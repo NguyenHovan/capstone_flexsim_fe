@@ -1,0 +1,128 @@
+.register-container {
+  display: flex;
+  min-height: 100vh;
+  font-family: "Segoe UI", sans-serif;
+  background-color: #f8f2f1;
+}
+
+.register-left {
+  flex: 1;
+  background-color: #ffffff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  border-top-left-radius: 12px;
+  border-bottom-left-radius: 12px;
+}
+
+.illustration-signup {
+  max-width: 90%;
+  border-radius: 12px;
+}
+
+.register-right {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.form-box {
+  width: 80%;
+  max-width: 450px;
+  background-color: #ffffff;
+  padding: 30px;
+  border-radius: 14px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+.form-box h2 {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.form-box p {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.form-grid {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 15px;
+}
+
+.form-grid input {
+  flex: 1;
+}
+
+.form-box input[type="text"],
+.form-box input[type="email"],
+.form-box input[type="password"] {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  margin-bottom: 20px;
+}
+
+.checkbox-row span {
+  color: #1abc9c;
+  cursor: pointer;
+}
+
+.create-button {
+  width: 100%;
+  padding: 12px;
+  background-color: #1bd4a2;
+  color: #fff;
+  font-size: 16px;
+  border: none;
+  border-radius: 999px;
+  margin-bottom: 15px;
+  cursor: pointer;
+}
+
+.already-account {
+  text-align: center;
+  font-size: 13px;
+  color: #333;
+  margin-bottom: 15px;
+}
+
+.already-account span {
+  color: #1abc9c;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.google-button {
+  width: 100%;
+  padding: 10px;
+  background-color: #f2eaea;
+  border: none;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.google-button img {
+  width: 18px;
+  height: 18px;
+}

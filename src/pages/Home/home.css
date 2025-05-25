@@ -1,0 +1,125 @@
+.container {
+  padding: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.sub-heading {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.description {
+  font-size: 1.1rem;
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.get-started-btn {
+  background-color: #f5a623 !important;
+  border-color: #f5a623 !important;
+  font-size: 1.1rem;
+  padding: 10px 20px;
+  height: auto;
+}
+
+.features-row {
+  margin-top: 30px;
+}
+
+.feature-box {
+  text-align: center;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.feature-box h3 {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.feature-image {
+  width: 100px;
+  height: 100px;
+  margin-bottom: 10px;
+}
+
+.main-image {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.section-spacing {
+  margin-top: 60px;
+}
+
+@media (max-width: 768px) {
+  .heading,
+  .sub-heading {
+    font-size: 1.8rem;
+  }
+
+  .description {
+    font-size: 1rem;
+  }
+
+  .feature-box {
+    padding: 15px;
+  }
+
+  .feature-box h3 {
+    font-size: 1rem;
+  }
+}
+
+.testimonials-section {
+  margin-bottom: 40px;
+}
+
+.testimonials .ant-card {
+  background: #f0f0f0;
+  text-align: center;
+}
+
+.testimonials .ant-card-cover img {
+  margin: 0 auto;
+  border-radius: 50%;
+}
+
+.rating {
+  color: #f4a261;
+  font-size: 16px;
+  margin: 8px 0;
+}
+
+.cta-section {
+  display: flex;
+  background: #2a6f97;
+  color: white;
+  padding: 40px;
+  text-align: center;
+  border-radius: 8px;
+  position: relative;
+}
+
+.cta-section .ant-typography {
+  color: white;
+}
+
+.cta-buttons {
+  margin: 20px 0;
+}
+
+.cta-image {
+  margin-top: 20px;
+}
+
+.cta-image img {
+  max-width: 200px;
+}
