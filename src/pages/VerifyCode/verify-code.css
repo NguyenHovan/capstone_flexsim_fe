@@ -1,0 +1,90 @@
+.verify-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #fdf6f5;
+  height: 100vh;
+  font-family: "Segoe UI", sans-serif;
+}
+
+.verify-card {
+  display: flex;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+  max-width: 900px;
+  width: 90%;
+  overflow: hidden;
+}
+
+.verify-left {
+  flex: 1;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.verify-left .back {
+  font-size: 14px;
+  margin-bottom: 20px;
+  color: #111;
+  cursor: pointer;
+}
+
+.verify-left h2 {
+  font-size: 22px;
+  margin-bottom: 10px;
+}
+
+.verify-left p {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 16px;
+  line-height: 1.6;
+}
+
+.verify-left input {
+  padding: 12px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  margin-bottom: 12px;
+  width: 100%;
+}
+
+.resend-text {
+  font-size: 13px;
+  margin-bottom: 24px;
+  color: #555;
+}
+
+.resend {
+  color: red;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.verify-btn {
+  padding: 12px;
+  font-size: 16px;
+  border: none;
+  border-radius: 999px;
+  background-color: #1bd4a2;
+  color: white;
+  cursor: pointer;
+}
+
+.verify-right {
+  flex: 1;
+  background-color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 30px;
+}
+
+.verify-right img {
+  max-width: 100%;
+  height: auto;
+}
