@@ -1,25 +1,43 @@
-.custom-footer {
-  display: flex;
-  justify-content: space-between;
-  padding: 40px 60px;
+.footer-wrapper {
   background-color: #fff;
-  border-top: 1px solid #ddd;
-  font-family: Arial, sans-serif;
+  border-top: 1px solid #eee;
+}
+
+.custom-footer {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1fr;
+  gap: 40px;
+  padding: 40px 80px 20px;
 }
 
 .footer-col {
-  flex: 1;
-  margin-right: 40px;
+  display: flex;
+  flex-direction: column;
 }
 
-.logo-section {
-  max-width: 250px;
+.logo-section p {
+  color: #333;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.contact-info p {
+  margin: 6px 0;
+  font-size: 14px;
+  color: #444;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .logo {
   font-size: 20px;
   font-weight: bold;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
+  display: inline-block;
+  margin-left: 0;     
+  padding-left: 0;    
+  text-align: left;  
 }
 
 .logo-orange {
@@ -32,14 +50,15 @@
 
 .footer-col h4 {
   font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 10px;
+  font-weight: bold;
+  margin-left: 5px;
+  margin-bottom: 12px;
 }
 
 .footer-col ul {
   list-style: none;
+  margin-left: 5px;
   padding: 0;
-  margin: 0;
 }
 
 .footer-col ul li {
@@ -47,11 +66,21 @@
 }
 
 .footer-col ul li a {
+  color: #222;
   text-decoration: none;
-  color: #000;
-  font-weight: 400;
+  font-size: 14px;
 }
 
 .footer-col ul li a:hover {
   text-decoration: underline;
+}
+
+.footer-bottom {
+  width: 100%;
+  text-align: center;
+  margin-top: 20px;
+  font-size: 13px;
+  color: #888;
+  border-top: 1px solid #eee;
+  padding: 16px 0;
 }
