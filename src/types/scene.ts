@@ -1,0 +1,7 @@
+interface Scene {
+
+}
+
+interface SceneOfWorkspace {
+    
+}
