@@ -8,6 +8,7 @@ import HomePage from "../pages/Home/Home";
 import OrganizationLayout from "../layouts/Organization/OrganizationLayout";
 import HomeOrganization from "../pages/Organization/Home/HomeOrganization";
 import Contact from "../pages/Contact/Contact";
+import NewPasswordPage from "../pages/NewPassword/NewPassword";
 
 const MainRoute = () => {
   return (
@@ -22,6 +23,7 @@ const MainRoute = () => {
       <Route element={<LayoutMain />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/new-password" element={<NewPasswordPage />} />
       </Route>
 
       {/* Organization layout - dùng nested routes */}
