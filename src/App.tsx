@@ -1,12 +1,16 @@
 import { BrowserRouter } from "react-router-dom";
 
 import MainRoute from "./routers";
+import { Toaster } from "sonner";
 
 function App() {
   return (
-    <BrowserRouter>
-      <MainRoute />
-    </BrowserRouter>
+    <>
+      <Toaster />
+      <BrowserRouter>
+        <MainRoute />
+      </BrowserRouter>
+    </>
   );
 }
 
