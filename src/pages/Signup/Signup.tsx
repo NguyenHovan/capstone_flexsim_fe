@@ -3,15 +3,15 @@ import "./signup.css";
 import illustration from "../../assets/signup.png";
 import { GooglePlusOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import { AuthService } from "../../services/auth.service"; // đường dẫn đúng
-import { message } from "antd";
+import { AuthService } from "../../services/auth.service";
+import { Modal, Input } from "antd";
 import { toast } from "sonner";
 
 const SignUpPage = () => {
   const navigate = useNavigate();
 
-  // State lưu thông tin người dùng
   const [form, setForm] = useState({
+    userName: "",
     firstName: "",
     lastName: "",
     email: "",
@@ -20,6 +20,9 @@ const SignUpPage = () => {
     confirmPassword: "",
     agree: false,
   });
+
+  const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
+  const [otp, setOtp] = useState("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -30,30 +33,57 @@ const SignUpPage = () => {
   };
 
   const handleSubmit = async () => {
-    if (!form.agree) {
-      message.warning("You must agree to the terms and privacy policies.");
-      return;
-    }
+    const {
+      userName,
+      firstName,
+      lastName,
+      email,
+      phone,
+      password,
+      confirmPassword,
+      agree,
+    } = form;
 
-    if (form.password !== form.confirmPassword) {
-      message.error("Passwords do not match.");
-      return;
-    }
+    if (!agree) return toast.warning("Bạn cần đồng ý với điều khoản.");
+    if (
+      !userName ||
+      !firstName ||
+      !lastName ||
+      !email ||
+      !phone ||
+      !password ||
+      !confirmPassword
+    )
+      return toast.error("Vui lòng điền đầy đủ thông tin.");
+    if (password !== confirmPassword)
+      return toast.error("Mật khẩu xác nhận không khớp.");
 
     const payload = {
-      userName: form.email.split("@")[0],
-      fullName: `${form.firstName} ${form.lastName}`,
-      email: form.email,
-      phone: form.phone,
-      password: form.password,
+      userName,
+      fullName: `${firstName} ${lastName}`,
+      email,
+      phone,
+      password,
     };
 
     try {
       await AuthService.register(payload);
-      toast.success("Verify Email!");
-      // navigate("/login");
+      toast.success("Đăng ký thành công! Vui lòng nhập mã OTP.");
+      setIsOtpModalOpen(true);
     } catch (error) {
-      message.error("Registration failed!");
+      toast.error("Đăng ký thất bại!");
+      console.error(error);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    try {
+      await AuthService.verifyEmail(otp);
+      toast.success("Xác thực email thành công!");
+      setIsOtpModalOpen(false);
+      navigate("/login");
+    } catch (error) {
+      toast.error("Mã OTP không hợp lệ!");
       console.error(error);
     }
   };
@@ -71,6 +101,14 @@ const SignUpPage = () => {
             Let’s get you all set up so you can start learning logistics the
             smart way — with simulation and AI.
           </p>
+
+          <input
+            type="text"
+            placeholder="Username"
+            name="userName"
+            value={form.userName}
+            onChange={handleChange}
+          />
 
           <div className="form-grid">
             <input
@@ -150,6 +188,22 @@ const SignUpPage = () => {
           </button>
         </div>
       </div>
+
+      <Modal
+        title="Xác thực Email"
+        open={isOtpModalOpen}
+        onOk={handleVerifyOtp}
+        onCancel={() => setIsOtpModalOpen(false)}
+        okText="Xác nhận"
+        cancelText="Hủy"
+      >
+        <p>Vui lòng nhập mã OTP đã gửi qua email:</p>
+        <Input
+          value={otp}
+          onChange={(e) => setOtp(e.target.value)}
+          placeholder="Nhập mã OTP"
+        />
+      </Modal>
     </div>
   );
 };

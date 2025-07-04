@@ -54,7 +54,7 @@ const LoginPage = () => {
 
           <input
             type="text"
-            placeholder="username"
+            placeholder="Username"
             value={userName}
             onChange={(e) => setUserName(e.target.value)}
           />

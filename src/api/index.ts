@@ -5,6 +5,7 @@ export const API = {
   FORGOT_PASSWORD: "/api/Account/ForgotPassword",
   CHANGE_PASSWORD: "/api/Account/ChangePassword",
   UPDATE_ACCOUNT: "/api/Account/UpdateAccount",
+  VERIFY_EMAIL: "/api/Account/VerifyEmail",
 
   //COURSE
   GET_ALL_COURSE: "/api/Course/GetAllCourse",
