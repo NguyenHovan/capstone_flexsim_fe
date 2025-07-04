@@ -1,6 +1,11 @@
 import axiosInstance from "./main.service";
 import { API } from "../api";
-import type { Register } from "../types/auth";
+import type {
+  ChangePassword,
+  ForgotPassword,
+  Login,
+  Register,
+} from "../types/auth";
 
 export const AuthService = {
   register: async (payload: Register) => {
@@ -10,5 +15,24 @@ export const AuthService = {
     } catch (error) {
       console.log({ error });
     }
+  },
+
+  login: async (payload: Login) => {
+    const response = await axiosInstance.post(`${API.LOGIN}`, payload);
+    return response.data;
+  },
+  forgotPassword: async (payload: ForgotPassword) => {
+    const response = await axiosInstance.post(
+      `${API.FORGOT_PASSWORD}`,
+      payload
+    );
+    return response.data;
+  },
+  changePassword: async (payload: ChangePassword) => {
+    const response = await axiosInstance.post(
+      `${API.CHANGE_PASSWORD}`,
+      payload
+    );
+    return response.data;
   },
 };

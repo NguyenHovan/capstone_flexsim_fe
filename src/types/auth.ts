@@ -5,3 +5,17 @@ export interface Register {
   phone: string;
   password: string;
 }
+
+export interface Login {
+  email: string;
+  password: string;
+}
+
+export interface ForgotPassword {
+  email: string;
+}
+
+export interface ChangePassword {
+  currentPassword: string;
+  newPassword: string;
+}

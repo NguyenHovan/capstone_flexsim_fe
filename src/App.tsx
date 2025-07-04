@@ -42,6 +42,12 @@ function App() {
         <Route path="/organization/order/paymentfail" element={<PaymentFailure/>} />
       </Routes>
     </BrowserRouter>
+    <>
+      <Toaster position="top-right" richColors closeButton expand={true} />
+      <BrowserRouter>
+        <MainRoute />
+      </BrowserRouter>
+    </>
   );
 }
 
