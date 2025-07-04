@@ -8,29 +8,27 @@ import { toast } from "sonner";
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
+  const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
 
   const handleLogin = async () => {
-    if (!email || !password) {
-      toast.warning("Please enter both email and password.");
+    if (!userName || !password) {
+      toast.warning("Please enter both username and password.");
       return;
     }
 
     try {
-      const response = await AuthService.login({ email, password });
+      const response = await AuthService.login({ userName, password });
 
       console.log({ response });
 
       if (response?.token) {
-        // Lưu token
         localStorage.setItem("accessToken", response.token);
 
-        // Lưu thông tin user
         localStorage.setItem("currentUser", JSON.stringify(response.user));
 
         toast.success("Login successful!");
-        navigate("/"); // hoặc chuyển hướng vào dashboard, etc.
+        navigate("/");
       } else {
         toast.error("Invalid email or password.");
       }
@@ -55,10 +53,10 @@ const LoginPage = () => {
           </p>
 
           <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            type="text"
+            placeholder="Username"
+            value={userName}
+            onChange={(e) => setUserName(e.target.value)}
           />
 
           <input

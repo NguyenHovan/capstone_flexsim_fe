@@ -35,4 +35,12 @@ export const AuthService = {
     );
     return response.data;
   },
+
+  verifyEmail: async (otp: string) => {
+    const response = await axiosInstance.post(
+      `${API.VERIFY_EMAIL}`,
+      JSON.stringify(otp)
+    );
+    return response.data;
+  },
 };

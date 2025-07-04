@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input, Button, Modal, Form, Card, Space } from "antd";
 import { toast } from "sonner";
 import { useAuth } from "../../hooks/useAuth";
 import { AuthService } from "../../services/auth.service";
-import "./profile.css";
+import { AccountService } from "../../services/account.service";
 import { useNavigate } from "react-router-dom";
+import "./profile.css";
 
 const ProfilePage = () => {
   const { user } = useAuth();
@@ -16,11 +17,28 @@ const ProfilePage = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    if (user) {
+      formProfile.setFieldsValue({
+        email: user.email,
+        userName: user.userName,
+        fullName: user.fullName,
+        phone: user.phone,
+      });
+    }
+  }, [user, formProfile]);
+
   const handleSaveProfile = async () => {
     try {
       const values = await formProfile.validateFields();
-      console.log({ values });
-      //   const response = await AuthService.updateProfile(values);
+      if (!user?.id) {
+        toast.error("Không xác định được tài khoản.");
+        return;
+      }
+
+      await AccountService.updateAccount(user.id, values);
+      toast.success("Cập nhật thông tin thành công!");
+      setIsEditing(false);
     } catch (error) {
       toast.error("Có lỗi xảy ra khi cập nhật.");
     }
@@ -49,6 +67,19 @@ const ProfilePage = () => {
       toast.success("Đổi mật khẩu thành công!");
       setIsModalVisible(false);
       formPassword.resetFields();
+
+      setTimeout(() => {
+        Modal.confirm({
+          title: "Bạn muốn đăng xuất không?",
+          content: "Đổi mật khẩu thành công. Tiếp tục sử dụng hay đăng xuất?",
+          okText: "Đăng xuất",
+          cancelText: "Tiếp tục",
+          onOk: () => {
+            localStorage.clear();
+            navigate("/login");
+          },
+        });
+      }, 300);
     } catch (error) {
       toast.error(error?.response?.data?.message || "Có lỗi xảy ra.");
     } finally {
@@ -59,23 +90,33 @@ const ProfilePage = () => {
   return (
     <div className="profile-container">
       <Card title="Thông tin cá nhân" bordered={false}>
-        <Form
-          form={formProfile}
-          layout="vertical"
-          initialValues={{
-            email: user?.email,
-            userName: user?.userName,
-            fullName: user?.fullName,
-          }}
-          disabled={!isEditing}
-        >
-          <Form.Item label="Email" name="email">
+        <Form form={formProfile} layout="vertical" disabled={!isEditing}>
+          <Form.Item
+            label="Email"
+            name="email"
+            rules={[{ required: true, message: "Vui lòng nhập email" }]}
+          >
             <Input />
           </Form.Item>
-          <Form.Item label="Username" name="userName">
+          <Form.Item
+            label="Tên người dùng"
+            name="userName"
+            rules={[{ required: true, message: "Vui lòng nhập username" }]}
+          >
             <Input />
           </Form.Item>
-          <Form.Item label="Họ và tên" name="fullName">
+          <Form.Item
+            label="Họ và tên"
+            name="fullName"
+            rules={[{ required: true, message: "Vui lòng nhập họ tên" }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label="Số điện thoại"
+            name="phone"
+            rules={[{ required: true, message: "Vui lòng nhập số điện thoại" }]}
+          >
             <Input />
           </Form.Item>
         </Form>
