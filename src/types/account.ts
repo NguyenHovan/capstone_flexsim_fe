@@ -1,14 +1,10 @@
-interface Account {
-
+export interface Account {
+  userName: string;
+  fullName: string;
+  email: string;
+  phone: string;
 }
 
+interface AccountOfWorkspace {}
 
-interface AccountOfWorkspace{
-
-}
-
-
-interface AccountOfClass {
-
-
-}
+interface AccountOfClass {}
