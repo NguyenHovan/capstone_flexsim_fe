@@ -11,6 +11,7 @@ import Contact from "../pages/Contact/Contact";
 import NewPasswordPage from "../pages/NewPassword/NewPassword";
 import InstructorLayout from "../layouts/Instructor/InstructorLayout";
 import Overview from "../pages/Instructor/Overview";
+import ProfilePage from "../pages/Profile/Profile";
 
 const MainRoute = () => {
   return (
@@ -26,6 +27,7 @@ const MainRoute = () => {
         <Route path="/" element={<HomePage />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/new-password" element={<NewPasswordPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
       </Route>
 
       {/* Organization layout - dùng nested routes */}

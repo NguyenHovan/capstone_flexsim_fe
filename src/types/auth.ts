@@ -14,3 +14,8 @@ export interface Login {
 export interface ForgotPassword {
   email: string;
 }
+
+export interface ChangePassword {
+  currentPassword: string;
+  newPassword: string;
+}
