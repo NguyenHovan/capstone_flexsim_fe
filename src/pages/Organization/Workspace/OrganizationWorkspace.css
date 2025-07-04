@@ -1,0 +1,33 @@
+
+.org-workspace-container {
+  padding: 24px;
+  background: #f9f9f9;
+  min-height: 100vh;
+}
+
+
+.org-workspace-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.org-workspace-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.org-workspace-table .ant-table {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.org-workspace-table .ant-table-container {
+  border-radius: 8px;
+}
+
+/* modal form tweaks */
+.org-workspace-modal .ant-form-item-label > label {
+  font-weight: 500;
+}

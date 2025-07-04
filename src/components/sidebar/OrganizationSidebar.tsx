@@ -1,42 +1,77 @@
+import { NavLink, useLocation } from "react-router-dom";
 import {
   HomeOutlined,
-  AppstoreOutlined,
+  FolderOpenOutlined,
   TeamOutlined,
-  BookOutlined,
-  DollarOutlined,
-  InfoCircleOutlined,
-  SettingOutlined,
+  AppstoreOutlined,
   UserOutlined,
+  SettingOutlined,
+  QuestionCircleOutlined,
 } from "@ant-design/icons";
 import "./organizationSidebar.css";
 
-const sidebarItems = [
-  { key: "overview", icon: <HomeOutlined />, label: "Overview" },
-  { key: "workspaces", icon: <AppstoreOutlined />, label: "Workspaces" },
-  { key: "users", icon: <TeamOutlined />, label: "Users" },
-  { key: "courses", icon: <BookOutlined />, label: "Courses" },
-  { key: "packages", icon: <DollarOutlined />, label: "Packages & Subscription" },
-  { key: "org-profile", icon: <InfoCircleOutlined />, label: "Organization Profile" },
-  { key: "settings", icon: <SettingOutlined />, label: "Settings" },
-  { key: "help", icon: <UserOutlined />, label: "Support / Help" },
-];
+const OrganizationSidebar = () => {
+  const location = useLocation();
 
-const OrganizationSidebar = () => (
-  <aside className="org-sidebar">
-    <div className="org-sidebar-title">
-      <span className="logo-main">ORGANIZATION</span>
-    </div>
-    <nav>
+  const menuItems = [
+    {
+      label: "Overview",
+      icon: <HomeOutlined />,
+      path: "/organization/",
+    },
+    {
+      label: "Workspace",
+      icon: <FolderOpenOutlined />,
+      path: "/organization/workspace",
+    },
+    {
+      label: "User",
+      icon: <TeamOutlined />,
+      path: "/organization/user",
+    },
+    {
+      label: "Order",
+      icon: <AppstoreOutlined />,
+      path: "/organization/order",
+    },
+    {
+      label: "Profile",
+      icon: <UserOutlined />,
+      path: "/organization/profile",
+    },
+    {
+      label: "Settings",
+      icon: <SettingOutlined />,
+      path: "/organization/setting",
+    },
+    {
+      label: "Support & Help",
+      icon: <QuestionCircleOutlined />,
+      path: "/organization/support",
+    },
+  ];
+
+  return (
+    <div className="org-sidebar">
+      <div className="sidebar-section-title">ORGANIZATION</div>
       <ul className="org-sidebar-menu">
-        {sidebarItems.map((item) => (
-          <li key={item.key} className="org-sidebar-item">
-            {item.icon}
-            <span className="org-sidebar-label">{item.label}</span>
+        {menuItems.map((item) => (
+          <li key={item.path}>
+            <NavLink
+              to={item.path}
+              className={({ isActive }) =>
+                `org-sidebar-item ${isActive ? "active" : ""}`
+              }
+              end
+            >
+              {item.icon}
+              <span className="org-sidebar-label">{item.label}</span>
+            </NavLink>
           </li>
         ))}
       </ul>
-    </nav>
-  </aside>
-);
+    </div>
+  );
+};
 
 export default OrganizationSidebar;

@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, Navigate } from "react-router-dom";
 import LoginPage from "../pages/Login/Login";
 import SignUpPage from "../pages/Signup/Signup";
 import ForgotPasswordPage from "../pages/ForgotPassword/ForgotPassword";
@@ -6,7 +6,10 @@ import VerifyCodePage from "../pages/VerifyCode/VerifyCode";
 import LayoutMain from "../layouts/Student";
 import HomePage from "../pages/Home/Home";
 import OrganizationLayout from "../layouts/Organization/OrganizationLayout";
-import HomeOrganization from "../pages/Organization/Home/HomeOrganization";
+import HomeOrganization from "../pages/Organization/Home/OrganizationHome";
+import OrganizationCourses from "../pages/Organization/Courses/OrganizationCourses";
+import OrganizationClasses from "../pages/Organization/Classes/OrganizationClasses";
+import OrganizationWorkspace from "../pages/Organization/Workspace/OrganizationWorkspace";
 import Contact from "../pages/Contact/Contact";
 import NewPasswordPage from "../pages/NewPassword/NewPassword";
 
@@ -26,11 +29,13 @@ const MainRoute = () => {
         <Route path="/new-password" element={<NewPasswordPage />} />
       </Route>
 
-      {/* Organization layout - dùng nested routes */}
-      <Route element={<OrganizationLayout />}>
-        <Route path="/organization" element={<HomeOrganization />} />
-        {/* Nếu có các page con cho org: */}
-        {/* <Route path="/organization/xxx" element={<PageXxx />} /> */}
+      {/* Organization layout with nested routes */}
+      <Route path="/organization" element={<OrganizationLayout />}>
+        <Route index element={<Navigate to="overview" replace />} />
+        <Route path="/" element={<HomeOrganization />} />
+        <Route path="courses" element={<OrganizationCourses />} />
+        <Route path="classes" element={<OrganizationClasses />} />
+        <Route path="workspace" element={<OrganizationWorkspace />} />
       </Route>
     </Routes>
   );

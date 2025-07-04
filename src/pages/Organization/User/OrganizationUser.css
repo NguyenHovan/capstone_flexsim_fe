@@ -1,0 +1,41 @@
+/* OrganizationUser.css */
+
+.org-user-container {
+  padding: 24px;
+  background: #f9f9f9;
+  min-height: 100vh;
+}
+
+.org-user-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.org-user-table .ant-table {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.org-user-table .ant-table-container {
+  border-radius: 8px;
+}
+
+.action-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.action-icon {
+  font-size: 16px;
+  color: #555;
+  cursor: pointer;
+}
+
+.action-icon.delete {
+  color: #e53935;
+}
