@@ -8,6 +8,7 @@ import {
   Modal,
   Form,
   InputNumber,
+  Select,
 } from "antd";
 import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
@@ -194,18 +195,31 @@ const CourseManagement = () => {
             <Input.TextArea rows={3} />
           </Form.Item>
           <Form.Item
-            label="Category ID"
+            label="Category"
             name="categoryId"
-            rules={[{ required: true, message: "Require field category" }]}
+            rules={[{ required: true, message: "Bắt buộc" }]}
           >
-            <Input />
+            <Select placeholder="Chọn category">
+              {categories.map((cat: any) => (
+                <Select.Option key={cat.id} value={cat.id}>
+                  {cat.categoryName}
+                </Select.Option>
+              ))}
+            </Select>
           </Form.Item>
+
           <Form.Item
-            label="Workspace ID"
+            label="Workspace"
             name="workSpaceId"
-            rules={[{ required: true, message: "Require field workspace" }]}
+            rules={[{ required: true, message: "Bắt buộc" }]}
           >
-            <Input />
+            <Select placeholder="Chọn workspace">
+              {workspaces.map((ws: any) => (
+                <Select.Option key={ws.id} value={ws.id}>
+                  {ws.workSpaceName}
+                </Select.Option>
+              ))}
+            </Select>
           </Form.Item>
           <Form.Item label="Rating" name="ratingAverage">
             <InputNumber min={0} max={5} step={0.1} style={{ width: "100%" }} />
