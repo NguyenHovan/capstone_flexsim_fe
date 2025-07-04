@@ -6,7 +6,7 @@ import { Toaster } from "sonner";
 function App() {
   return (
     <>
-      <Toaster />
+      <Toaster position="top-right" richColors closeButton expand={true} />
       <BrowserRouter>
         <MainRoute />
       </BrowserRouter>

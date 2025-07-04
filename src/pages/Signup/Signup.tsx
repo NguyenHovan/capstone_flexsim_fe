@@ -5,6 +5,7 @@ import { GooglePlusOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { AuthService } from "../../services/auth.service"; // đường dẫn đúng
 import { message } from "antd";
+import { toast } from "sonner";
 
 const SignUpPage = () => {
   const navigate = useNavigate();
@@ -49,8 +50,8 @@ const SignUpPage = () => {
 
     try {
       await AuthService.register(payload);
-      message.success("Account created successfully!");
-      navigate("/login");
+      toast.success("Verify Email!");
+      // navigate("/login");
     } catch (error) {
       message.error("Registration failed!");
       console.error(error);

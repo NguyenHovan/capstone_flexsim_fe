@@ -9,6 +9,8 @@ import OrganizationLayout from "../layouts/Organization/OrganizationLayout";
 import HomeOrganization from "../pages/Organization/Home/HomeOrganization";
 import Contact from "../pages/Contact/Contact";
 import NewPasswordPage from "../pages/NewPassword/NewPassword";
+import InstructorLayout from "../layouts/Instructor/InstructorLayout";
+import Overview from "../pages/Instructor/Overview";
 
 const MainRoute = () => {
   return (
@@ -31,6 +33,10 @@ const MainRoute = () => {
         <Route path="/organization" element={<HomeOrganization />} />
         {/* Nếu có các page con cho org: */}
         {/* <Route path="/organization/xxx" element={<PageXxx />} /> */}
+      </Route>
+
+      <Route element={<InstructorLayout />}>
+        <Route path="/instructor" element={<Overview />} />
       </Route>
     </Routes>
   );
