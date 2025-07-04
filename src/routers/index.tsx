@@ -12,6 +12,8 @@ import NewPasswordPage from "../pages/NewPassword/NewPassword";
 import InstructorLayout from "../layouts/Instructor/InstructorLayout";
 import Overview from "../pages/Instructor/Overview";
 import ProfilePage from "../pages/Profile/Profile";
+import CourseManagement from "../pages/Instructor/Course-manage/Course-manage";
+import ManageClass from "../pages/Instructor/Class-manage/Class-manage";
 
 const MainRoute = () => {
   return (
@@ -39,6 +41,8 @@ const MainRoute = () => {
 
       <Route element={<InstructorLayout />}>
         <Route path="/instructor" element={<Overview />} />
+        <Route path="/instructor-course" element={<CourseManagement />} />
+        <Route path="/instructor-class" element={<ManageClass />} />
       </Route>
     </Routes>
   );
