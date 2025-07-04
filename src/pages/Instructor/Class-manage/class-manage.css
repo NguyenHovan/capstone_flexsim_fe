@@ -1,0 +1,12 @@
+.manage-class-wrapper {
+  padding: 24px;
+  background: #fff;
+  border-radius: 8px;
+}
+
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
