@@ -1,7 +1,0 @@
-interface Scene {
-
-}
-
-interface SceneOfWorkspace {
-    
-}

@@ -32,7 +32,7 @@ const ManageClass = () => {
     },
     {
       title: "Action",
-      render: (_, record) => (
+      render: () => (
         <Space size="middle">
           <Tooltip title="Edit">
             <EditOutlined style={{ cursor: "pointer" }} />
