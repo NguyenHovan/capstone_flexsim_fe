@@ -2,7 +2,7 @@ import { Outlet } from "react-router-dom";
 import OrganizationHeader from "../../components/header/OrganizationHeader";
 import OrganizationSidebar from "../../components/sidebar/OrganizationSidebar";
 import Footer from "../../components/footer/Footer";
-import "./organizationLayout.css";
+import "./OrganizationLayout.css";
 
 export default function OrganizationLayout() {
   return (
