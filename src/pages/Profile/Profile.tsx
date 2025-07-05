@@ -80,7 +80,7 @@ const ProfilePage = () => {
           },
         });
       }, 300);
-    } catch (error) {
+    } catch (error: any) {
       toast.error(error?.response?.data?.message || "Có lỗi xảy ra.");
     } finally {
       setLoading(false);

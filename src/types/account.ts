@@ -4,7 +4,3 @@ export interface Account {
   email: string;
   phone: string;
 }
-
-interface AccountOfWorkspace {}
-
-interface AccountOfClass {}
