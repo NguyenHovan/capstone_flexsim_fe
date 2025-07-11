@@ -34,7 +34,7 @@ const sidebarItems = [
     key: "Topics",
     icon: <TeamOutlined />,
     label: "Topics",
-    url: "/instructor",
+    url: "/instructor-topic",
   },
   {
     key: "Scenarios",

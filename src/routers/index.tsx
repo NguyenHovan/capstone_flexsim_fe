@@ -14,13 +14,14 @@ import Overview from "../pages/Instructor/Overview";
 import ProfilePage from "../pages/Profile/Profile";
 import CourseManagement from "../pages/Instructor/Course-manage/Course-manage";
 import ManageClass from "../pages/Instructor/Class-manage/Class-manage";
+import TopicManagement from "../pages/Instructor/Topic-manage/TopicManagement";
 
 const MainRoute = () => {
   return (
     <Routes>
       {/* Auth routes */}
       <Route path="/login" element={<LoginPage />} />
-      <Route path="/signup" element={<SignUpPage />} />
+      {/* <Route path="/signup" element={<SignUpPage />} /> */}
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/verify-code" element={<VerifyCodePage />} />
 
@@ -43,6 +44,7 @@ const MainRoute = () => {
         <Route path="/instructor" element={<Overview />} />
         <Route path="/instructor-course" element={<CourseManagement />} />
         <Route path="/instructor-class" element={<ManageClass />} />
+        <Route path="/instructor-topic" element={<TopicManagement />} />
       </Route>
     </Routes>
   );
