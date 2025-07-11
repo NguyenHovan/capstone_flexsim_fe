@@ -19,9 +19,22 @@ export const API = {
   GET_ALL_CLASS: "/api/class/get_all_class",
   GET_CLASS_ID: "/api/class/get_class",
   CREATE_CLASS: "/api/class/create_class",
-  UPDATE_CLASS: "/api/course/update_class",
-  DELETE_CLASS: "/api/course/delete_class",
+  UPDATE_CLASS: "/api/class/update_class",
+  DELETE_CLASS: "/api/class/delete_class",
 
+  //TOPIC
+  GET_ALL_TOPIC: "/api/topic/get_all_topic",
+  GET_TOPIC_ID: "/api/topic/get_topic",
+  CREATE_TOPIC: "/api/topic/create_topic",
+  UPDATE_TOPIC: "/api/topic/update_topic",
+  DELETE_TOPIC: "/api/topic/delete_topic",
+
+  //SCENE
+  GET_ALL_SCENE: "/api/scene/get_all_scene",
+  GET_SCENE_ID: "/api/scene/get_scene",
+  CREATE_SCENE: "/api/scene/create_scene",
+  UPDATE_SCENE: "/api/scene/update_scene",
+  DELETE_SCENE: "/api/scene/delete_scene",
   //WORKSPACE
   GET_ALL_WORKSPACE: "/api/workspace/get_all_workSpace",
   //ADMIN

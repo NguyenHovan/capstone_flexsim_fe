@@ -77,15 +77,15 @@ const LoginPage = () => {
             Login
           </button>
 
-          <button className="google-button">
+          {/* <button className="google-button">
             <GooglePlusOutlined />
             Continue with Google
-          </button>
+          </button> */}
 
-          <p className="signup-text">
+          {/* <p className="signup-text">
             Don’t have an account?{" "}
             <span onClick={() => navigate("/signup")}>Signup</span>
-          </p>
+          </p> */}
         </div>
       </div>
     </div>
