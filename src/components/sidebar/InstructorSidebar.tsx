@@ -46,7 +46,7 @@ const sidebarItems = [
     key: "Scene",
     icon: <InfoCircleOutlined />,
     label: "Scene",
-    url: "/instructor",
+    url: "/instructor-scene",
   },
   {
     key: "Quizzes",
