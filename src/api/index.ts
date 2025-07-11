@@ -8,15 +8,42 @@ export const API = {
   VERIFY_EMAIL: "/api/Account/VerifyEmail",
 
   //COURSE
-  GET_ALL_COURSE: "/api/Course/GetAllCourse",
-  GET_COURSE_ID: "/api/Course/GetCourse",
+  GET_ALL_COURSE: "/api/course/get_all_course",
+  GET_COURSE_ID: "/api/course/get_course",
   GET_COURSE_SEARCH: "/api/Course/SearchCourse",
-  CREATE_COURSE: "/api/Course/CreateCourse",
-  UPDATE_COURSE: "/api/Course/UpdateCourse",
-  DELETE_COURSE: "/api/Course/DeleteCourse",
+  CREATE_COURSE: "/api/course/create_course",
+  UPDATE_COURSE: "/api/course/update_course",
+  DELETE_COURSE: "/api/course/delete_course",
 
+  //CLASSES
+  GET_ALL_CLASS: "/api/class/get_all_class",
+  GET_CLASS_ID: "/api/class/get_class",
+  CREATE_CLASS: "/api/class/create_class",
+  UPDATE_CLASS: "/api/class/update_class",
+  DELETE_CLASS: "/api/class/delete_class",
+
+  //TOPIC
+  GET_ALL_TOPIC: "/api/topic/get_all_topic",
+  GET_TOPIC_ID: "/api/topic/get_topic",
+  CREATE_TOPIC: "/api/topic/create_topic",
+  UPDATE_TOPIC: "/api/topic/update_topic",
+  DELETE_TOPIC: "/api/topic/delete_topic",
+
+  //SCENE
+  GET_ALL_SCENE: "/api/scene/get_all_scene",
+  GET_SCENE_ID: "/api/scene/get_scene",
+  CREATE_SCENE: "/api/scene/create_scene",
+  UPDATE_SCENE: "/api/scene/update_scene",
+  DELETE_SCENE: "/api/scene/delete_scene",
+
+  //QUIZ
+  GET_ALL_QUIZ: "/api/quiz/get_all_quiz",
+  GET_QUIZ_ID: "/api/quiz/get_quiz",
+  CREATE_FULL_QUIZ: "/api/quiz/create_full_quiz",
+  UPDATE_QUIZ: "/api/quiz/update_quiz",
+  DELETE_QUIZ: "/api/quiz/delete_quiz",
   //WORKSPACE
-  GET_ALL_WORKSPACE: "/api/Workspace/GetAllWorkSpace",
+  GET_ALL_WORKSPACE: "/api/workspace/get_all_workSpace",
   //ADMIN
 
   //ACCOUNT OF WORKSPACE
@@ -24,5 +51,5 @@ export const API = {
   //AUTH
 
   //CATEGORY
-  GET_ALL_CATEGORY: "/api/Category/GetAllCategory",
+  GET_ALL_CATEGORY: "/api/category/get_all_category",
 };

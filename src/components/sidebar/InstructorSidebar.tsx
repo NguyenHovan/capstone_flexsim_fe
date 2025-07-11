@@ -34,7 +34,7 @@ const sidebarItems = [
     key: "Topics",
     icon: <TeamOutlined />,
     label: "Topics",
-    url: "/instructor",
+    url: "/instructor-topic",
   },
   {
     key: "Scenarios",
@@ -46,13 +46,13 @@ const sidebarItems = [
     key: "Scene",
     icon: <InfoCircleOutlined />,
     label: "Scene",
-    url: "/instructor",
+    url: "/instructor-scene",
   },
   {
     key: "Quizzes",
     icon: <SettingOutlined />,
     label: "Quizzes",
-    url: "/instructor",
+    url: "/instructor-quiz",
   },
   {
     key: "Reviews",
