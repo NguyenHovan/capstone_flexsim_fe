@@ -35,6 +35,13 @@ export const API = {
   CREATE_SCENE: "/api/scene/create_scene",
   UPDATE_SCENE: "/api/scene/update_scene",
   DELETE_SCENE: "/api/scene/delete_scene",
+
+  //QUIZ
+  GET_ALL_QUIZ: "/api/quiz/get_all_quiz",
+  GET_QUIZ_ID: "/api/quiz/get_quiz",
+  CREATE_FULL_QUIZ: "/api/quiz/create_full_quiz",
+  UPDATE_QUIZ: "/api/quiz/update_quiz",
+  DELETE_QUIZ: "/api/quiz/delete_quiz",
   //WORKSPACE
   GET_ALL_WORKSPACE: "/api/workspace/get_all_workSpace",
   //ADMIN
