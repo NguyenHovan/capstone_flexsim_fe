@@ -52,7 +52,7 @@ const sidebarItems = [
     key: "Quizzes",
     icon: <SettingOutlined />,
     label: "Quizzes",
-    url: "/instructor",
+    url: "/instructor-quiz",
   },
   {
     key: "Reviews",
