@@ -8,64 +8,55 @@ import {
   SettingOutlined,
   QuestionCircleOutlined,
 } from "@ant-design/icons";
-import "./organizationSidebar.css";
+import "./adminsidebar.css";
 
-const OrganizationSidebar = () => {
+const AdminSidebar = () => {
   const location = useLocation();
 
   const menuItems = [
     {
       label: "Overview",
       icon: <HomeOutlined />,
-      path: "/organization/",
+      path: "/admin/",
     },
     {
-      label: "Workspace",
-      icon: <FolderOpenOutlined />,
-      path: "/organization/workspace",
-    },
-    {
-      label: "User",
+      label: "Organization Manager",
       icon: <TeamOutlined />,
-      path: "/organization/user",
+      path: "/admin/organization-manager",
     },
+    
     {
-      label: "Order",
-      icon: <AppstoreOutlined />,
-      path: "/organization/order",
-    },
-    {
-      label: "Profile",
+      label: "User Manager",
       icon: <UserOutlined />,
-      path: "/organization/profile",
+      path: "/admin/user-manager",
     },
     {
-      label: "Settings",
+      label: "Workspace Manager",
       icon: <SettingOutlined />,
-      path: "/organization/setting",
+      path: "/admin/workspace-manager",
     },
     {
       label: "Support & Help",
       icon: <QuestionCircleOutlined />,
-      path: "/organization/support",
+      path: "/adminsupport",
     },
   ];
 
   return (
-    <div className="org-sidebar">
-      <div className="sidebar-section-title">ORGANIZATION</div>
-      <ul className="org-sidebar-menu">
+    <div className="admin-sidebar">
+      <div className="sidebar-section-title">SYSTEM ADMIN</div>
+      <ul className="admin-sidebar-menu">
         {menuItems.map((item) => (
           <li key={item.path}>
             <NavLink
               to={item.path}
               className={({ isActive }) =>
-                `org-sidebar-item ${isActive ? "active" : ""}`
+                `admin-sidebar-item ${isActive ? "active" : ""}`
               }
               end
             >
               {item.icon}
-              <span className="org-sidebar-label">{item.label}</span>
+              <span className="admin-sidebar-label">{item.label}</span>
             </NavLink>
           </li>
         ))}
@@ -74,4 +65,4 @@ const OrganizationSidebar = () => {
   );
 };
 
-export default OrganizationSidebar;
+export default AdminSidebar;

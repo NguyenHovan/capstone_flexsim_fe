@@ -1,11 +1,17 @@
 export const API = {
   //ACCOUNT
-  REGISTER: "/api/Account/SignUp",
+  REGISTER: "/api/account/SignUp",
   LOGIN: "/api/Account/Login",
   FORGOT_PASSWORD: "/api/Account/ForgotPassword",
   CHANGE_PASSWORD: "/api/Account/ChangePassword",
-  UPDATE_ACCOUNT: "/api/Account/UpdateAccount",
+  UPDATE_ACCOUNT: "/api/account/update_account",
   VERIFY_EMAIL: "/api/Account/VerifyEmail",
+  GET_ALL_ACCOUNT:"/api/account/get_all",
+  GET_ACCOUNT_ID:"/api/account/get_account",
+  DELETE_ACCOUNT: "/api/account/delete_account",
+  CREATE_ORG_ADMIN:"/api/account/register-organization-admin-account",
+
+
 
   //COURSE
   GET_ALL_COURSE: "/api/course/get_all_course",
@@ -46,6 +52,14 @@ export const API = {
   GET_ALL_WORKSPACE: "/api/workspace/get_all_workSpace",
   //ADMIN
 
+  GET_ALL_ORGANIZATION :"/api/organization/get_all_organization",
+  GET_ORGANIZATION_ID :"/api/organization/get_organization",
+  CREATE_ORGANIZATION :"/api/organization/create_organization",
+  UPDATE_ORGANIZATION :"/api/organization/update_organization",
+  DELETE_ORGANIZATION :"/api/organization/delete_organization",
+  GET_ALL_WORKSPACES: "/api/workspace/get_all_workSpace",
+  GET_WORKSPACE_BY_ID: "/api/workspace/get_workSpace",
+  UPDATE_WORKSPACE: "/api/workspace/update_workSpace",
   //ACCOUNT OF WORKSPACE
 
   //AUTH

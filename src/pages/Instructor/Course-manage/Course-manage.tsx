@@ -16,7 +16,9 @@ import { CourseService } from "../../../services/course.service";
 import dayjs from "dayjs";
 import { toast } from "sonner";
 import { CategoryService } from "../../../services/category.service";
-import { WorkSpaceService } from "../../../services/work-space.service";
+import { WorkspaceService } from "../../../services/workspace.service";
+import type { Workspace } from "../../../types/workspace";
+import type { Category } from "../../../types/category";
 
 const CourseManagement = () => {
   const [dataSource, setDataSource] = useState<any[]>([]);
@@ -24,22 +26,31 @@ const CourseManagement = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
-  const [categories, setCategories] = useState([]);
-  const [workspaces, setWorkspaces] = useState([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [form] = Form.useForm();
 
   useEffect(() => {
     const fetchData = async () => {
-      const [catRes, wsRes] = await Promise.all([
-        CategoryService.getCategories(),
-        WorkSpaceService.getWorkSpaces(),
-      ]);
-      setCategories(catRes || []);
-      setWorkspaces(wsRes || []);
+      try {
+        const [catRes, wsRes] = await Promise.all([
+          CategoryService.getCategories(),
+          WorkspaceService.getAll(),
+        ]);
+        console.log('Category Response:', catRes); // Debug
+        console.log('Workspace Response:', wsRes); // Debug
+        setCategories(Array.isArray(catRes) ? catRes : []);
+        setWorkspaces(Array.isArray(wsRes) ? wsRes : []);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        toast.error("Failed to fetch data");
+      }
     };
     fetchData();
   }, []);
+
   console.log({ categories, workspaces });
+
   const fetchCourses = async () => {
     try {
       setLoading(true);
@@ -200,7 +211,7 @@ const CourseManagement = () => {
             rules={[{ required: true, message: "Bắt buộc" }]}
           >
             <Select placeholder="Chọn category">
-              {categories.map((cat: any) => (
+              {categories.map((cat: Category) => (
                 <Select.Option key={cat.id} value={cat.id}>
                   {cat.categoryName}
                 </Select.Option>
@@ -214,7 +225,7 @@ const CourseManagement = () => {
             rules={[{ required: true, message: "Bắt buộc" }]}
           >
             <Select placeholder="Chọn workspace">
-              {workspaces.map((ws: any) => (
+              {workspaces.map((ws: Workspace) => (
                 <Select.Option key={ws.id} value={ws.id}>
                   {ws.workSpaceName}
                 </Select.Option>

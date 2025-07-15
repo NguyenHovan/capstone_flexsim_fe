@@ -1,15 +1,10 @@
 import { Route, Routes, Navigate } from "react-router-dom";
 import LoginPage from "../pages/Login/Login";
-import SignUpPage from "../pages/Signup/Signup";
+// import SignUpPage from "../pages/Signup/Signup";
 import ForgotPasswordPage from "../pages/ForgotPassword/ForgotPassword";
 import VerifyCodePage from "../pages/VerifyCode/VerifyCode";
 import LayoutMain from "../layouts/Student";
 import HomePage from "../pages/Home/Home";
-import OrganizationLayout from "../layouts/Organization/OrganizationLayout";
-import HomeOrganization from "../pages/Organization/Home/OrganizationHome";
-import OrganizationCourses from "../pages/Organization/Courses/OrganizationCourses";
-import OrganizationClasses from "../pages/Organization/Classes/OrganizationClasses";
-import OrganizationWorkspace from "../pages/Organization/Workspace/OrganizationWorkspace";
 import Contact from "../pages/Contact/Contact";
 import NewPasswordPage from "../pages/NewPassword/NewPassword";
 import InstructorLayout from "../layouts/Instructor/InstructorLayout";
@@ -20,6 +15,11 @@ import ManageClass from "../pages/Instructor/Class-manage/Class-manage";
 import TopicManagement from "../pages/Instructor/Topic-manage/TopicManagement";
 import SceneManagement from "../pages/Instructor/Scene-manage/SceneManagement";
 import QuizManagement from "../pages/Instructor/Quiz-manage/QuizManagement";
+import AdminLayout from "../layouts/Admin/AdminLayout";
+import AdminOverview from "../pages/Admin/Overview";
+import OrganizationManager from "../pages/Admin/Manager Organization/OrganizationManager";
+import UserManager from "../pages/Admin/Manager User/UserManager";
+import WorkspaceManager from "../pages/Admin/Manager Workspace/WorkspaceManager";
 
 const MainRoute = () => {
   return (
@@ -38,13 +38,12 @@ const MainRoute = () => {
         <Route path="/profile" element={<ProfilePage />} />
       </Route>
 
-      {/* Organization layout with nested routes */}
-      <Route path="/organization" element={<OrganizationLayout />}>
+      <Route path="/admin" element={<AdminLayout />}>
         <Route index element={<Navigate to="overview" replace />} />
-        <Route path="/" element={<HomeOrganization />} />
-        <Route path="courses" element={<OrganizationCourses />} />
-        <Route path="classes" element={<OrganizationClasses />} />
-        <Route path="workspace" element={<OrganizationWorkspace />} />
+        <Route path="overview" element={<AdminOverview />} />
+        <Route path="organization-manager" element={<OrganizationManager />} />
+        <Route path="user-manager" element={<UserManager />} />
+        <Route path="workspace-manager" element={<WorkspaceManager />} />
       </Route>
 
       <Route element={<InstructorLayout />}>
