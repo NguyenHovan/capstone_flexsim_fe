@@ -17,6 +17,7 @@ import ManageClass from "../pages/Instructor/Class-manage/Class-manage";
 import TopicManagement from "../pages/Instructor/Topic-manage/TopicManagement";
 import SceneManagement from "../pages/Instructor/Scene-manage/SceneManagement";
 import QuizManagement from "../pages/Instructor/Quiz-manage/QuizManagement";
+import ReviewManagement from "../pages/Instructor/Review-manage/ReviewManagement";
 
 const MainRoute = () => {
   return (
@@ -49,6 +50,7 @@ const MainRoute = () => {
         <Route path="/instructor-topic" element={<TopicManagement />} />
         <Route path="/instructor-scene" element={<SceneManagement />} />
         <Route path="/instructor-quiz" element={<QuizManagement />} />
+        <Route path="/instructor-review" element={<ReviewManagement />} />
       </Route>
     </Routes>
   );

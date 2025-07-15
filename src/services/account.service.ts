@@ -11,4 +11,9 @@ export const AccountService = {
     );
     return response.data;
   },
+
+  getAllAccount: async () => {
+    const response = await axiosInstance.get(API.GET_ALL_ACCOUNT);
+    return response.data;
+  },
 };

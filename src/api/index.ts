@@ -1,5 +1,6 @@
 export const API = {
   //ACCOUNT
+  GET_ALL_ACCOUNT: "/api/account/get_all",
   REGISTER: "/api/Account/SignUp",
   LOGIN: "/api/Account/Login",
   FORGOT_PASSWORD: "/api/Account/ForgotPassword",
@@ -42,6 +43,13 @@ export const API = {
   CREATE_FULL_QUIZ: "/api/quiz/create_full_quiz",
   UPDATE_QUIZ: "/api/quiz/update_quiz",
   DELETE_QUIZ: "/api/quiz/delete_quiz",
+
+  //REVIEW
+  GET_ALL_REVIEW: "/api/review/get_all_review",
+  GET_REVIEW_ID: "/api/review/get_review",
+  CREATE_REVIEW: "/api/review/create_review",
+  UPDATE_REVIEW: "/api/review/update_review",
+  DELETE_REVIEW: "/api/review/delete_review",
   //WORKSPACE
   GET_ALL_WORKSPACE: "/api/workspace/get_all_workSpace",
   //ADMIN
