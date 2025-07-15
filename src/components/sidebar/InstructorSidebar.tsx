@@ -58,7 +58,7 @@ const sidebarItems = [
     key: "Reviews",
     icon: <UserOutlined />,
     label: "Reviews",
-    url: "/instructor",
+    url: "/instructor-review",
   },
   {
     key: "Setting",

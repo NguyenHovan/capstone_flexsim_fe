@@ -1,15 +1,14 @@
 import { Outlet } from "react-router-dom";
-import OrganizationHeader from "../../components/header/OrganizationHeader";
-import OrganizationSidebar from "../../components/sidebar/OrganizationSidebar";
 import Footer from "../../components/footer/Footer";
-import "./OrganizationLayout.css";
+import AdminHeader from "../../components/header/AdminHeader";
+import AdminSidebar from "../../components/sidebar/AdminSidebar";
 
-export default function OrganizationLayout() {
+export default function AdminLayout() {
   return (
     <div className="org-app-layout">
-      <OrganizationHeader />
+      <AdminHeader />
       <div className="org-main-row">
-        <OrganizationSidebar />
+        <AdminSidebar />
         <main className="org-content-area">
           <Outlet />
         </main>

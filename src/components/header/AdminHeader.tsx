@@ -1,10 +1,10 @@
 import { Avatar } from "antd";
 import "./organizationHeader.css";
 
-const ORGANIZATION_NAME = "FPT Education";
-const AVATAR_URL = "https://fpt-corp.com/asset/uploads/fpt.webp";
+const ADMIN_NAME = "ADMIN";
+const AVATAR_URL = "https://cdn-icons-png.flaticon.com/512/3251/3251650.png";
 
-const OrganizationHeader = () => (
+const AdminHeader = () => (
   <header className="custom-header">
     <div className="logo">
       <span className="logo-orange">LOGISIM</span>
@@ -12,9 +12,9 @@ const OrganizationHeader = () => (
     </div>
     <div className="org-avatar-block">
       <Avatar src={AVATAR_URL} size={34} />
-      <span className="org-name">{ORGANIZATION_NAME}</span>
+      <span className="org-name">{ADMIN_NAME}</span>
     </div>
   </header>
 );
 
-export default OrganizationHeader;
+export default AdminHeader;
