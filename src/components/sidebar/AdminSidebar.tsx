@@ -1,9 +1,7 @@
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import {
   HomeOutlined,
-  FolderOpenOutlined,
   TeamOutlined,
-  AppstoreOutlined,
   UserOutlined,
   SettingOutlined,
   QuestionCircleOutlined,
@@ -11,8 +9,6 @@ import {
 import "./adminsidebar.css";
 
 const AdminSidebar = () => {
-  const location = useLocation();
-
   const menuItems = [
     {
       label: "Overview",
@@ -24,7 +20,7 @@ const AdminSidebar = () => {
       icon: <TeamOutlined />,
       path: "/admin/organization-manager",
     },
-    
+
     {
       label: "User Manager",
       icon: <UserOutlined />,

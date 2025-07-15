@@ -7,7 +7,6 @@ export const API = {
   CHANGE_PASSWORD: "/api/Account/ChangePassword",
   UPDATE_ACCOUNT: "/api/account/update_account",
   VERIFY_EMAIL: "/api/Account/VerifyEmail",
-  GET_ALL_ACCOUNT: "/api/account/get_all",
   GET_ACCOUNT_ID: "/api/account/get_account",
   DELETE_ACCOUNT: "/api/account/delete_account",
   CREATE_ORG_ADMIN: "/api/account/register-organization-admin-account",

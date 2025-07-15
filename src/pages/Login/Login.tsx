@@ -1,6 +1,5 @@
 import "./login.css";
 import illustration from "../../assets/login.png";
-import { GooglePlusOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { AuthService } from "../../services/auth.service";

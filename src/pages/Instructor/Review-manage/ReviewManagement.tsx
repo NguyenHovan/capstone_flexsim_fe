@@ -45,7 +45,7 @@ const ReviewManagement = () => {
 
   const fetchUsersAndCourses = async () => {
     const [userList, courseList] = await Promise.all([
-      AccountService.getAllAccount?.(),
+      AccountService.getAllAccounts?.(),
       CourseService.getAllCourses(),
     ]);
     setUsers(userList || []);

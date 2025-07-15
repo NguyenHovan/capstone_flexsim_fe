@@ -9,7 +9,6 @@ import Contact from "../pages/Contact/Contact";
 import NewPasswordPage from "../pages/NewPassword/NewPassword";
 import InstructorLayout from "../layouts/Instructor/InstructorLayout";
 import Overview from "../pages/Instructor/Overview";
-import ProfilePage from "../pages/Profile/Profile";
 import CourseManagement from "../pages/Instructor/Course-manage/Course-manage";
 import ManageClass from "../pages/Instructor/Class-manage/Class-manage";
 import TopicManagement from "../pages/Instructor/Topic-manage/TopicManagement";
@@ -21,6 +20,11 @@ import OrganizationManager from "../pages/Admin/Manager Organization/Organizatio
 import UserManager from "../pages/Admin/Manager User/UserManager";
 import WorkspaceManager from "../pages/Admin/Manager Workspace/WorkspaceManager";
 import ReviewManagement from "../pages/Instructor/Review-manage/ReviewManagement";
+import ProfileLayout from "../pages/Profile";
+import MyCourse from "../pages/Profile/MyCourse";
+import MyClass from "../pages/Profile/MyClass";
+import Setting from "../pages/Profile/Setting";
+import About from "../pages/Profile/About";
 
 const MainRoute = () => {
   return (
@@ -36,7 +40,38 @@ const MainRoute = () => {
         <Route path="/" element={<HomePage />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/new-password" element={<NewPasswordPage />} />
-        <Route path="/profile" element={<ProfilePage />} />
+        <Route
+          path="/about"
+          element={
+            <ProfileLayout>
+              <About />
+            </ProfileLayout>
+          }
+        />
+        <Route
+          path="/my-course"
+          element={
+            <ProfileLayout>
+              <MyCourse />
+            </ProfileLayout>
+          }
+        />
+        <Route
+          path="/my-class"
+          element={
+            <ProfileLayout>
+              <MyClass />
+            </ProfileLayout>
+          }
+        />
+        <Route
+          path="/setting"
+          element={
+            <ProfileLayout>
+              <Setting />
+            </ProfileLayout>
+          }
+        />
       </Route>
 
       <Route path="/admin" element={<AdminLayout />}>
