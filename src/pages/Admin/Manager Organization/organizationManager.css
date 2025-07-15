@@ -1,0 +1,171 @@
+/* Layout và Container */
+.layout {
+  padding: 24px;
+  background: linear-gradient(135deg, #f0f2f5 0%, #e0e7ff 100%); /* Gradient nền nhẹ */
+  min-height: 100vh;
+}
+
+.content {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Tiêu đề */
+.dashboard-title {
+  margin-bottom: 24px;
+  color: #1a202c;
+  font-size: 28px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Card */
+.ant-card {
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+}
+
+.ant-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+}
+
+.ant-card-head {
+  border-bottom: 1px solid #e2e8f0;
+  padding: 16px;
+  background: #f9fafb;
+  border-radius: 12px 12px 0 0;
+}
+
+.ant-card-head-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #2d3748;
+}
+
+/* Nút Create */
+.create-button {
+  background-color: #4c51bf;
+  border-color: #4c51bf;
+  color: #ffffff;
+  border-radius: 8px;
+  padding: 8px 20px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 6px rgba(76, 81, 191, 0.3);
+}
+
+.create-button:hover {
+  background-color: #434190;
+  border-color: #434190;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(67, 65, 144, 0.4);
+}
+
+/* Bảng */
+.ant-table {
+  border-radius: 12px;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.ant-table-thead > tr > th {
+  background: #edf2f7;
+  color: #2d3748;
+  font-weight: 600;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.ant-table-tbody > tr:hover {
+  background: #f7fafc;
+}
+
+/* Form và Modal */
+.ant-form-item-label > label {
+  color: #4a5568;
+  font-weight: 500;
+  font-size: 15px;
+}
+
+.ant-modal-content {
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.ant-modal-header {
+  border-radius: 12px 12px 0 0;
+  background: #f9fafb;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.ant-modal-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.view-details {
+  margin-top: 20px;
+  padding: 20px;
+  background: #f9fafb;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  color: #4a5568;
+}
+
+.view-details strong {
+  color: #2d3748;
+  font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .content {
+    max-width: 100%;
+    padding: 0 16px;
+  }
+
+  .dashboard-title {
+    font-size: 24px;
+    margin-bottom: 16px;
+  }
+
+  .ant-card-head-title {
+    font-size: 16px;
+  }
+
+  .create-button {
+    width: 100%;
+    margin-bottom: 16px;
+  }
+
+  .ant-table {
+    border-radius: 0;
+  }
+
+  .ant-modal {
+    width: 90% !important;
+    margin: 0;
+  }
+
+  .ant-form-item-label > label {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-title {
+    font-size: 20px;
+  }
+
+  .ant-card-head {
+    padding: 12px;
+  }
+
+  .view-details {
+    padding: 16px;
+  }
+}

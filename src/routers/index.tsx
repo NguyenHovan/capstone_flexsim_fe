@@ -1,12 +1,10 @@
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, Navigate } from "react-router-dom";
 import LoginPage from "../pages/Login/Login";
-import SignUpPage from "../pages/Signup/Signup";
+// import SignUpPage from "../pages/Signup/Signup";
 import ForgotPasswordPage from "../pages/ForgotPassword/ForgotPassword";
 import VerifyCodePage from "../pages/VerifyCode/VerifyCode";
 import LayoutMain from "../layouts/Student";
 import HomePage from "../pages/Home/Home";
-import OrganizationLayout from "../layouts/Organization/OrganizationLayout";
-import HomeOrganization from "../pages/Organization/Home/HomeOrganization";
 import Contact from "../pages/Contact/Contact";
 import NewPasswordPage from "../pages/NewPassword/NewPassword";
 import InstructorLayout from "../layouts/Instructor/InstructorLayout";
@@ -17,6 +15,11 @@ import ManageClass from "../pages/Instructor/Class-manage/Class-manage";
 import TopicManagement from "../pages/Instructor/Topic-manage/TopicManagement";
 import SceneManagement from "../pages/Instructor/Scene-manage/SceneManagement";
 import QuizManagement from "../pages/Instructor/Quiz-manage/QuizManagement";
+import AdminLayout from "../layouts/Admin/AdminLayout";
+import AdminOverview from "../pages/Admin/Overview";
+import OrganizationManager from "../pages/Admin/Manager Organization/OrganizationManager";
+import UserManager from "../pages/Admin/Manager User/UserManager";
+import WorkspaceManager from "../pages/Admin/Manager Workspace/WorkspaceManager";
 
 const MainRoute = () => {
   return (
@@ -35,11 +38,12 @@ const MainRoute = () => {
         <Route path="/profile" element={<ProfilePage />} />
       </Route>
 
-      {/* Organization layout - dùng nested routes */}
-      <Route element={<OrganizationLayout />}>
-        <Route path="/organization" element={<HomeOrganization />} />
-        {/* Nếu có các page con cho org: */}
-        {/* <Route path="/organization/xxx" element={<PageXxx />} /> */}
+      <Route path="/admin" element={<AdminLayout />}>
+        <Route index element={<Navigate to="overview" replace />} />
+        <Route path="overview" element={<AdminOverview />} />
+        <Route path="organization-manager" element={<OrganizationManager />} />
+        <Route path="user-manager" element={<UserManager />} />
+        <Route path="workspace-manager" element={<WorkspaceManager />} />
       </Route>
 
       <Route element={<InstructorLayout />}>
