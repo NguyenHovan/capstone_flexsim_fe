@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { AuthService } from "../../services/auth.service";
 import { toast } from "sonner";
+import { decodeToken } from "../../utils/decodeToken";
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -19,7 +20,8 @@ const LoginPage = () => {
     try {
       const response = await AuthService.login({ userName, password });
 
-      console.log({ response });
+      const decode = decodeToken(response.token);
+      console.log({ decode });
 
       if (response?.token) {
         localStorage.setItem("accessToken", response.token);

@@ -26,6 +26,7 @@ import MyClass from "../pages/Profile/MyClass";
 import Setting from "../pages/Profile/Setting";
 import About from "../pages/Profile/About";
 import CourseList from "../pages/CourseList/CourseList";
+import CourseDetail from "../pages/CourseDetail/CourseDetail";
 
 const MainRoute = () => {
   return (
@@ -42,6 +43,7 @@ const MainRoute = () => {
         <Route path="/contact" element={<Contact />} />
         <Route path="/new-password" element={<NewPasswordPage />} />
         <Route path="/course-list" element={<CourseList />} />
+        <Route path="/course-detail/:id" element={<CourseDetail />} />
         <Route
           path="/about"
           element={
