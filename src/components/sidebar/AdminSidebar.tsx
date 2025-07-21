@@ -6,7 +6,7 @@ import {
   SettingOutlined,
   QuestionCircleOutlined,
 } from "@ant-design/icons";
-import "./adminsidebar.css";
+import "./adminSidebar.css";
 
 const AdminSidebar = () => {
   const menuItems = [
