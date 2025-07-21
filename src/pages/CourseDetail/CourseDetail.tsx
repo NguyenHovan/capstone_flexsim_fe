@@ -1,7 +1,5 @@
-import { Card, Button, Row, Col, Rate, Tabs, List, Avatar, Tag } from "antd";
+import { Card, Button, Row, Col, Rate, List, Avatar, Tag } from "antd";
 import { PlayCircleOutlined } from "@ant-design/icons";
-
-const { TabPane } = Tabs;
 
 const lessons = [
   { title: "Create first React project", duration: "43:58 min" },
