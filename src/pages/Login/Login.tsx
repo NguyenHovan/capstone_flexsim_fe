@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { AuthService } from "../../services/auth.service";
 import { toast } from "sonner";
-import { decodeToken } from "../../utils/decodeToken";
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -20,16 +19,25 @@ const LoginPage = () => {
     try {
       const response = await AuthService.login({ userName, password });
 
-      const decode = decodeToken(response.token);
-      console.log({ decode });
+      if (response?.user) {
+        const roleId = response.user.roleId;
+        localStorage.setItem("roleId", roleId);
+        localStorage.setItem("currentUser", JSON.stringify(response.user));
+      }
 
       if (response?.token) {
         localStorage.setItem("accessToken", response.token);
-
-        localStorage.setItem("currentUser", JSON.stringify(response.user));
-
         toast.success("Login successful!");
-        navigate("/");
+
+        const roleId = response.user.roleId;
+
+        if (Number(roleId) === 1 || Number(roleId) === 2) {
+          navigate("/admin");
+        } else if (Number(roleId) === 3) {
+          navigate("/instructor");
+        } else {
+          navigate("/");
+        }
       } else {
         toast.error("Invalid email or password.");
       }

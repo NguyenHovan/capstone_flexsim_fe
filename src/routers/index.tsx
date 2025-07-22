@@ -31,6 +31,7 @@ import OrganizationAdminLayout from "../layouts/Organization Admin/OragnizarionA
 import OrganizationAdminOverview from "../pages/OrganizationAdmin/Overview";
 import WorkspaceOrganization from "../pages/OrganizationAdmin/Workspace Manager/WorkspaceOrganization";
 import UserOrganization from "../pages/OrganizationAdmin/User Manager/UserOrganization";
+import PrivateRoute from "./PrivateRoute";
 
 const MainRoute = () => {
   return (
@@ -81,24 +82,29 @@ const MainRoute = () => {
           }
         />
       </Route>
-
-      <Route path="/admin" element={<AdminLayout />}>
-        <Route index element={<Navigate to="overview" replace />} />
-        <Route path="overview" element={<AdminOverview />} />
-        <Route path="organization-manager" element={<OrganizationManager />} />
-        <Route path="user-manager" element={<UserManager />} />
-        <Route path="workspace-manager" element={<WorkspaceManager />} />
+      <Route
+        element={<PrivateRoute allowedRoles={["admin", "organization"]} />}
+      >
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<Navigate to="overview" replace />} />
+          <Route path="overview" element={<AdminOverview />} />
+          <Route
+            path="organization-manager"
+            element={<OrganizationManager />}
+          />
+          <Route path="user-manager" element={<UserManager />} />
+          <Route path="workspace-manager" element={<WorkspaceManager />} />
+        </Route>
       </Route>
 
-      <Route path="/organizationAdmin" element={<OrganizationAdminLayout />}>
-        <Route index element={<Navigate to="overview" replace />} />
-        <Route path="overview" element={<OrganizationAdminOverview/>} />
-        <Route path="workspace-organization" element={<WorkspaceOrganization/>} />
-        <Route path="user" element={<UserOrganization />} />
-        <Route path="user-manager" element={<UserManager />} />
-
-
-        
+     <Route element={<PrivateRoute allowedRoles={["organization"]} />}>
+        <Route path="/organizationAdmin" element={<OrganizationAdminLayout />}>
+          <Route index element={<Navigate to="overview" replace />} />
+          <Route path="overview" element={<OrganizationAdminOverview/>} />
+          <Route path="workspace-organization" element={<WorkspaceOrganization/>} />
+          <Route path="user" element={<UserOrganization />} />
+          <Route path="user-manager" element={<UserManager />} />
+        </Route>
       </Route>
 
       <Route element={<InstructorLayout />}>

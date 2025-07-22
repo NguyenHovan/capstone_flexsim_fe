@@ -107,8 +107,9 @@ const UserManager: React.FC = () => {
   };
 
   const handleCreateOrgAdmin = () => {
-    form.validateFields()
-      .then(values => {
+    form
+      .validateFields()
+      .then((values) => {
         setLoading(true);
         AccountService.registerOrganizationAdmin(values)
           .then(newUser => {
