@@ -83,7 +83,7 @@ const MainRoute = () => {
         />
       </Route>
       <Route
-        element={<PrivateRoute allowedRoles={["admin", "organization"]} />}
+        element={<PrivateRoute allowedRoles={["admin"]} />}
       >
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<Navigate to="overview" replace />} />
@@ -97,13 +97,13 @@ const MainRoute = () => {
         </Route>
       </Route>
 
-     <Route element={<PrivateRoute allowedRoles={["organization"]} />}>
+     <Route element={<PrivateRoute allowedRoles={["organizationAdmin"]} />}>
         <Route path="/organizationAdmin" element={<OrganizationAdminLayout />}>
           <Route index element={<Navigate to="overview" replace />} />
           <Route path="overview" element={<OrganizationAdminOverview/>} />
           <Route path="workspace-organization" element={<WorkspaceOrganization/>} />
           <Route path="user" element={<UserOrganization />} />
-          <Route path="user-manager" element={<UserManager />} />
+          
         </Route>
       </Route>
 

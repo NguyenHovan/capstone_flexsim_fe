@@ -13,12 +13,16 @@ const { Content } = Layout;
 const { Title } = Typography;
 const { Option } = Select;
 
-// Lấy organizationId từ localStorage
+// Lấy organizationId từ localStorage (có log kiểm tra)
 const getOrganizationId = (): string => {
   try {
-    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-    return currentUser.organizationId;
-  } catch {
+    const currentUserStr = localStorage.getItem('currentUser');
+    if (!currentUserStr) return '';
+    const currentUser = JSON.parse(currentUserStr);
+    console.log('currentUser from localStorage:', currentUser);
+    return currentUser.organizationId || '';
+  } catch (e) {
+    console.error('Cannot parse currentUser', e);
     return '';
   }
 };
@@ -52,16 +56,29 @@ const UserOrganization: React.FC = () => {
       return;
     }
     setLoading(true);
+
     AccountService.getAllAccounts()
-      .then(data => {
-        const filteredUsers = data.filter(
-          user =>
+      .then((result: any) => {
+        // Đảm bảo lấy đúng kiểu dữ liệu, nếu là mảng hoặc là object có field data là mảng
+        let list: Account[] = [];
+        if (Array.isArray(result)) {
+          list = result;
+        } else if (result?.data && Array.isArray(result.data)) {
+          list = result.data;
+        }
+        console.log('ALL ACCOUNTS:', list);
+        const filteredUsers = list.filter(
+          (user: Account) =>
             user.organizationId === organizationId &&
             (user.roleId === 3 || user.roleId === 4)
         );
+        console.log('Filtered users:', filteredUsers);
         setUsers(filteredUsers);
       })
-      .catch(() => message.error('Failed to load users.'))
+      .catch((err) => {
+        console.error('API ERROR', err);
+        message.error('Failed to load users.');
+      })
       .finally(() => setLoading(false));
   }, [organizationId]);
 

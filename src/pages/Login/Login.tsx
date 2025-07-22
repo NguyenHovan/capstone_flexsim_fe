@@ -31,12 +31,17 @@ const LoginPage = () => {
 
         const roleId = response.user.roleId;
 
-        if (Number(roleId) === 1 || Number(roleId) === 2) {
+        // CHỈNH LẠI PHẦN ĐIỀU HƯỚNG CHO ĐÚNG ROLE
+        if (Number(roleId) === 1) {
           navigate("/admin");
+        } else if (Number(roleId) === 2) {
+          navigate("/organizationAdmin");
         } else if (Number(roleId) === 3) {
           navigate("/instructor");
-        } else {
+        } else if (Number(roleId) === 4) {
           navigate("/");
+        } else {
+          toast.error("Unknown role, cannot login.");
         }
       } else {
         toast.error("Invalid email or password.");
@@ -85,16 +90,6 @@ const LoginPage = () => {
           <button className="login-button" onClick={handleLogin}>
             Login
           </button>
-
-          {/* <button className="google-button">
-            <GooglePlusOutlined />
-            Continue with Google
-          </button> */}
-
-          {/* <p className="signup-text">
-            Don’t have an account?{" "}
-            <span onClick={() => navigate("/signup")}>Signup</span>
-          </p> */}
         </div>
       </div>
     </div>
