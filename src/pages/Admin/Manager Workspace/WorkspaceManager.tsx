@@ -36,7 +36,7 @@ const WorkspaceManager: React.FC = () => {
   const handleApprove = async (id: string) => {
     setLoading(true);
     try {
-      const updatedWorkspace = await WorkspaceService.updateWorkspace(id, {
+      const updatedWorkspace = await WorkspaceService.updateWorkspaceById(id, {
         isActive: true,
         updatedAt: new Date().toISOString(),
       });
@@ -54,7 +54,7 @@ const WorkspaceManager: React.FC = () => {
   const handleReject = async (id: string) => {
     setLoading(true);
     try {
-      const updatedWorkspace = await WorkspaceService.updateWorkspace(id, {
+      const updatedWorkspace = await WorkspaceService.updateWorkspaceById(id, {
         isActive: false,
         updatedAt: new Date().toISOString(),
       });

@@ -1,5 +1,5 @@
 import { Avatar } from "antd";
-import "./organizationHeader.css";
+import "./adminHeader.css";
 
 const ADMIN_NAME = "ADMIN";
 const AVATAR_URL = "https://cdn-icons-png.flaticon.com/512/3251/3251650.png";

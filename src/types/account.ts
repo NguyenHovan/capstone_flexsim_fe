@@ -1,22 +1,27 @@
 export interface Account {
   id: string;
+  roleId: number; // 1-Admin, 2-OrgAdmin, 3-Instructor, 4-Student
   organizationId: string;
-  systemMode: boolean;
-  organizationRole?: string; // Có thể không bắt buộc
   userName: string;
-  password?: string; // Có thể không bắt buộc, tùy thuộc vào việc lưu trữ
-  isEmailVerify: boolean;
   fullName: string;
   email: string;
+  password?: string;
   phone: string;
-  gender: 'Male' | 'Female' | 'Other';
-  address?: string; // Có thể không bắt buộc
-  avtUrl?: string; // Có thể không bắt buộc
+  gender: number; // 0: Male, 1: Female, 2: Other
+  address?: string;
+  avtUrl?: string;
+  isEmailVerify: boolean;
   isActive: boolean;
   createdAt: string;
-  updatedAt: string | null; // Có thể null nếu chưa cập nhật
-  deleteAt: string | null; // Có thể null nếu chưa xóa
+  updatedAt: string | null;
+  deleteAt: string | null;
 }
+
+export type AccountForm = Omit<Account, 'id' | 'createdAt' | 'updatedAt' | 'deleteAt' | 'isEmailVerify' | 'isActive' | 'avtUrl'> & {
+  password: string;
+  isActive: boolean;
+};
+
 export interface CreateUserForm {
   userName: string;
   password: string;

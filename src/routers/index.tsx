@@ -27,6 +27,10 @@ import Setting from "../pages/Profile/Setting";
 import About from "../pages/Profile/About";
 import CourseList from "../pages/CourseList/CourseList";
 import CourseDetail from "../pages/CourseDetail/CourseDetail";
+import OrganizationAdminLayout from "../layouts/Organization Admin/OragnizarionAdminLayout";
+import OrganizationAdminOverview from "../pages/OrganizationAdmin/Overview";
+import WorkspaceOrganization from "../pages/OrganizationAdmin/Workspace Manager/WorkspaceOrganization";
+import UserOrganization from "../pages/OrganizationAdmin/User Manager/UserOrganization";
 
 const MainRoute = () => {
   return (
@@ -84,6 +88,17 @@ const MainRoute = () => {
         <Route path="organization-manager" element={<OrganizationManager />} />
         <Route path="user-manager" element={<UserManager />} />
         <Route path="workspace-manager" element={<WorkspaceManager />} />
+      </Route>
+
+      <Route path="/organizationAdmin" element={<OrganizationAdminLayout />}>
+        <Route index element={<Navigate to="overview" replace />} />
+        <Route path="overview" element={<OrganizationAdminOverview/>} />
+        <Route path="workspace-organization" element={<WorkspaceOrganization/>} />
+        <Route path="user" element={<UserOrganization />} />
+        <Route path="user-manager" element={<UserManager />} />
+
+
+        
       </Route>
 
       <Route element={<InstructorLayout />}>

@@ -1,14 +1,26 @@
+// src/services/workspace.service.ts
 import axiosInstance from './main.service';
 import { API } from '../api';
-import type { Workspace, WorkspaceUpdate } from '../types/workspace';
+import type { Workspace, WorkspaceForm } from '../types/workspace';
 
 export const WorkspaceService = {
   getAll: async (): Promise<Workspace[]> => {
     try {
-      const response = await axiosInstance.get(`${API.GET_ALL_WORKSPACES}`);
-      return response.data;
+      const response = await axiosInstance.get(`${API.GET_ALL_WORKSPACE}`);
+      console.log('All workspaces data from API:', response.data);
+      return response.data as Workspace[];
     } catch (error) {
-      console.error('Error fetching workspaces:', error);
+      console.error('Error fetching all workspaces:', error);
+      throw error;
+    }
+  },
+
+  getWorkspacesByOrgId: async (organizationId: string): Promise<Workspace[]> => {
+    try {
+      const response = await axiosInstance.get(`${API.GET_WORKSPACES_BY_ORG_ID}/${organizationId}`);
+      return response.data as Workspace[];
+    } catch (error) {
+      console.error('Error fetching workspaces by orgId:', error);
       throw error;
     }
   },
@@ -16,40 +28,46 @@ export const WorkspaceService = {
   getWorkspaceById: async (id: string): Promise<Workspace> => {
     try {
       const response = await axiosInstance.get(`${API.GET_WORKSPACE_BY_ID}/${id}`);
-      return response.data;
+      return response.data as Workspace;
     } catch (error) {
       console.error('Error fetching workspace by id:', error);
       throw error;
     }
   },
 
-  updateWorkspace: async (id: string, payload: WorkspaceUpdate): Promise<Workspace> => {
+  createWorkspace: async (payload: WorkspaceForm): Promise<Workspace> => {
     try {
-      const response = await axiosInstance.put(`${API.UPDATE_WORKSPACE}/${id}`, {
+      const response = await axiosInstance.post(`${API.CREATE_WORKSPACE}`, {
         ...payload,
-        updatedAt: payload.updatedAt || new Date().toISOString(),
+        organizationId: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+        orderId: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+        numberOfAccount: 0,
+        imgUrl: '',
+        createdAt: new Date().toISOString(),
+        updatedAt: null,
+        deleteAt: null,
+        accountOfWorkSpaces: [],
+        courses: [],
+        orders: [],
+        packages: [],
+        sceneOfWorkSpaces: [],
       });
-      return response.data;
+      return response.data as Workspace;
     } catch (error) {
-      console.error('Error updating workspace:', error);
+      console.error('Error creating workspace:', error);
       throw error;
     }
   },
 
-  // Không có create hoặc delete trong yêu cầu, bỏ qua nếu không cần
-  // Nếu cần thêm, có thể mở rộng như sau:
-  /*
-  create: async (payload: WorkspaceUpdate): Promise<Workspace> => {
+  updateWorkspaceById: async (id: string, payload: WorkspaceForm): Promise<Workspace> => {
     try {
-      const response = await axiosInstance.post(`${API.CREATE_WORKSPACE}`, {
+      const response = await axiosInstance.put(`${API.UPDATE_WORKSPACE}/${id}`, {
         ...payload,
-        createdAt: new Date().toISOString(),
-        updatedAt: null,
-        deleteAt: null,
+        updatedAt: new Date().toISOString(), // Được gán tự động trong service
       });
-      return response.data;
+      return response.data as Workspace;
     } catch (error) {
-      console.error('Error creating workspace:', error);
+      console.error('Error updating workspace:', error);
       throw error;
     }
   },
@@ -58,9 +76,8 @@ export const WorkspaceService = {
     try {
       await axiosInstance.delete(`${API.DELETE_WORKSPACE}/${id}`);
     } catch (error) {
-      console.error('Error deleting workspace by id:', error);
+      console.error('Error deleting workspace:', error);
       throw error;
     }
   },
-  */
 };

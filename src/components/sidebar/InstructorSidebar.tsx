@@ -8,7 +8,7 @@ import {
   SettingOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import "./organizationSidebar.css";
+import "./instructorSidebar.css";
 import { useNavigate } from "react-router-dom";
 
 const sidebarItems = [

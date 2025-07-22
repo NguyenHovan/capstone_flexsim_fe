@@ -1,17 +1,18 @@
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink , useNavigate} from "react-router-dom";
 import {
   HomeOutlined,
   TeamOutlined,
+  LogoutOutlined ,
   UserOutlined,
   SettingOutlined,
-  LogoutOutlined,
   QuestionCircleOutlined,
 } from "@ant-design/icons";
-import "./adminsidebar.css";
+import "./organizationAdminSidebar.css";
 
-const AdminSidebar = () => {
-  const navigate = useNavigate();
+const OrganizationAdminSidebar = () => {
+    const navigate = useNavigate();
 
+  
   const handleLogout = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
     if (window.confirm("Are you sure you want to logout?")) {
@@ -25,52 +26,58 @@ const AdminSidebar = () => {
     {
       label: "Overview",
       icon: <HomeOutlined />,
-      path: "/admin/",
+      path: "/organizationAdmin/",
     },
-    {
-      label: "Organization Manager",
-      icon: <TeamOutlined />,
-      path: "/admin/organization-manager",
-    },
+   
     {
       label: "User Manager",
       icon: <UserOutlined />,
-      path: "/admin/user-manager",
+      path: "/organizationAdmin/user",
     },
     {
       label: "Workspace Manager",
       icon: <SettingOutlined />,
-      path: "/admin/workspace-manager",
+      path: "/organizationAdmin/workspace",
+    },
+    {
+      label: "Scene Manager",
+      icon: <SettingOutlined />,
+      path: "/organizationAdmin/scene",
+    },
+    {
+      label: "Scenario Manager",
+      icon: <SettingOutlined />,
+      path: "/organizationAdmin/scenario",
     },
     {
       label: "Support & Help",
       icon: <QuestionCircleOutlined />,
-      path: "/admin/support",
+      path: "/organizationAdmin/support",
     },
     {
       label: "Logout",
       icon: <LogoutOutlined />,
-      path: "/admin/logout", // Optional, can be removed
+      path: "/organizationAdmin/logout", 
       onClick: handleLogout,
     },
   ];
 
   return (
-    <div className="admin-sidebar">
-      <div className="sidebar-section-title">SYSTEM ADMIN</div>
-      <ul className="admin-sidebar-menu">
+    <div className="organizationAdmin-sidebar">
+      <div className="sidebar-section-title">ORGANIZATION ADMIN</div>
+      <ul className="organizationAdmin-sidebar-menu">
         {menuItems.map((item) => (
           <li key={item.path}>
             <NavLink
               to={item.path}
               className={({ isActive }) =>
-                `admin-sidebar-item ${isActive ? "active" : ""}`
+                `organizationAdmin-sidebar-item ${isActive ? "active" : ""}`
               }
               end
               onClick={(e) => item.onClick && item.onClick(e)}
             >
               {item.icon}
-              <span className="admin-sidebar-label">{item.label}</span>
+              <span className="organizationAdmin-sidebar-label">{item.label}</span>
             </NavLink>
           </li>
         ))}
@@ -79,4 +86,4 @@ const AdminSidebar = () => {
   );
 };
 
-export default AdminSidebar;
+export default OrganizationAdminSidebar;
