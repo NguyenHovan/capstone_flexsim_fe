@@ -46,7 +46,7 @@ const MainRoute = () => {
         <Route path="/course-list" element={<CourseList />} />
         <Route path="/course-detail/:id" element={<CourseDetail />} />
         <Route
-          path="/about"
+          path="/profile"
           element={
             <ProfileLayout>
               <About />

@@ -6,10 +6,9 @@ const Sidebar = () => {
   const location = useLocation();
 
   const menuItems = [
-    { label: "About", path: "/about" },
+    { label: "Profile", path: "/profile" },
     { label: "My Course", path: "/my-course" },
     { label: "My Class", path: "/my-class" },
-    { label: "Setting", path: "/setting" },
   ];
 
   return (

@@ -3,8 +3,8 @@ export const API = {
   GET_ALL_ACCOUNT: "/api/account/get_all",
   REGISTER: "/api/account/SignUp",
   LOGIN: "/api/Account/Login",
-  FORGOT_PASSWORD: "/api/Account/ForgotPassword",
-  CHANGE_PASSWORD: "/api/Account/ChangePassword",
+  FORGOT_PASSWORD: "/api/account/forgot_password",
+  CHANGE_PASSWORD: "/api/account/change_password",
   UPDATE_ACCOUNT: "/api/account/update_account",
   VERIFY_EMAIL: "/api/Account/VerifyEmail",
   GET_ACCOUNT_ID: "/api/account/get_account",
@@ -12,7 +12,7 @@ export const API = {
   CREATE_ORG_ADMIN: "/api/account/register-organization-admin-account",
 
   //COURSE
-  GET_ALL_COURSE: "/api/course/get_all_course",
+  GET_ALL_COURSE: "/api/course/get_all",
   GET_COURSE_ID: "/api/course/get_course",
   GET_COURSE_SEARCH: "/api/Course/SearchCourse",
   CREATE_COURSE: "/api/course/create_course",
