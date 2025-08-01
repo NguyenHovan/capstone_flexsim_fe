@@ -20,7 +20,11 @@ export const CourseService = {
     return response.data;
   },
   createCourse: async (payload: CreateUpdateCourse) => {
-    const response = await axiosInstance.post(`${API.CREATE_COURSE}`, payload);
+    const response = await axiosInstance.post(`${API.CREATE_COURSE}`, payload, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
     return response.data;
   },
   updateCourse: async (id: string, payload: CreateUpdateCourse) => {

@@ -28,6 +28,7 @@ import About from "../pages/Profile/About";
 import CourseList from "../pages/CourseList/CourseList";
 import CourseDetail from "../pages/CourseDetail/CourseDetail";
 import PrivateRoute from "./PrivateRoute";
+import QuizApp from "../pages/Quiz/QuizApp";
 
 const MainRoute = () => {
   return (
@@ -45,6 +46,7 @@ const MainRoute = () => {
         <Route path="/new-password" element={<NewPasswordPage />} />
         <Route path="/course-list" element={<CourseList />} />
         <Route path="/course-detail/:id" element={<CourseDetail />} />
+        <Route path="/quiz-test/:id" element={<QuizApp />} />
         <Route
           path="/profile"
           element={
