@@ -75,4 +75,7 @@ export const API = {
   //EnrollmentRequest
   ENROLLMENT_REQUEST: "/api/enrollmentRequest/create_enrollmentRequest",
   ENROLLMENT_REQUEST_STUDENT: "/api/enrollmentRequest/student",
+
+  //LESSON
+  GET_ALL_LESSON: "/api/Lesson/get_all_lesson",
 };
