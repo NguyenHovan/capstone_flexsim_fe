@@ -25,10 +25,10 @@ const sidebarItems = [
     url: "/instructor-course",
   },
   {
-    key: "Classes",
+    key: "Lessons",
     icon: <AppstoreOutlined />,
-    label: "Classes",
-    url: "/instructor-class",
+    label: "Lessons",
+    url: "/instructor-lesson",
   },
   {
     key: "Topics",

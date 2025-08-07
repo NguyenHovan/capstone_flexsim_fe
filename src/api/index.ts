@@ -78,4 +78,5 @@ export const API = {
 
   //LESSON
   GET_ALL_LESSON: "/api/Lesson/get_all_lesson",
+  CREATE_LESSON: "/api/Lesson/create_lesson",
 };

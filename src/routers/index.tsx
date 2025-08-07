@@ -29,6 +29,7 @@ import CourseList from "../pages/CourseList/CourseList";
 import CourseDetail from "../pages/CourseDetail/CourseDetail";
 import PrivateRoute from "./PrivateRoute";
 import QuizApp from "../pages/Quiz/QuizApp";
+import LessonManagement from "../pages/Instructor/Manage-Lesson/LessonManagement";
 
 const MainRoute = () => {
   return (
@@ -104,6 +105,7 @@ const MainRoute = () => {
           <Route path="/instructor-scene" element={<SceneManagement />} />
           <Route path="/instructor-quiz" element={<QuizManagement />} />
           <Route path="/instructor-review" element={<ReviewManagement />} />
+          <Route path="/instructor-lesson" element={<LessonManagement />} />
         </Route>
       </Route>
     </Routes>

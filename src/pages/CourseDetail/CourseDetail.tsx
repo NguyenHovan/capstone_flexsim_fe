@@ -6,21 +6,12 @@ import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import type { Course } from "../../types/course";
 import { EnrollmentRequestService } from "../../services/enrollment-request.service";
-
-const lessons = [
-  { title: "Create first React project", duration: "43:58 min" },
-  { title: "Create first React project", duration: "43:58 min" },
-  { title: "Create first React project", duration: "43:58 min" },
-  { title: "Create first React project", duration: "43:58 min" },
-  { title: "Future of AI", duration: "04:28 min" },
-  { title: "The evolution and key milestones", duration: "04:28 min" },
-  { title: "Emerging AI technologies", duration: "04:28 min" },
-  { title: "The impact of AI on society", duration: "04:28 min" },
-];
+import { LessonService } from "../../services/lesson.service";
 
 const CourseDetail = () => {
   const { id } = useParams();
   const [courseDetail, setCourseDetail] = useState<Course | null>(null);
+  const [lessons, setLessons] = useState([]);
   const fetchCourseDetail = async () => {
     try {
       if (!id) {
@@ -32,6 +23,19 @@ const CourseDetail = () => {
       console.log({ error });
     }
   };
+
+  const fetchLessons = async () => {
+    try {
+      const response = await LessonService.getAllLessons();
+      setLessons(response);
+    } catch (error) {
+      console.error("Failed to fetch lessons", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchLessons();
+  }, []);
   const handleErollRequest = async () => {
     const data = localStorage.getItem("currentUser");
     const user = data ? JSON.parse(data) : null;
@@ -136,7 +140,7 @@ const CourseDetail = () => {
                     item.title
                   }`}
                   description={
-                    <span style={{ color: "#888" }}>{item.duration}</span>
+                    <span style={{ color: "#888" }}>{item.description}</span>
                   }
                 />
               </List.Item>
