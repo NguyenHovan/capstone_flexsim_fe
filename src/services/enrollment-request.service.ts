@@ -22,4 +22,16 @@ export const EnrollmentRequestService = {
     const response = await axiosInstance.get(`${API.GET_ENROLLMENT_REQUEST}`);
     return response.data;
   },
+  acceptEnrollmentRequest: async (id: string) => {
+    const response = await axiosInstance.put(
+      `${API.ACCEPT_ENROLLMENT_REQUEST}/${id}`
+    );
+    return response.data;
+  },
+  deleteEnrollmentRequest: async (id: string) => {
+    const response = await axiosInstance.delete(
+      `${API.DELETE_ENROLLMENT_REQUEST}/${id}`
+    );
+    return response.data;
+  },
 };

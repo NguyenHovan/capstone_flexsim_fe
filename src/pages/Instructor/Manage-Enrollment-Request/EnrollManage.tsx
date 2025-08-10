@@ -25,7 +25,6 @@ const EnrollManage = () => {
     2: { text: "Rejected", color: "red" },
   };
 
-  // Lấy dữ liệu từ API
   const fetchEnrolls = async () => {
     setLoading(true);
     try {
@@ -41,12 +40,24 @@ const EnrollManage = () => {
     fetchEnrolls();
   }, []);
 
-  const handleAccept = (id) => {
-    message.info(`Accept enroll id: ${id} (demo)`);
+  const handleAccept = async (id) => {
+    try {
+      await EnrollmentRequestService.acceptEnrollmentRequest(id);
+      message.success("Chấp nhận enroll thành công");
+      fetchEnrolls();
+    } catch (error) {
+      message.error("Không thể chấp nhận enroll");
+    }
   };
 
-  const handleDelete = (id) => {
-    message.info(`Delete enroll id: ${id} (demo)`);
+  const handleDelete = async (id) => {
+    try {
+      await EnrollmentRequestService.deleteEnrollmentRequest(id);
+      message.success("Xóa enroll thành công");
+      fetchEnrolls();
+    } catch (error) {
+      message.error("Không thể xóa enroll");
+    }
   };
 
   const handleUpdate = (values) => {
@@ -100,11 +111,13 @@ const EnrollManage = () => {
           >
             Accept
           </Button>
-          <Button size="small" onClick={() => openUpdateModal(record)}>
+          {/* <Button size="small" onClick={() => openUpdateModal(record)}>
             Update
-          </Button>
+          </Button> */}
           <Popconfirm
             title="Bạn có chắc muốn xóa enroll này?"
+            okText="Xóa"
+            cancelText="Hủy"
             onConfirm={() => handleDelete(record.id)}
           >
             <Button danger size="small">
