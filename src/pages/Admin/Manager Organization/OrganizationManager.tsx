@@ -39,7 +39,6 @@ const OrganizationManager: React.FC = () => {
     setLoading(true);
     try {
       if (editingOrganization) {
-        // Gọi API update, lấy updatedOrg trả về từ BE (nếu có)
         const updatedOrg = await OrganizationService.updateOrganizationById(editingOrganization.id, values);
 
         setOrganizations(orgs =>
@@ -214,7 +213,7 @@ const OrganizationManager: React.FC = () => {
                 setIsModalOpen(true);
               }}
             >
-              Create New
+              Create New Organization 
             </Button>
           </Col>
         </Row>

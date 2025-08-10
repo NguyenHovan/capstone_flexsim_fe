@@ -4,74 +4,124 @@ import { API } from "../api";
 import type { Account } from "../types/account";
 import type { OrganizationAdminForm } from "../types/organizationAdmin";
 import type { AccountForm } from "../types/account";
+import { getErrorMessage } from "../utils/errorHandler";
+
 export const AccountService = {
-  // Lấy tất cả tài khoản
+  /** Lấy tất cả tài khoản */
   getAllAccounts: async (): Promise<Account[]> => {
     try {
-      const response = await axiosInstance.get(`${API.GET_ALL_ACCOUNT}`);
-      return response.data as Account[];
+      const { data } = await axiosInstance.get(API.GET_ALL_ACCOUNT);
+      return data as Account[];
     } catch (error) {
-      console.error('Error fetching accounts:', error);
-      throw error;
+      const msg = getErrorMessage(error);
+      console.error("Error fetching accounts:", msg);
+      throw new Error(msg);
     }
   },
 
-  // Lấy thông tin tài khoản theo ID
+  /** Lấy tài khoản theo ID */
   getAccountById: async (id: string): Promise<Account> => {
     try {
-      const response = await axiosInstance.get(`${API.GET_ACCOUNT_ID}/${id}`);
-      return response.data as Account;
+      const { data } = await axiosInstance.get(`${API.GET_ACCOUNT_ID}/${id}`);
+      return data as Account;
     } catch (error) {
-      console.error('Error fetching account by id:', error);
-      throw error;
+      const msg = getErrorMessage(error);
+      console.error(`Error fetching account ${id}:`, msg);
+      throw new Error(msg);
     }
   },
 
-  createAccount: async (payload: AccountForm): Promise<Account> => {
+  /** Đăng ký Organization Admin */
+  registerOrganizationAdmin: async (payload: OrganizationAdminForm): Promise<Account> => {
     try {
-      console.log('Payload sent to create account:', payload);
-      const response = await axiosInstance.post(`${API.REGISTER}`, payload);
-      const newAccount = response.data as Account;
-      console.log('Response from create account:', newAccount);
-      return newAccount;
+      const { data } = await axiosInstance.post(API.CREATE_ORG_ADMIN, payload);
+      return data as Account;
     } catch (error) {
-      console.error('Error creating account:', error);
-      throw error;
+      const msg = getErrorMessage(error);
+      console.error("Error registering org admin:", msg);
+      throw new Error(msg);
     }
   },
 
-  // Cập nhật tài khoản
+  /** Đăng ký Instructor */
+  registerInstructor: async (payload: AccountForm): Promise<Account> => {
+    try {
+      const { data } = await axiosInstance.post(API.CREATE_INSTRUCTOR, payload);
+      return data as Account;
+    } catch (error) {
+      const msg = getErrorMessage(error);
+      console.error("Error registering instructor:", msg);
+      throw new Error(msg);
+    }
+  },
+
+  /** Đăng ký Student */
+  registerStudent: async (payload: AccountForm): Promise<Account> => {
+    try {
+      const { data } = await axiosInstance.post(API.CREATE_STUDENT, payload);
+      return data as Account;
+    } catch (error) {
+      const msg = getErrorMessage(error);
+      console.error("Error registering student:", msg);
+      throw new Error(msg);
+    }
+  },
+
+  /** Cập nhật tài khoản */
   updateAccount: async (id: string, payload: Partial<Account>): Promise<Account> => {
     try {
-      const response = await axiosInstance.put(`${API.UPDATE_ACCOUNT}/${id}`, {
+      const { data } = await axiosInstance.put(`${API.UPDATE_ACCOUNT}/${id}`, {
         ...payload,
         updatedAt: new Date().toISOString(),
       });
-      return response.data as Account;
+      return data as Account;
     } catch (error) {
-      console.error('Error updating account:', error);
-      throw error;
+      const msg = getErrorMessage(error);
+      console.error(`Error updating account ${id}:`, msg);
+      throw new Error(msg);
     }
   },
 
-  // Xóa tài khoản
+  /** Xóa tài khoản */
   deleteAccount: async (id: string): Promise<void> => {
     try {
       await axiosInstance.delete(`${API.DELETE_ACCOUNT}/${id}`);
     } catch (error) {
-      console.error('Error deleting account:', error);
-      throw error;
+      const msg = getErrorMessage(error);
+      console.error(`Error deleting account ${id}:`, msg);
+      throw new Error(msg);
     }
   },
 
-  // Đăng ký Organization Admin
-  registerOrganizationAdmin: async (payload: OrganizationAdminForm): Promise<Account> => {
-    try {
-      const response = await axiosInstance.post(`${API.CREATE_ORG_ADMIN}`, payload);
-      return response.data as Account;
-    } catch (error) {
-      console.error('Error registering organization admin:', error);
-      throw error;
-    }
-  },
+    /** Ban tài khoản: chuyển isActive = false (PUT /ban_account/{id}) */
+banAccount: async (id: string): Promise<Account> => {
+  try {
+    // Một số server yêu cầu body rỗng cho PUT => truyền {} để chắc chắn
+    await axiosInstance.put(`${API.BAN_ACCOUNT}/${id}`, {});
+
+    // Lấy lại user sau khi ban để cập nhật UI
+    const { data } = await axiosInstance.get(`${API.GET_ACCOUNT_ID}/${id}`);
+    return data as Account;
+  } catch (error) {
+    const msg = getErrorMessage(error);
+    console.error(`Error banning account ${id}:`, msg);
+    throw new Error(msg);
+  }
+},
+
+/** Unban tài khoản: chuyển isActive = true (PUT /unban_account/{id}) */
+unbanAccount: async (id: string): Promise<Account> => {
+  try {
+    await axiosInstance.put(`${API.UNBAN_ACCOUNT}/${id}`, {});
+
+    const { data } = await axiosInstance.get(`${API.GET_ACCOUNT_ID}/${id}`);
+    return data as Account;
+  } catch (error) {
+    const msg = getErrorMessage(error);
+    console.error(`Error unbanning account ${id}:`, msg);
+    throw new Error(msg);
+  }
+},
+
+
 };

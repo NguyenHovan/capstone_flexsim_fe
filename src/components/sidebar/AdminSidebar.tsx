@@ -7,7 +7,7 @@ import {
   LogoutOutlined,
   QuestionCircleOutlined,
 } from "@ant-design/icons";
-import "./adminSidebar.css";
+import "./adminsidebar.css";
 
 const AdminSidebar = () => {
   const navigate = useNavigate();
@@ -43,6 +43,26 @@ const AdminSidebar = () => {
       path: "/admin/workspace-manager",
     },
     {
+      label: "Subcription Manager",
+      icon: <SettingOutlined />,
+      path: "/admin/subcription-manager",
+    },
+    {
+      label: "Order Manager",
+      icon: <SettingOutlined />,
+      path: "/admin/order-manager",
+    },
+    {
+      label: "Scene Manager",
+      icon: <SettingOutlined />,
+      path: "/admin/scene-manager",
+    },
+    {
+      label: "Scenario Manager",
+      icon: <SettingOutlined />,
+      path: "/admin/scenario-manager",
+    },
+    {
       label: "Support & Help",
       icon: <QuestionCircleOutlined />,
       path: "/admin/support",
@@ -50,7 +70,7 @@ const AdminSidebar = () => {
     {
       label: "Logout",
       icon: <LogoutOutlined />,
-      path: "/admin/logout", // Optional, can be removed
+      path: "/admin/logout",
       onClick: handleLogout,
     },
   ];

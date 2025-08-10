@@ -1,0 +1,10 @@
+.ws-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.ant-table-wrapper .ant-table-container table > thead > tr > th.ant-table-cell-fix-right,
+.ant-table-wrapper .ant-table-container table > tbody > tr > td.ant-table-cell-fix-right {
+  background: #fff; /* Giữ nền trắng khi scroll */
+  z-index: 2; /* Giữ trên các cột khác */
+}

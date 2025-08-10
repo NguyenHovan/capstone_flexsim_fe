@@ -1,31 +1,68 @@
-import { API } from "../api";
-import axiosInstance from "./main.service";
+import axiosInstance from './main.service';
+import { API } from '../api';
+import type { ClassItem, ClassForm } from '../types/class';
+import { getErrorMessage } from '../utils/errorHandler';
 
 export const ClassService = {
-  getAllClasses: async () => {
-    const response = await axiosInstance.get(API.GET_ALL_CLASS);
-    return response.data;
+  getAll: async (): Promise<ClassItem[]> => {
+    try {
+      const { data } = await axiosInstance.get(API.GET_ALL_CLASS);
+      return (data?.data ?? data) as ClassItem[];
+    } catch (err: any) {
+      const msg = getErrorMessage(err);
+      console.error('Error fetching classes:', msg, err.response?.data);
+      throw new Error(msg);
+    }
   },
 
-  createClass: async (payload: {
-    className: string;
-    numberOfStudent: number;
-    courseId: string;
-  }) => {
-    const response = await axiosInstance.post(API.CREATE_CLASS, payload);
-    return response.data;
+  getById: async (id: string): Promise<ClassItem> => {
+    try {
+      const { data } = await axiosInstance.get(`${API.GET_CLASS_ID}/${id}`);
+      return (data?.data ?? data) as ClassItem;
+    } catch (err: any) {
+      const msg = getErrorMessage(err);
+      console.error('Error fetching class by ID:', msg, err.response?.data);
+      throw new Error(msg);
+    }
   },
 
-  updateClass: async (id: string, payload: any) => {
-    const response = await axiosInstance.put(
-      `${API.UPDATE_CLASS}/${id}`,
-      payload
-    );
-    return response.data;
+  create: async (payload: ClassForm): Promise<ClassItem> => {
+    try {
+      const body = {
+        // map tối thiểu, giữ camelCase nếu BE auto-bind (ASP.NET Core mặc định ok)
+        ...payload,
+      };
+      const { data } = await axiosInstance.post(API.CREATE_CLASS, body, {
+        headers: { 'Content-Type': 'application/json' },
+      });
+      return (data?.data ?? data) as ClassItem;
+    } catch (err: any) {
+      const msg = getErrorMessage(err);
+      console.error('Error creating class:', msg, err.response?.data);
+      throw new Error(msg);
+    }
   },
 
-  deleteClass: async (id: string) => {
-    const response = await axiosInstance.post(`${API.DELETE_CLASS}/${id}`);
-    return response.data;
+  update: async (id: string, payload: Partial<ClassForm>): Promise<ClassItem> => {
+    try {
+      const { data } = await axiosInstance.put(`${API.UPDATE_CLASS}/${id}`, payload, {
+        headers: { 'Content-Type': 'application/json' },
+      });
+      return (data?.data ?? data) as ClassItem;
+    } catch (err: any) {
+      const msg = getErrorMessage(err);
+      console.error('Error updating class:', msg, err.response?.data);
+      throw new Error(msg);
+    }
+  },
+
+  delete: async (id: string): Promise<void> => {
+    try {
+      await axiosInstance.delete(`${API.DELETE_CLASS}/${id}`);
+    } catch (err: any) {
+      const msg = getErrorMessage(err);
+      console.error('Error deleting class:', msg, err.response?.data);
+      throw new Error(msg);
+    }
   },
 };

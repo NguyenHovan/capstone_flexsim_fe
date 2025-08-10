@@ -1,20 +1,39 @@
 import { Avatar } from "antd";
 import "./organizationAdminHeader.css";
 
-const ORGANIZATION_NAME = "FPT";
-const AVATAR_URL = "https://media.licdn.com/dms/image/v2/C560BAQFRxbxHAl5oew/company-logo_200_200/company-logo_200_200/0/1630668147018/fpt_corporation_logo?e=2147483647&v=beta&t=WW03ljSGZoL6rHvwTqGDIlWDqttr8Jii1yHjHnFm8Xk";
+const DEFAULT_AVATAR =
+  "https://static.vecteezy.com/system/resources/thumbnails/009/734/564/small_2x/default-avatar-profile-icon-of-social-media-user-vector.jpg";
 
-const OrganizationAdminHeader = () => (
-  <header className="custom-header">
-    <div className="logo">
-      <span className="logo-orange">LOGISIM</span>
-      <span className="logo-teal">EDU</span>
-    </div>
-    <div className="orgAdmin-avatar-block">
-      <Avatar src={AVATAR_URL} size={34} />
-      <span className="orgAdmin-name">{ORGANIZATION_NAME}</span>
-    </div>
-  </header>
-);
+function getCurrentUser() {
+  try {
+    return JSON.parse(localStorage.getItem("currentUser") || "null");
+  } catch {
+    return null;
+  }
+}
+
+const OrganizationAdminHeader = () => {
+  const currentUser = getCurrentUser();
+
+  const userName =
+    currentUser?.fullName || currentUser?.userName || "Organization Admin";
+
+  const avatarUrl =
+    currentUser?.avtUrl?.trim() ? currentUser.avtUrl : DEFAULT_AVATAR;
+
+  return (
+    <header className="custom-header">
+      <div className="logo">
+        <span className="logo-orange">LOGISIM</span>
+        <span className="logo-teal">EDU</span>
+      </div>
+
+      <div className="org-avatar-block">
+        <Avatar src={avatarUrl} size={36} />
+        <span className="org-name">{userName}</span>
+      </div>
+    </header>
+  );
+};
 
 export default OrganizationAdminHeader;

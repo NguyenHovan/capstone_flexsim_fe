@@ -10,8 +10,8 @@ export interface OrganizationAdmin extends Omit<Account, 'id' | 'createdAt' | 'u
   password: string;
   isEmailVerify: boolean;
   organizationRole?: string; 
-  isActive: boolean; // Loại bỏ ? để khớp với Account
+  isActive: boolean; 
 }
 
-// Type cho payload khi tạo Organization Admin, khớp với API
+
 export type OrganizationAdminForm = Pick<OrganizationAdmin, 'organizationId' | 'userName' | 'fullName' | 'email' | 'phone' | 'password'>;

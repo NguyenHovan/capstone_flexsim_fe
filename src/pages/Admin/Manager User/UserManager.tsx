@@ -10,7 +10,8 @@ import { OrganizationService } from '../../../services/organization-manager.serv
 import type { Account } from '../../../types/account';
 import type { Organization } from '../../../types/organization';
 import type { ColumnsType } from 'antd/es/table';
-import './UserManager.css';
+import './UserManager.css';import { toast } from 'sonner'; // Import toast from sonner
+
 
 const { Content } = Layout;
 const { Title } = Typography;
@@ -18,7 +19,7 @@ const { Option } = Select;
 
 const ROLE_MAP: Record<number, string> = {
   1: 'Admin',
-  2: 'Oranization Admin',
+  2: 'Organization Admin',
   3: 'Instructor',
   4: 'Student',
 };
@@ -38,13 +39,22 @@ const UserManager: React.FC = () => {
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
   const [editingUser, setEditingUser] = useState<Account | null>(null);
   const [viewingUser, setViewingUser] = useState<Account | null>(null);
+  const [isDeleteConfirmVisible, setIsDeleteConfirmVisible] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<Account | null>(null);
 
-  useEffect(() => {
+
+
+  // Load user list
+  const loadUsers = () => {
     setLoading(true);
     AccountService.getAllAccounts()
       .then(data => setUsers(data))
       .catch(() => message.error('Failed to load users'))
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    loadUsers();
   }, []);
 
   useEffect(() => {
@@ -53,13 +63,53 @@ const UserManager: React.FC = () => {
       .catch(() => message.error('Failed to load organizations'));
   }, []);
 
+  
+  const handleCreateOrgAdmin = () => {
+    form
+      .validateFields()
+      .then((values) => {
+        setLoading(true);
+        const payload = {
+          ...values,
+          gender: Number(values.gender),
+          address: values.address || '',
+        };
+
+        AccountService.registerOrganizationAdmin(payload)
+          .then(() => {
+            toast.success('Organization Admin created successfully');
+            form.resetFields();
+            loadUsers(); // Reload the user list
+            setIsCreateModalVisible(false); // Close the modal after success
+          })
+          .catch((err) => {
+            const errorMessage = err?.response?.data?.message || 'This email is already in use. Please choose another one';
+
+            if (errorMessage.includes('Email')) {
+              toast.error('This email is already in use. Please choose another one.');
+              form.setFields([
+                { name: 'email', errors: ['This email is already in use. Please choose another one.'] },
+              ]);
+            } else {
+              toast.error(errorMessage);
+            }
+            setLoading(false);
+          })
+          .finally(() => setLoading(false));
+      })
+      .catch((error) => {
+        setLoading(false);
+        toast.error('Validation failed! Please check your input.');
+      });
+  };
+
   const handleToggleActive = (checked: boolean, record: Account) => {
     setLoading(true);
     AccountService.updateAccount(record.id, { ...record, isActive: checked })
-      .then(updatedUser => {
-        setUsers(users => users.map(u => u.id === record.id ? updatedUser : u));
+      .then(() => {
+        loadUsers();
       })
-      .catch(() => message.error('Failed to update active status'))
+      .catch((err) => message.error(err?.response?.data?.message || 'Failed to update active status'))
       .finally(() => setLoading(false));
   };
 
@@ -71,59 +121,80 @@ const UserManager: React.FC = () => {
   const handleEditUser = (record: Account) => {
     setEditingUser(record);
     form.setFieldsValue({
-      ...record,
-      gender: record.gender,
+      userName: record.userName,
+      fullName: record.fullName,
+      email: record.email,
+      phone: record.phone,
+      gender: typeof record.gender === 'number' ? record.gender : 0,
+      address: record.address || '',
     });
     setIsEditModalVisible(true);
   };
 
-  const handleDeleteUser = (id: string) => {
+  // Show custom confirm
+  const handleDeleteUser = (user: Account) => {
+    setUserToDelete(user);
+    setIsDeleteConfirmVisible(true);
+  };
+  // Xác nhận xóa
+  const confirmDeleteUser = () => {
+    if (!userToDelete) return;
     setLoading(true);
-    AccountService.deleteAccount(id)
+    AccountService.deleteAccount(userToDelete.id)
       .then(() => {
-        setUsers(users => users.filter(u => u.id !== id));
+        setUsers(users => users.filter(u => u.id !== userToDelete.id));
         message.success('User deleted successfully');
+        setIsDeleteConfirmVisible(false);
+        setUserToDelete(null);
       })
-      .catch(() => message.error('Failed to delete user'))
+      .catch((err) => {
+        message.error(err?.response?.data?.message || 'Failed to delete user');
+        setIsDeleteConfirmVisible(false);
+        setUserToDelete(null);
+      })
       .finally(() => setLoading(false));
   };
+  const cancelDeleteUser = () => {
+    setIsDeleteConfirmVisible(false);
+    setUserToDelete(null);
+  };
 
+  // Update user (cập nhật real time + lỗi custom)
   const handleUpdateUser = () => {
     form.validateFields()
       .then(values => {
         if (!editingUser) return;
         setLoading(true);
-        AccountService.updateAccount(editingUser.id, { ...editingUser, ...values })
-          .then(updatedUser => {
-            setUsers(users => users.map(u => u.id === editingUser.id ? updatedUser : u));
+        const payload = {
+          ...editingUser,
+          ...values,
+          gender: Number(values.gender),
+          address: values.address || '',
+        };
+        AccountService.updateAccount(editingUser.id, payload)
+          .then(() => {
+            loadUsers();
             setIsEditModalVisible(false);
             setEditingUser(null);
             form.resetFields();
             message.success('User updated successfully');
           })
-          .catch(() => message.error('Failed to update user'))
-          .finally(() => setLoading(false));
-      });
-  };
-
-  const handleCreateOrgAdmin = () => {
-    form
-      .validateFields()
-      .then((values) => {
-        setLoading(true);
-        AccountService.registerOrganizationAdmin(values)
-          .then(newUser => {
-            setUsers(prev => [...prev, newUser]);
-            setIsCreateModalVisible(false);
-            form.resetFields();
-            message.success('Organization Admin created successfully');
+          .catch(err => {
+            // Ưu tiên show lỗi BE trả về (nếu có)
+            message.error(err?.response?.data?.message || 'Failed to update user');
           })
-          .catch(() => message.error('Failed to create Organization Admin'))
           .finally(() => setLoading(false));
       });
   };
 
-  // ================== COLUMNS TABLE ==================
+   const handleCreateModalOpen = () => {
+    setIsCreateModalVisible(true);
+  };
+
+  const handleCreateModalClose = () => {
+    setIsCreateModalVisible(false);
+  };
+
   const columns: ColumnsType<Account> = [
     { title: 'ID', dataIndex: 'id', key: 'id', ellipsis: true, width: 180 },
     {
@@ -143,9 +214,12 @@ const UserManager: React.FC = () => {
     { title: 'Phone', dataIndex: 'phone', key: 'phone', ellipsis: true, width: 120 },
     {
       title: 'Gender', dataIndex: 'gender', key: 'gender', ellipsis: true, width: 100,
-      render: (gender: number) => GENDER_MAP[gender] || gender
+      render: (gender: number) => GENDER_MAP[gender] ?? 'N/A'
     },
-    { title: 'Address', dataIndex: 'address', key: 'address', ellipsis: true, width: 170 },
+    {
+      title: 'Address', dataIndex: 'address', key: 'address', ellipsis: true, width: 170,
+      render: (address: string) => address || 'N/A'
+    },
     {
       title: 'Avatar', dataIndex: 'avtUrl', key: 'avtUrl', ellipsis: true, width: 90,
       render: (url: string) => url ? <a href={url} target="_blank" rel="noopener noreferrer">View</a> : 'N/A'
@@ -162,29 +236,28 @@ const UserManager: React.FC = () => {
     },
     {
       title: 'Created At', dataIndex: 'createdAt', key: 'createdAt', ellipsis: true, width: 110,
-      render: (date: string) => date ? new Date(date).toLocaleDateString() : 'N/A',
+      render: (date: string) => date ? new Date(date).toLocaleString() : 'N/A',
     },
     {
-      title: 'Updated At', dataIndex: 'updatedAt', key: 'updatedAt', ellipsis: true, width: 110,
-      render: (date: string) => date ? new Date(date).toLocaleDateString() : 'N/A',
+      title: 'Updated At', dataIndex: 'updatedAt', key: 'updatedAt', ellipsis: true, width: 170,
+      render: (date: string) => date ? new Date(date).toLocaleString() : 'N/A',
     },
     {
       title: 'Deleted At', dataIndex: 'deleteAt', key: 'deleteAt', ellipsis: true, width: 110,
-      render: (date: string) => date ? new Date(date).toLocaleDateString() : 'N/A',
+      render: (date: string) => date ? new Date(date).toLocaleString() : 'N/A',
     },
-   {
-  title: 'Actions',
-  key: 'actions',
-  dataIndex: 'actions',
-  width: 120,
-  render: (_: any, record: Account) => (
-    <div>
-      <Button icon={<EyeOutlined />} style={{ marginRight: 8 }} onClick={() => handleViewUser(record)} />
-      <Button icon={<EditOutlined />} style={{ marginRight: 8 }} onClick={() => handleEditUser(record)} />
-      <Button icon={<DeleteOutlined />} danger onClick={() => handleDeleteUser(record.id)} />
-    </div>
-  ),
-}
+    {
+      title: 'Actions',
+      key: 'actions',
+      width: 200,
+      render: (_: any, record: Account) => (
+        <div>
+          <Button icon={<EyeOutlined />} style={{ marginRight: 8 }} onClick={() => handleViewUser(record)} />
+          <Button icon={<EditOutlined />} style={{ marginRight: 8 }} onClick={() => handleEditUser(record)} />
+          <Button icon={<DeleteOutlined />} danger onClick={() => handleDeleteUser(record)} />
+        </div>
+      ),
+    }
   ];
 
   return (
@@ -197,12 +270,7 @@ const UserManager: React.FC = () => {
           <Col>
             <Button
               type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => {
-                form.resetFields();
-                setIsCreateModalVisible(true);
-              }}
-            >
+              onClick={() => setIsCreateModalVisible(true)}>
               Create Organization Admin
             </Button>
           </Col>
@@ -241,9 +309,8 @@ const UserManager: React.FC = () => {
               <p><strong>Avatar URL:</strong> {viewingUser.avtUrl ? <a href={viewingUser.avtUrl} target="_blank" rel="noopener noreferrer">View</a> : 'N/A'}</p>
               <p><strong>Email Verified:</strong> {viewingUser.isEmailVerify ? 'Yes' : 'No'}</p>
               <p><strong>Active:</strong> {viewingUser.isActive ? 'Yes' : 'No'}</p>
-              <p><strong>Created At:</strong> {new Date(viewingUser.createdAt).toLocaleDateString()}</p>
-              <p><strong>Updated At:</strong> {viewingUser.updatedAt ? new Date(viewingUser.updatedAt).toLocaleDateString() : 'N/A'}</p>
-              <p><strong>Deleted At:</strong> {viewingUser.deleteAt ? new Date(viewingUser.deleteAt).toLocaleDateString() : 'N/A'}</p>
+              <p><strong>Created At:</strong> {viewingUser.createdAt ? new Date(viewingUser.createdAt).toLocaleString() : 'N/A'}</p>
+              <p><strong>Updated At:</strong> {viewingUser.updatedAt ? new Date(viewingUser.updatedAt).toLocaleString() : 'N/A'}</p>
             </div>
           )}
         </Modal>
@@ -281,59 +348,107 @@ const UserManager: React.FC = () => {
                 <Option value={2}>Other</Option>
               </Select>
             </Form.Item>
-            <Form.Item name="address" label="Address">
+            <Form.Item name="address" label="Address" rules={[{ required: true, message: 'Please enter address!' }]}>
               <Input />
             </Form.Item>
           </Form>
         </Modal>
 
-        {/* Modal tạo Organization Admin */}
         <Modal
           title="Create Organization Admin"
-          open={isCreateModalVisible}
-          onCancel={() => {
-            setIsCreateModalVisible(false);
-            form.resetFields();
-          }}
-          onOk={handleCreateOrgAdmin}
-          okText="Create"
-          cancelText="Cancel"
+          visible={isCreateModalVisible}
+          onCancel={handleCreateModalClose}
+          footer={null}
         >
           <Form form={form} layout="vertical">
             <Form.Item
               name="organizationId"
               label="Organization"
-              rules={[{ required: true, message: 'Please select an organization!' }]}
-            >
-             <Select
-  showSearch
-  placeholder="Select an organization"
-  options={organizations.map(org => ({
-    label: `${org.organizationName} (${org.email})`,
-    value: org.id
-  }))}
-  filterOption={(input, option) =>
-    (option?.label as string).toLowerCase().includes(input.toLowerCase())
-  }
-/>
+              rules={[{ required: true, message: 'Please select an organization!' }]}>
+              <Select
+                showSearch
+                placeholder="Select an organization"
+                options={organizations.map(org => ({
+                  label: `${org.organizationName}`,
+                  value: org.id,
+                }))}
+              />
+            </Form.Item>
 
-            </Form.Item>
-            <Form.Item name="userName" label="Username" rules={[{ required: true }]}>
+            <Form.Item
+              name="userName"
+              label="Username"
+              rules={[{ required: true, message: 'Please enter a username!' }]}>
               <Input />
             </Form.Item>
-            <Form.Item name="fullName" label="Full Name" rules={[{ required: true }]}>
+
+            <Form.Item
+              name="fullName"
+              label="Full Name"
+              rules={[{ required: true, message: 'Please enter your full name!' }]}>
               <Input />
             </Form.Item>
-            <Form.Item name="email" label="Email" rules={[{ required: true, type: 'email' }]}>
+
+            <Form.Item
+              name="email"
+              label="Email"
+              rules={[{ required: true, type: 'email', message: 'Please enter a valid email!' }]}>
               <Input />
             </Form.Item>
-            <Form.Item name="phone" label="Phone" rules={[{ required: true }]}>
+
+            <Form.Item
+              name="phone"
+              label="Phone"
+              rules={[{ required: true, message: 'Please enter your phone number!' }]}>
               <Input />
             </Form.Item>
-            <Form.Item name="password" label="Password" rules={[{ required: true, min: 6, message: 'At least 6 characters' }]}>
+
+            <Form.Item
+              name="gender"
+              label="Gender"
+              rules={[{ required: true }]}>
+              <Select>
+                <Option value={0}>Male</Option>
+                <Option value={1}>Female</Option>
+                <Option value={2}>Other</Option>
+              </Select>
+            </Form.Item>
+
+            <Form.Item
+              name="address"
+              label="Address"
+              rules={[{ required: true, message: 'Please enter your address!' }]}>
+              <Input />
+            </Form.Item>
+
+            <Form.Item
+              name="password"
+              label="Password"
+              rules={[{ required: true, min: 6, message: 'Password must be at least 6 characters!' }]}>
               <Input.Password />
             </Form.Item>
+
+            <Button type="primary" onClick={handleCreateOrgAdmin} loading={loading}>
+              Create Organization Admin
+            </Button>
           </Form>
+        </Modal>
+
+        {/* Modal confirm xóa user thủ công */}
+        <Modal
+          open={isDeleteConfirmVisible}
+          title="Confirm Delete"
+          onOk={confirmDeleteUser}
+          onCancel={cancelDeleteUser}
+          okText="Delete"
+          okButtonProps={{ danger: true }}
+          confirmLoading={loading}
+        >
+          <p>
+            Are you sure you want to delete this user?<br />
+            <b>{userToDelete?.fullName || ''} ({userToDelete?.email || ''})</b><br />
+            This action cannot be undone.
+          </p>
         </Modal>
       </Content>
     </Layout>

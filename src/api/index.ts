@@ -10,15 +10,19 @@ export const API = {
   GET_ACCOUNT_ID: "/api/account/get_account",
   DELETE_ACCOUNT: "/api/account/delete_account",
   CREATE_ORG_ADMIN: "/api/account/register-organization-admin-account",
+  CREATE_INSTRUCTOR: "/api/account/register-instructor-account",
+  CREATE_STUDENT: "/api/account/register-student-account",
+  BAN_ACCOUNT: "/api/account/ban_account",
+  UNBAN_ACCOUNT: "/api/account/unban_account",
 
 
   //COURSE
-  GET_ALL_COURSE: "/api/course/get_all_course",
-  GET_COURSE_ID: "/api/course/get_course",
+  GET_ALL_COURSE: "/api/course/get_all",
+  GET_COURSE_ID: "/api/course/get_by_id",
   GET_COURSE_SEARCH: "/api/Course/SearchCourse",
-  CREATE_COURSE: "/api/course/create_course",
-  UPDATE_COURSE: "/api/course/update_course",
-  DELETE_COURSE: "/api/course/delete_course",
+  CREATE_COURSE: "/api/course/create",
+  UPDATE_COURSE: "/api/course/update",
+  DELETE_COURSE: "/api/course/delete",
 
   //CLASSES
   GET_ALL_CLASS: "/api/class/get_all_class",
@@ -41,6 +45,11 @@ export const API = {
   UPDATE_SCENE: "/api/scene/update_scene",
   DELETE_SCENE: "/api/scene/delete_scene",
 
+  //SCENARIO
+  GET_ALL_SCENARIO: "/api/scenario/get_all_scenario",
+
+
+
   //QUIZ
   GET_ALL_QUIZ: "/api/quiz/get_all_quiz",
   GET_QUIZ_ID: "/api/quiz/get_quiz",
@@ -57,10 +66,13 @@ export const API = {
   //WORKSPACE
   GET_ALL_WORKSPACE: "/api/workspace/get_all_workSpace",
   GET_WORKSPACES_BY_ID:"/api/workspace/get_workSpace",
-  GET_WORKSPACES_BY_ORG_ID:"/api/workspace/get_workSpace",
   CREATE_WORKSPACE:"/api/workspace/create_workSpace",
   UPDATE_WORKSPACE:"/api/workspace/update_workSpace",
   DELETE_WORKSPACE:"/api/workspace/delete_workSpace",
+
+  //UPLOAD FILE
+  UPLOAD_FILE:"/api/Cloudinary/image",
+  
 
   //ADMIN
 
@@ -69,13 +81,31 @@ export const API = {
   CREATE_ORGANIZATION: "/api/organization/create_organization",
   UPDATE_ORGANIZATION: "/api/organization/update_organization",
   DELETE_ORGANIZATION: "/api/organization/delete_organization",
-  GET_ALL_WORKSPACES: "/api/workspace/get_all_workSpace",
-  GET_WORKSPACE_BY_ID: "/api/workspace/get_workSpace",
+  
+// ORDER 
+  GET_ALL_ORDER:"/api/orders",
+  GET_ORDER_BY_ID:"/api/orders",
+  DELETE_ORDER:"/api/orders",
+  CREATE_ORDER:"/api/orders",
+  UPDATE_ORDER:"/api/orders/status",
 
-  //ACCOUNT OF WORKSPACE
+  // SUBCRIPTION PLAND
+
+  GET_ALL_SUBCRIPTION:"/api/subscription-plan/get_all",
+  GET_SUBCRIPTION_BY_ID:"/api/subscription-plan/get",
+  DELETE_SUBCRIPTION:"/api/subscription-plan/delete",
+  CREATE_SUBCRIPTION:"/api/subscription-plan/create",
+  UPDATE_SUBCRIPTION:"/api/subscription-plan/update",
+
+
+
+
 
   //AUTH
 
   //CATEGORY
   GET_ALL_CATEGORY: "/api/category/get_all_category",
+
+
+
 };

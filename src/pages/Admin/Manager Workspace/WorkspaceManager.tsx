@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { Table, Button, Modal, message } from "antd";
-import { CheckOutlined, CloseOutlined } from "@ant-design/icons";
+import { Table, Button, message, Modal } from "antd";
+import { DeleteOutlined } from "@ant-design/icons";
 import type { Workspace } from "../../../types/workspace";
 import { WorkspaceService } from "../../../services/workspace.service";
 
 const WorkspaceManager: React.FC = () => {
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [loading, setLoading] = useState(false);
-  const [selectedWorkspace, setSelectedWorkspace] = useState<Workspace | null>(
-    null
-  );
+  const [selectedWorkspace, setSelectedWorkspace] = useState<Workspace | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isDeleteConfirmVisible, setIsDeleteConfirmVisible] = useState(false);
+  const [workspaceToDelete, setWorkspaceToDelete] = useState<Workspace | null>(null);
 
   useEffect(() => {
     fetchWorkspaces();
@@ -20,53 +20,40 @@ const WorkspaceManager: React.FC = () => {
     setLoading(true);
     try {
       const data = await WorkspaceService.getAll();
-      if (Array.isArray(data)) {
-        setWorkspaces(data);
-      } else {
-        console.error("API response is not an array:", data);
-        setWorkspaces([]);
-      }
+      setWorkspaces(Array.isArray(data) ? data : []);
     } catch (error) {
       message.error("Failed to fetch workspaces");
+      console.error("Fetch workspaces error:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleApprove = async (id: string) => {
+  const handleDelete = (record: Workspace) => {
+    setWorkspaceToDelete(record);
+    setIsDeleteConfirmVisible(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!workspaceToDelete) return;
     setLoading(true);
     try {
-      const updatedWorkspace = await WorkspaceService.updateWorkspaceById(id, {
-        isActive: true,
-        updatedAt: new Date().toISOString(),
-      });
-      setWorkspaces(
-        workspaces.map((ws) => (ws.id === id ? updatedWorkspace : ws))
-      );
-      message.success("Workspace approved successfully");
-    } catch (error) {
-      message.error("Failed to approve workspace");
+      await WorkspaceService.deleteWorkspace(workspaceToDelete.id);
+      setWorkspaces(prev => prev.filter(ws => ws.id !== workspaceToDelete.id));
+      message.success("Workspace deleted successfully");
+    } catch (error: any) {
+      message.error(error.message || "Failed to delete workspace");
+      console.error("Delete error:", error);
     } finally {
       setLoading(false);
+      setIsDeleteConfirmVisible(false);
+      setWorkspaceToDelete(null);
     }
   };
 
-  const handleReject = async (id: string) => {
-    setLoading(true);
-    try {
-      const updatedWorkspace = await WorkspaceService.updateWorkspaceById(id, {
-        isActive: false,
-        updatedAt: new Date().toISOString(),
-      });
-      setWorkspaces(
-        workspaces.map((ws) => (ws.id === id ? updatedWorkspace : ws))
-      );
-      message.success("Workspace rejected successfully");
-    } catch (error) {
-      message.error("Failed to reject workspace");
-    } finally {
-      setLoading(false);
-    }
+  const handleCancelDelete = () => {
+    setIsDeleteConfirmVisible(false);
+    setWorkspaceToDelete(null);
   };
 
   const handleView = (record: Workspace) => {
@@ -76,22 +63,10 @@ const WorkspaceManager: React.FC = () => {
 
   const columns = [
     { title: "ID", dataIndex: "id", key: "id" },
-    {
-      title: "Workspace Name",
-      dataIndex: "workSpaceName",
-      key: "workSpaceName",
-    },
+    { title: "Workspace Name", dataIndex: "workSpaceName", key: "workSpaceName" },
     { title: "Order ID", dataIndex: "orderId", key: "orderId" },
-    {
-      title: "Organization ID",
-      dataIndex: "organizationId",
-      key: "organizationId",
-    },
-    {
-      title: "Number of Accounts",
-      dataIndex: "numberOfAccount",
-      key: "numberOfAccount",
-    },
+    { title: "Organization ID", dataIndex: "organizationId", key: "organizationId" },
+    { title: "Number of Accounts", dataIndex: "numberOfAccount", key: "numberOfAccount" },
     {
       title: "Image URL",
       dataIndex: "imgUrl",
@@ -137,24 +112,16 @@ const WorkspaceManager: React.FC = () => {
       key: "actions",
       render: (_: any, record: Workspace) => (
         <div>
-          <Button
-            icon={<CheckOutlined />}
-            style={{ marginRight: 8 }}
-            onClick={() => handleApprove(record.id)}
-            disabled={record.isActive}
-          >
-            Approve
-          </Button>
-          <Button
-            icon={<CloseOutlined />}
-            danger
-            onClick={() => handleReject(record.id)}
-            disabled={!record.isActive}
-          >
-            Reject
-          </Button>
-          <Button style={{ marginLeft: 8 }} onClick={() => handleView(record)}>
+          <Button style={{ marginRight: 8 }} onClick={() => handleView(record)}>
             View
+          </Button>
+          <Button
+            icon={<DeleteOutlined />}
+            danger
+            onClick={() => handleDelete(record)}
+            disabled={loading}
+          >
+            Delete
           </Button>
         </div>
       ),
@@ -174,67 +141,60 @@ const WorkspaceManager: React.FC = () => {
       />
       <Modal
         title="Workspace Details"
-        visible={isModalVisible}
+        open={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
         footer={null}
       >
         {selectedWorkspace && (
           <div>
-            <p>
-              <strong>ID:</strong> {selectedWorkspace.id}
-            </p>
-            <p>
-              <strong>Workspace Name:</strong> {selectedWorkspace.workSpaceName}
-            </p>
-            <p>
-              <strong>Order ID:</strong> {selectedWorkspace.orderId}
-            </p>
-            <p>
-              <strong>Organization ID:</strong>{" "}
-              {selectedWorkspace.organizationId}
-            </p>
-            <p>
-              <strong>Number of Accounts:</strong>{" "}
-              {selectedWorkspace.numberOfAccount}
-            </p>
+            <p><strong>ID:</strong> {selectedWorkspace.id}</p>
+            <p><strong>Workspace Name:</strong> {selectedWorkspace.workSpaceName}</p>
+            <p><strong>Order ID:</strong> {selectedWorkspace.orderId}</p>
+            <p><strong>Organization ID:</strong> {selectedWorkspace.organizationId}</p>
+            <p><strong>Number of Accounts:</strong> {selectedWorkspace.numberOfAccount}</p>
             <p>
               <strong>Image URL:</strong>{" "}
               {selectedWorkspace.imgUrl ? (
-                <a
-                  href={selectedWorkspace.imgUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  View
-                </a>
+                <a href={selectedWorkspace.imgUrl} target="_blank" rel="noopener noreferrer">View</a>
               ) : (
                 "N/A"
               )}
             </p>
-            <p>
-              <strong>Description:</strong> {selectedWorkspace.description}
-            </p>
-            <p>
-              <strong>Active:</strong>{" "}
-              {selectedWorkspace.isActive ? "Yes" : "No"}
-            </p>
-            <p>
-              <strong>Created At:</strong>{" "}
-              {new Date(selectedWorkspace.createdAt).toLocaleDateString()}
-            </p>
-            <p>
-              <strong>Updated At:</strong>{" "}
-              {selectedWorkspace.updatedAt
-                ? new Date(selectedWorkspace.updatedAt).toLocaleDateString()
-                : "N/A"}
-            </p>
-            <p>
-              <strong>Deleted At:</strong>{" "}
-              {selectedWorkspace.deleteAt
-                ? new Date(selectedWorkspace.deleteAt).toLocaleDateString()
-                : "N/A"}
-            </p>
+            <p><strong>Description:</strong> {selectedWorkspace.description}</p>
+            <p><strong>Active:</strong> {selectedWorkspace.isActive ? "Yes" : "No"}</p>
+            <p><strong>Created At:</strong> {new Date(selectedWorkspace.createdAt).toLocaleDateString()}</p>
+            <p><strong>Updated At:</strong> {selectedWorkspace.updatedAt ? new Date(selectedWorkspace.updatedAt).toLocaleDateString() : "N/A"}</p>
+            <p><strong>Deleted At:</strong> {selectedWorkspace.deleteAt ? new Date(selectedWorkspace.deleteAt).toLocaleDateString() : "N/A"}</p>
             <Button onClick={() => setIsModalVisible(false)}>Close</Button>
+          </div>
+        )}
+      </Modal>
+      {/* Custom Modal Confirm */}
+      <Modal
+        title="Confirm Delete Workspace"
+        open={isDeleteConfirmVisible}
+        onOk={handleConfirmDelete}
+        okText="Yes, delete"
+        okButtonProps={{ danger: true, loading }}
+        onCancel={handleCancelDelete}
+        cancelText="Cancel"
+        maskClosable={false}
+        closable={!loading}
+        destroyOnClose
+      >
+        {workspaceToDelete && (
+          <div>
+            <p>
+              <b>Are you sure you want to permanently delete this workspace?</b>
+            </p>
+            <p>
+              <strong>Name:</strong> {workspaceToDelete.workSpaceName}<br/>
+              <strong>ID:</strong> {workspaceToDelete.id}<br/>
+              <strong>Number of Accounts:</strong> {workspaceToDelete.numberOfAccount}
+            </p>
+            <p style={{ color: "red" }}>
+              This action <b>cannot be undone</b>. All related data will be permanently removed from the database.
+            </p>
           </div>
         )}
       </Modal>
