@@ -31,6 +31,12 @@ const sidebarItems = [
     url: "/instructor-lesson",
   },
   {
+    key: "Enroll Request",
+    icon: <AppstoreOutlined />,
+    label: "Enroll Request",
+    url: "/instructor-enroll-request",
+  },
+  {
     key: "Topics",
     icon: <TeamOutlined />,
     label: "Topics",

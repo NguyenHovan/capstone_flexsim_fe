@@ -30,6 +30,7 @@ import CourseDetail from "../pages/CourseDetail/CourseDetail";
 import PrivateRoute from "./PrivateRoute";
 import QuizApp from "../pages/Quiz/QuizApp";
 import LessonManagement from "../pages/Instructor/Manage-Lesson/LessonManagement";
+import EnrollManage from "../pages/Instructor/Manage-Enrollment-Request/EnrollManage";
 
 const MainRoute = () => {
   return (
@@ -106,6 +107,7 @@ const MainRoute = () => {
           <Route path="/instructor-quiz" element={<QuizManagement />} />
           <Route path="/instructor-review" element={<ReviewManagement />} />
           <Route path="/instructor-lesson" element={<LessonManagement />} />
+          <Route path="/instructor-enroll-request" element={<EnrollManage />} />
         </Route>
       </Route>
     </Routes>

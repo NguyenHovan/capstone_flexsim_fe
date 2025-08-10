@@ -18,4 +18,8 @@ export const EnrollmentRequestService = {
     );
     return response.data;
   },
+  getEnrolmentRequest: async () => {
+    const response = await axiosInstance.get(`${API.GET_ENROLLMENT_REQUEST}`);
+    return response.data;
+  },
 };
