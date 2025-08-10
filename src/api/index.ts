@@ -3,8 +3,8 @@ export const API = {
   GET_ALL_ACCOUNT: "/api/account/get_all",
   REGISTER: "/api/account/SignUp",
   LOGIN: "/api/Account/Login",
-  FORGOT_PASSWORD: "/api/Account/ForgotPassword",
-  CHANGE_PASSWORD: "/api/Account/ChangePassword",
+  FORGOT_PASSWORD: "/api/account/forgot_password",
+  CHANGE_PASSWORD: "/api/account/change_password",
   UPDATE_ACCOUNT: "/api/account/update_account",
   VERIFY_EMAIL: "/api/Account/VerifyEmail",
   GET_ACCOUNT_ID: "/api/account/get_account",
@@ -104,8 +104,16 @@ export const API = {
   //AUTH
 
   //CATEGORY
-  GET_ALL_CATEGORY: "/api/category/get_all_category",
+  GET_ALL_CATEGORY: "/api/category/get_all",
 
+  //EnrollmentRequest
+  ENROLLMENT_REQUEST: "/api/enrollmentRequest/create_enrollmentRequest",
+  ENROLLMENT_REQUEST_STUDENT: "/api/enrollmentRequest/student",
+  GET_ENROLLMENT_REQUEST: "/api/enrollmentRequest/get_all_enrollmentRequest",
+  ACCEPT_ENROLLMENT_REQUEST: "/api/enrollmentRequest/update_enrollmentRequest",
+  DELETE_ENROLLMENT_REQUEST: "/api/enrollmentRequest/delete_enrollmentRequest",
 
-
+  //LESSON
+  GET_ALL_LESSON: "/api/Lesson/get_all_lesson",
+  CREATE_LESSON: "/api/Lesson/create_lesson",
 };

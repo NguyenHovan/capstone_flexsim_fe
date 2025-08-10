@@ -32,7 +32,6 @@ import OrganizationAdminOverview from "../pages/OrganizationAdmin/Overview";
 import WorkspaceOrganization from "../pages/OrganizationAdmin/Workspace Manager/WorkspaceOrganization";
 import UserOrganization from "../pages/OrganizationAdmin/User Manager/UserOrganization";
 import PrivateRoute from "./PrivateRoute";
-import ClassManagerOrgAdmin from "../pages/OrganizationAdmin/Class Manager/ClassOrganization";
 
 const MainRoute = () => {
   return (
@@ -107,10 +106,9 @@ const MainRoute = () => {
           <Route index element={<Navigate to="overview" replace />} />
           <Route path="overview" element={<OrganizationAdminOverview/>} />
           <Route path="user-manager" element={<UserOrganization />} />
-          <Route path="workspace-manager" element={<WorkspaceOrganization/>} />  
-          <Route path="class-manager" element={<ClassManagerOrgAdmin/>} />
+          <Route path="workspace-manager" element={<WorkspaceOrganization/>} />
           {/* <Route path="lesson-manager" element={<LessonOrganization />} />
-        
+          <Route path="class-manager" element={<ClassOrganization />} />
           <Route path="topic-manager" element={<TopicOrganization />} />
           <Route path="category-manager" element={<CategoryOrganization />} />
           <Route path="order-manager" element={<OrderOrganization />} /> */}

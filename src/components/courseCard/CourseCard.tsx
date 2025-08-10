@@ -2,18 +2,18 @@ import { Card, Button, Tooltip } from "antd";
 import { UsergroupAddOutlined, PlayCircleOutlined } from "@ant-design/icons";
 
 type Props = {
-  image: string;
-  title: string;
-  organization: string;
+  imgUrl: string;
+  courseName: string;
+  description: string;
   students: number;
   lessons: number;
   onEnroll?: () => void;
 };
 
 const CourseCard = ({
-  image,
-  title,
-  organization,
+  imgUrl,
+  courseName,
+  description,
   students,
   lessons,
   onEnroll,
@@ -23,16 +23,16 @@ const CourseCard = ({
       hoverable
       cover={
         <img
-          src={image}
-          alt={title}
+          src={imgUrl}
+          alt={courseName}
           style={{ height: 140, objectFit: "cover" }}
         />
       }
       bodyStyle={{ padding: "12px" }}
     >
-      <div style={{ fontWeight: 600, marginBottom: 4 }}>{title}</div>
+      <div style={{ fontWeight: 600, marginBottom: 4 }}>{courseName}</div>
       <div style={{ color: "#888", fontSize: 13, marginBottom: 8 }}>
-        {organization}
+        {description}
       </div>
 
       <div

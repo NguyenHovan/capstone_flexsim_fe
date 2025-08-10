@@ -9,6 +9,8 @@ import {
   Form,
   InputNumber,
   Select,
+  Upload,
+  type UploadFile,
 } from "antd";
 import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
@@ -28,6 +30,7 @@ const CourseManagement = () => {
   const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
+  const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [form] = Form.useForm();
 
   useEffect(() => {
@@ -37,12 +40,12 @@ const CourseManagement = () => {
           CategoryService.getCategories(),
           WorkspaceService.getAll(),
         ]);
-        console.log('Category Response:', catRes); // Debug
-        console.log('Workspace Response:', wsRes); // Debug
+        console.log("Category Response:", catRes); // Debug
+        console.log("Workspace Response:", wsRes); // Debug
         setCategories(Array.isArray(catRes) ? catRes : []);
         setWorkspaces(Array.isArray(wsRes) ? wsRes : []);
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error("Error fetching data:", error);
         toast.error("Failed to fetch data");
       }
     };
@@ -102,13 +105,27 @@ const CourseManagement = () => {
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
+
+      // Lấy file image (nếu có)
+      const file = values.imgUrl?.[0]?.originFileObj || null;
+      const formData = new FormData();
+      formData.append("courseName", values.courseName);
+      formData.append("description", values.description);
+      formData.append("categoryId", values.categoryId);
+      formData.append("workSpaceId", values.workSpaceId);
+      formData.append("ratingAverage", values.ratingAverage || 0);
+      if (file) {
+        formData.append("imgUrl", file);
+      }
+
       if (isEditing && selectedCourseId) {
-        await CourseService.updateCourse(selectedCourseId, values);
+        await CourseService.updateCourse(selectedCourseId, formData);
         toast.success("Cập nhật thành công!");
       } else {
-        await CourseService.createCourse(values);
+        await CourseService.createCourse(formData);
         toast.success("Tạo mới thành công!");
       }
+
       setIsModalVisible(false);
       fetchCourses();
     } catch (error) {
@@ -235,8 +252,21 @@ const CourseManagement = () => {
           <Form.Item label="Rating" name="ratingAverage">
             <InputNumber min={0} max={5} step={0.1} style={{ width: "100%" }} />
           </Form.Item>
-          <Form.Item label="Image URL" name="imgUrl">
-            <Input />
+          <Form.Item
+            label="Image"
+            name="imgUrl"
+            valuePropName="fileList"
+            getValueFromEvent={(e) => (Array.isArray(e) ? e : e && e.fileList)}
+          >
+            <Upload
+              beforeUpload={() => false} // ngăn upload tự động
+              fileList={fileList}
+              onChange={({ fileList }) => setFileList(fileList)}
+              accept="image/*"
+              maxCount={1}
+            >
+              <Button>Select Image</Button>
+            </Upload>
           </Form.Item>
         </Form>
       </Modal>
