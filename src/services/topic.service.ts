@@ -1,10 +1,29 @@
-import { API } from "../api";
-import axiosInstance from "./main.service";
+import axiosInstance from './main.service';
+import { API } from '../api';
+import type { Topic } from '../types/topic';
+import { getErrorMessage } from '../utils/errorHandler';
 
 export const TopicService = {
-  getAllTopics: async () => {
-    const res = await axiosInstance.get(API.GET_ALL_TOPIC);
-    return res.data;
+  getAllTopics: async (): Promise<Topic[]> => {
+    try {
+      const { data } = await axiosInstance.get(API.GET_ALL_TOPIC);
+      return (data?.data ?? data) as Topic[];
+    } catch (err: any) {
+      const msg = getErrorMessage(err);
+      console.error('Error fetching topics:', msg, err?.response?.data);
+      throw new Error(msg);
+    }
+  },
+
+  getTopicById: async (id: string): Promise<Topic> => {
+    try {
+      const { data } = await axiosInstance.get(`${API.GET_TOPIC_ID}/${id}`);
+      return (data?.data ?? data) as Topic;
+    } catch (err: any) {
+      const msg = getErrorMessage(err);
+      console.error('Error fetching topic by ID:', msg, err?.response?.data);
+      throw new Error(msg);
+    }
   },
 
   createTopic: async (payload: FormData) => {

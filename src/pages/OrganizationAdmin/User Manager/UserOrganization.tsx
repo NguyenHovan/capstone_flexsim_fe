@@ -22,7 +22,7 @@ const { Title } = Typography;
 
 // maps
 const roleNameMap: Record<number, string> = { 3: 'Instructor', 4: 'Student' };
-const genderNameMap: Record<number, string> = { 0: 'Male', 1: 'Female', 2: 'Other' };
+const genderNameMap: Record<number, string> = { 1: 'Male', 2: 'Female', 3: 'Other' };
 
 // select options
 const roleOptions = [
@@ -48,7 +48,12 @@ const sortDirOptions = [
   { label: 'Descending', value: 'desc' }
 ] as const;
 
-// helpers
+const genderOptions = [
+  { label: 'Male', value: 1 },
+  { label: 'Female', value: 2 },
+  { label: 'Other', value: 3 },
+] as const;
+
 const getOrganizationId = (): string => {
   try {
     const s = localStorage.getItem('currentUser');
@@ -60,7 +65,6 @@ const UserOrganization: React.FC = () => {
   const [users, setUsers] = useState<Account[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // dialogs
   const [viewingUser, setViewingUser] = useState<Account | null>(null);
   const [isViewModal, setIsViewModal] = useState(false);
   const [editingUser, setEditingUser] = useState<Account | null>(null);
@@ -71,7 +75,6 @@ const UserOrganization: React.FC = () => {
   const [formStud] = Form.useForm();
   const [formEdit] = Form.useForm();
 
-  // search / filter / sort state
   const [searchText, setSearchText] = useState('');
   const [debounced, setDebounced] = useState('');
   const [roleFilter, setRoleFilter] = useState<number | ''>('');
@@ -87,7 +90,7 @@ const UserOrganization: React.FC = () => {
 
   const orgId = getOrganizationId();
 
-  // load list
+  // list loader
   const load = async () => {
     if (!orgId) return;
     setLoading(true);
@@ -109,13 +112,37 @@ const UserOrganization: React.FC = () => {
     load();
   }, [orgId]);
 
+  // BroadcastChannel cho auto reload (loadUser orgAdmin) khi tạo/cập nhật/ban/unban
+  const bc = useMemo(() => new BroadcastChannel('org-accounts'), []);
+  useEffect(() => {
+    const onMsg = (e: MessageEvent) => {
+      const msg = e.data as { type: string; organizationId?: string };
+      if (msg?.type?.startsWith('account:') && msg.organizationId === orgId) {
+        load();
+      }
+    };
+    bc.addEventListener('message', onMsg);
+    return () => bc.close();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orgId]);
+
   // view / edit
   const onView = (u: Account) => { setViewingUser(u); setIsViewModal(true); };
+
   const onEdit = (u: Account) => {
     setEditingUser(u);
     formEdit.setFieldsValue({
-      userName: u.userName, fullName: u.fullName, email: u.email, phone: u.phone,
-      gender: genderNameMap[u.gender], roleId: roleNameMap[u.roleId], isActive: u.isActive
+      userName: u.userName,
+      fullName: u.fullName,
+      organizationId: u.organizationId, // readonly
+      roleId: u.roleId,                 // 3|4
+      email: u.email,
+      phone: u.phone,
+      password: undefined,              // để trống
+      gender: u.gender,                 // 1..3
+      address: (u as any).address,
+      avtUrl: (u as any).avtUrl,
+      isActive: u.isActive
     });
     setIsEditModal(true);
   };
@@ -125,20 +152,26 @@ const UserOrganization: React.FC = () => {
     if (!editingUser) return;
     setLoading(true);
     try {
-      const gender =
-        typeof v.gender === 'string'
-          ? Number(Object.keys(genderNameMap).find(k => genderNameMap[Number(k)] === v.gender))
-          : v.gender;
+      const payload: any = {
+        ...editingUser,
+        userName: v.userName,
+        fullName: v.fullName,
+        organizationId: v.organizationId || orgId,
+        roleId: Number(v.roleId),     // 3|4
+        email: v.email,
+        phone: v.phone,
+        gender: Number(v.gender),     // 1..3
+        address: v.address,
+        avtUrl: v.avtUrl
+      };
+      if (v.password && String(v.password).trim()) {
+        payload.password = v.password;
+      }
 
-      const roleId =
-        typeof v.roleId === 'string'
-          ? Number(Object.keys(roleNameMap).find(k => roleNameMap[Number(k)] === v.roleId))
-          : v.roleId;
-
-      const updated = await AccountService.updateAccount(editingUser.id, {
-        ...editingUser, ...v, gender: Number(gender ?? 0), roleId: Number(roleId ?? 3), organizationId: orgId
-      });
+      const updated = await AccountService.updateAccount(editingUser.id, payload);
       setUsers(curr => curr.map(x => (x.id === updated.id ? { ...x, ...updated } : x)));
+      bc.postMessage({ type: 'account:updated', organizationId: orgId });
+      await load();
       message.success('User updated');
       setIsEditModal(false);
       formEdit.resetFields();
@@ -153,6 +186,8 @@ const UserOrganization: React.FC = () => {
     try {
       const a = await AccountService.banAccount(id);
       setUsers(curr => curr.map(x => (x.id === a.id ? { ...x, isActive: false, updatedAt: new Date().toISOString() } : x)));
+      bc.postMessage({ type: 'account:banned', organizationId: orgId });
+      await load();
       message.success('User banned');
     } catch (err) {
       showErrorMessage(err, 'Cannot ban user');
@@ -163,6 +198,8 @@ const UserOrganization: React.FC = () => {
     try {
       const a = await AccountService.unbanAccount(id);
       setUsers(curr => curr.map(x => (x.id === a.id ? { ...x, isActive: true, updatedAt: new Date().toISOString() } : x)));
+      bc.postMessage({ type: 'account:unbanned', organizationId: orgId });
+      await load();
       message.success('User unbanned');
     } catch (err) {
       showErrorMessage(err, 'Cannot unban user');
@@ -174,9 +211,18 @@ const UserOrganization: React.FC = () => {
     const vals = await formInstr.validateFields();
     setLoading(true);
     try {
-      const c = await AccountService.registerInstructor({ ...vals, isActive: true, organizationId: orgId });
-      setUsers(u => [c, ...u]); message.success('Instructor created');
-      setIsCreateInstructor(false); formInstr.resetFields();
+      const c = await AccountService.registerInstructor({
+        ...vals,
+        gender: Number(vals.gender),  // 1..3
+        isActive: true,
+        organizationId: orgId
+      });
+      setUsers(u => [c, ...u]);
+      bc.postMessage({ type: 'account:created', organizationId: orgId });
+      await load();
+      message.success('Instructor created');
+      setIsCreateInstructor(false);
+      formInstr.resetFields();
     } catch (err) {
       showErrorMessage(err, 'Cannot create instructor');
     } finally { setLoading(false); }
@@ -185,8 +231,16 @@ const UserOrganization: React.FC = () => {
     const vals = await formStud.validateFields();
     setLoading(true);
     try {
-      const c = await AccountService.registerStudent({ ...vals, isActive: true, organizationId: orgId });
-      setUsers(u => [c, ...u]); message.success('Student created');
+      const c = await AccountService.registerStudent({
+        ...vals,
+        gender: Number(vals.gender),
+        isActive: true,
+        organizationId: orgId
+      });
+      setUsers(u => [c, ...u]);
+      bc.postMessage({ type: 'account:created', organizationId: orgId });
+      await load();
+      message.success('Student created');
     } catch (err) {
       showErrorMessage(err, 'Cannot create student');
     } finally {
@@ -219,8 +273,8 @@ const UserOrganization: React.FC = () => {
         const vb = b.createdAt ? +new Date(b.createdAt) : 0;
         return (va - vb) * dir;
       }
-      const sa = ((a as any)[sortBy] || '').toLowerCase();
-      const sb = ((b as any)[sortBy] || '').toLowerCase();
+      const sa = ((a as any)[sortBy] || '').toLowerCase?.() ?? '';
+      const sb = ((b as any)[sortBy] || '').toLowerCase?.() ?? '';
       if (sa < sb) return -1 * dir;
       if (sa > sb) return 1 * dir;
       return 0;
@@ -378,33 +432,75 @@ const UserOrganization: React.FC = () => {
           onOk={submitEdit}
           onCancel={() => { setIsEditModal(false); formEdit.resetFields(); setEditingUser(null); }}
           confirmLoading={loading}
-          width={600}
+          width={680}
         >
           <Form form={formEdit} layout="vertical">
             <Row gutter={16}>
-              <Col span={12}><Form.Item name="userName" label="Username" rules={[{ required: true }]}><Input /></Form.Item></Col>
-              <Col span={12}><Form.Item name="fullName" label="Full Name" rules={[{ required: true }]}><Input /></Form.Item></Col>
+              <Col span={12}>
+                <Form.Item name="userName" label="Username" rules={[{ required: true }]}>
+                  <Input />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item name="fullName" label="Full Name" rules={[{ required: true }]}>
+                  <Input />
+                </Form.Item>
+              </Col>
             </Row>
-            <Row gutter={16}>
-              <Col span={12}><Form.Item name="email" label="Email" rules={[{ required: true }, { type: 'email' }]}><Input /></Form.Item></Col>
-              <Col span={12}><Form.Item name="phone" label="Phone" rules={[{ required: true }]}><Input /></Form.Item></Col>
-            </Row>
+
             <Row gutter={16}>
               <Col span={12}>
-                <Form.Item name="gender" label="Gender" rules={[{ required: true }]}>
-                  <Select>
-                    <Select.Option value="Male">Male</Select.Option>
-                    <Select.Option value="Female">Female</Select.Option>
-                    <Select.Option value="Other">Other</Select.Option>
-                  </Select>
+                <Form.Item name="organizationId" label="Organization ID">
+                  <Input disabled />
                 </Form.Item>
               </Col>
               <Col span={12}>
                 <Form.Item name="roleId" label="Role" rules={[{ required: true }]}>
-                  <Select>
-                    <Select.Option value="Instructor">Instructor</Select.Option>
-                    <Select.Option value="Student">Student</Select.Option>
-                  </Select>
+                  <Select
+                    options={[
+                      { label: 'Instructor', value: 3 },
+                      { label: 'Student', value: 4 },
+                    ] as any}
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item name="email" label="Email" rules={[{ required: true }, { type: 'email' }]}>
+                  <Input />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item name="phone" label="Phone" rules={[{ required: true }]}>
+                  <Input />
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item name="password" label="Password">
+                  <Input.Password placeholder="Leave blank to keep current password" />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item name="gender" label="Gender" rules={[{ required: true }]}>
+                  <Select options={genderOptions as any} />
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item name="address" label="Address" rules={[{ required: true }]}>
+                  <Input />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item name="avtUrl" label="Avatar URL">
+                  <Input placeholder="https://..." />
                 </Form.Item>
               </Col>
             </Row>
@@ -429,6 +525,18 @@ const UserOrganization: React.FC = () => {
               <Col span={12}><Form.Item name="email" label="Email" rules={[{ required: true }, { type: 'email' }]}><Input /></Form.Item></Col>
               <Col span={12}><Form.Item name="phone" label="Phone" rules={[{ required: true }]}><Input /></Form.Item></Col>
             </Row>
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item name="gender" label="Gender" rules={[{ required: true }]}>
+                  <Select options={genderOptions as any} />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item name="address" label="Address" rules={[{ required: true }]}>
+                  <Input />
+                </Form.Item>
+              </Col>
+            </Row>
             <Form.Item name="password" label="Password" rules={[{ required: true }]}><Input.Password /></Form.Item>
           </Form>
         </Modal>
@@ -450,6 +558,18 @@ const UserOrganization: React.FC = () => {
             <Row gutter={16}>
               <Col span={12}><Form.Item name="email" label="Email" rules={[{ required: true }, { type: 'email' }]}><Input /></Form.Item></Col>
               <Col span={12}><Form.Item name="phone" label="Phone" rules={[{ required: true }]}><Input /></Form.Item></Col>
+            </Row>
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item name="gender" label="Gender" rules={[{ required: true }]}>
+                  <Select options={genderOptions as any} />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item name="address" label="Address" rules={[{ required: true }]}>
+                  <Input />
+                </Form.Item>
+              </Col>
             </Row>
             <Form.Item name="password" label="Password" rules={[{ required: true }]}><Input.Password /></Form.Item>
           </Form>

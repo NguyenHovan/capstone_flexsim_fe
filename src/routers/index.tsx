@@ -36,6 +36,7 @@ import ClassManagerOrgAdmin from "../pages/OrganizationAdmin/Class Manager/Class
 import QuizApp from "../pages/Quiz/QuizApp";
 import LessonManagement from "../pages/Instructor/Manage-Lesson/LessonManagement";
 import EnrollManage from "../pages/Instructor/Manage-Enrollment-Request/EnrollManage";
+import LessonOrganization from "../pages/OrganizationAdmin/Lesson Manager/LessonOrganization";
 
 const MainRoute = () => {
   return (
@@ -108,7 +109,7 @@ const MainRoute = () => {
           <Route path="lesson-manager" element={<LessonOrganization />} />
          
           {/* 
-          <Route path="topic-manager" element={<TopicOrganization />} />
+          
           <Route path="category-manager" element={<CategoryOrganization />} />S
           <Route path="order-manager" element={<OrderOrganization />} /> */}
 
