@@ -87,37 +87,31 @@ const MainRoute = () => {
           }
         />
       </Route>
-      <Route
-        element={<PrivateRoute allowedRoles={["admin"]} />}
-      >
+
+      {/* Admin routes */}
+      <Route element={<PrivateRoute allowedRoles={["admin"]} />}>
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<Navigate to="overview" replace />} />
           <Route path="overview" element={<AdminOverview />} />
-          <Route
-            path="organization-manager"
-            element={<OrganizationManager />}
-          />
+          <Route path="organization-manager" element={<OrganizationManager />} />
           <Route path="user-manager" element={<UserManager />} />
           <Route path="workspace-manager" element={<WorkspaceManager />} />
-          {/* <Route path="scene-manager" element={<SceneManager />} />
-          <Route path="scenario-manager" element={<ScenarioManager />} />
-          <Route path="order-manager" element={<OrderManager />} />
-          <Route path="Subcription-manager" element={<SubcriptionManager />} /> */}
         </Route>
       </Route>
-     <Route element={<PrivateRoute allowedRoles={["organizationAdmin"]} />}>
+
+      {/* Organization Admin routes */}
+      <Route element={<PrivateRoute allowedRoles={["organizationAdmin"]} />}>
         <Route path="/organizationAdmin" element={<OrganizationAdminLayout />}>
           <Route index element={<Navigate to="overview" replace />} />
-          <Route path="overview" element={<OrganizationAdminOverview/>} />
+          <Route path="overview" element={<OrganizationAdminOverview />} />
           <Route path="user-manager" element={<UserOrganization />} />
-          <Route path="workspace-manager" element={<WorkspaceOrganization/>} />  
-          <Route path="class-manager" element={<ClassManagerOrgAdmin/>} />
-          {/* <Route path="lesson-manager" element={<LessonOrganization />} />
-        
-          <Route path="topic-manager" element={<TopicOrganization />} />
-          <Route path="category-manager" element={<CategoryOrganization />} />
-          <Route path="order-manager" element={<OrderOrganization />} /> */}
-                <Route element={<PrivateRoute allowedRoles={["instructor", "admin"]} />}>
+          <Route path="workspace-manager" element={<WorkspaceOrganization />} />
+          <Route path="class-manager" element={<ClassManagerOrgAdmin />} />
+        </Route>
+      </Route>
+
+      {/* Instructor routes */}
+      <Route element={<PrivateRoute allowedRoles={["instructor", "admin"]} />}>
         <Route element={<InstructorLayout />}>
           <Route path="/instructor" element={<Overview />} />
           <Route path="/instructor-course" element={<CourseManagement />} />
@@ -128,17 +122,7 @@ const MainRoute = () => {
           <Route path="/instructor-review" element={<ReviewManagement />} />
           <Route path="/instructor-lesson" element={<LessonManagement />} />
           <Route path="/instructor-enroll-request" element={<EnrollManage />} />
-                  </Route>
-      </Route>
-
-      <Route element={<InstructorLayout />}>
-        <Route path="/instructor" element={<Overview />} />
-        <Route path="/instructor-course" element={<CourseManagement />} />
-        <Route path="/instructor-class" element={<ManageClass />} />
-        <Route path="/instructor-topic" element={<TopicManagement />} />
-        <Route path="/instructor-scene" element={<SceneManagement />} />
-        <Route path="/instructor-quiz" element={<QuizManagement />} />
-        <Route path="/instructor-review" element={<ReviewManagement />} />
+        </Route>
       </Route>
     </Routes>
   );
