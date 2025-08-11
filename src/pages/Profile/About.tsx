@@ -1,15 +1,32 @@
-import { useEffect, useState } from "react";
-import { Card, Avatar, Row, Col, Form, Input, Button, message } from "antd";
+import { useEffect, useRef, useState } from "react";
+import {
+  Card,
+  Avatar,
+  Row,
+  Col,
+  Form,
+  Input,
+  Button,
+  message,
+  Select,
+} from "antd";
 import { AccountService } from "../../services/account.service";
 import { toast } from "sonner";
+import { UploadService } from "../../services/uploadClousdinary.service";
+
+const { Option } = Select;
 
 const About = () => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState("");
   const [user, setUser] = useState({
     avatar: "",
     fullName: "",
+    password: "",
   });
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
   const { id: userId, roleId, organizationId, userName } = currentUser;
@@ -19,6 +36,7 @@ const About = () => {
       AccountService.getAccountById(userId)
         .then((res: any) => {
           setUser(res);
+          setAvatarUrl(res.avtUrl || "");
           form.setFieldsValue(res);
         })
         .catch(() => {
@@ -26,6 +44,27 @@ const About = () => {
         });
     }
   }, [userId, form]);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Preview ngay lập tức
+    const reader = new FileReader();
+    reader.onload = () => {
+      setAvatarUrl(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+
+    // Upload thật sự
+    try {
+      const url = await UploadService.uploadImage(file);
+      setAvatarUrl(url);
+      toast.success("Tải ảnh thành công");
+    } catch {
+      toast.error("Tải ảnh thất bại");
+    }
+  };
 
   const handleUpdate = async (values: any) => {
     setLoading(true);
@@ -35,10 +74,12 @@ const About = () => {
         userName,
         organizationId,
         roleId,
+        avtUrl: avatarUrl,
+        password: user?.password,
       };
       await AccountService.updateAccount(userId, payload);
       toast.success("Cập nhật thành công!");
-    } catch (error) {
+    } catch {
       toast.error("Cập nhật thất bại!");
     }
     setLoading(false);
@@ -59,10 +100,30 @@ const About = () => {
         <div style={{ fontSize: 18, fontWeight: 500 }}>
           Welcome to LogiSimEdu, {user?.fullName}
         </div>
-        <Avatar
-          src={user?.avatar || "/avatar.png"}
-          size={80}
-          style={{ marginTop: 10 }}
+
+        {/* Click vào avatar để upload */}
+        <div
+          style={{
+            display: "inline-block",
+            cursor: "pointer",
+            marginTop: 10,
+          }}
+          onClick={() => fileInputRef.current?.click()}
+        >
+          <Avatar
+            src={avatarUrl || "/avatar.png"}
+            size={80}
+            style={{ border: "2px solid #ccc" }}
+          />
+        </div>
+
+        {/* Input file hidden */}
+        <input
+          type="file"
+          accept="image/*"
+          ref={fileInputRef}
+          style={{ display: "none" }}
+          onChange={handleFileChange}
         />
       </div>
 
@@ -77,13 +138,26 @@ const About = () => {
               <Form.Item name="phone" label="Phone">
                 <Input />
               </Form.Item>
+              <Form.Item
+                name="address"
+                label="Address"
+                rules={[
+                  { required: true, message: "Please field address required" },
+                ]}
+              >
+                <Input />
+              </Form.Item>
             </Col>
             <Col xs={24} md={12}>
               <Form.Item name="fullName" label="Full name">
                 <Input />
               </Form.Item>
-              <Form.Item name="password" label="Password">
-                <Input.Password placeholder="Nhập mật khẩu mới (nếu muốn đổi)" />
+              <Form.Item name="gender" label="Gender">
+                <Select>
+                  <Option value={0}>Male</Option>
+                  <Option value={1}>Female</Option>
+                  <Option value={2}>Other</Option>
+                </Select>
               </Form.Item>
             </Col>
           </Row>

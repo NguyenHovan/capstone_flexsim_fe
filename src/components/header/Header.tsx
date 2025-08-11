@@ -37,7 +37,7 @@ const Header = () => {
 
   return (
     <header className="custom-header">
-      <div className="logo">
+      <div className="logo" onClick={() => navigate("/")}>
         <span className="logo-orange">LOGISIM</span>
         <span className="logo-teal">EDU</span>
       </div>
@@ -52,7 +52,7 @@ const Header = () => {
 
       <nav className="nav-links">
         <Link to="/">Home</Link>
-        <Link to={"/course-list"}>Courses</Link>
+        <Link to={"/course-list"}>Category</Link>
         <Link to="#">About</Link>
         <Link to="#">Contact</Link>
       </nav>
