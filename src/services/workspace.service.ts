@@ -17,7 +17,7 @@ export const WorkspaceService = {
 
   getWorkspaceById: async (id: string): Promise<Workspace> => {
     try {
-      const { data } = await axiosInstance.get(`${API.GET_WORKSPACES_BY_ID}/${id}`);
+      const { data } = await axiosInstance.get(`${API.GET_WORKSPACES_ID}/${id}`);
       return data as Workspace;
     } catch (err: any) {
       const msg = getErrorMessage(err);

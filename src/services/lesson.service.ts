@@ -1,13 +1,19 @@
-import { API } from "../api";
-import axiosInstance from "./main.service";
+import axiosInstance from './main.service';
+import { API } from '../api';
+import type { Lesson } from '../types/lesson';
+import { getErrorMessage } from '../utils/errorHandler';
 
 export const LessonService = {
-  getAllLessons: async () => {
-    const res = await axiosInstance.get(`${API.GET_ALL_LESSON}`);
-    return res.data;
+  getAll: async (): Promise<Lesson[]> => {
+    try {
+      const { data } = await axiosInstance.get(API.GET_ALL_LESSON);
+      return (data?.data ?? data) as Lesson[];
+    } catch (err: any) {
+      const msg = getErrorMessage(err);
+      console.error('Error fetching lessons:', msg, err?.response?.data);
+      throw new Error(msg);
+    }
   },
-  createLesson: async (payload: any) => {
-    const res = await axiosInstance.post(`${API.CREATE_LESSON}`, payload);
-    return res.data;
-  },
+
+ 
 };
