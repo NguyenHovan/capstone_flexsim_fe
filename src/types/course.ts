@@ -1,11 +1,26 @@
 export interface Course {
-  key: string;
-  name: string;
-  category: number;
-  workspace: number;
-  status: string;
+  id: string;
+  instructorId: string | null;
+  categoryId: string;
+  workSpaceId: string;
+  courseName: string;
+  description: string;
+  ratingAverage: number;
+  imgUrl: string;
+  isActive: boolean;
   createdAt: string;
-  updatedAt: string;
+  updatedAt: string | null;
+  deleteAt: string | null;
+  accountOfCourses: any[];
+  category: any | null;
+  certificateTempletes: any[];
+  certificates: any[];
+  classes: any[];
+  courseProgresses: any[];
+  instructor: any | null;
+  reviews: any[];
+  topics: any[];
+  workSpace: any | null;
 }
 
 export interface CreateUpdateCourse {
@@ -14,5 +29,5 @@ export interface CreateUpdateCourse {
   courseName: string;
   description: string;
   ratingAverage: number;
-  imgUrl: string;
+  imgUrl: File;
 }

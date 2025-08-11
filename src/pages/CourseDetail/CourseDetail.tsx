@@ -1,18 +1,63 @@
 import { Card, Button, Row, Col, Rate, List, Avatar, Tag } from "antd";
 import { PlayCircleOutlined } from "@ant-design/icons";
-
-const lessons = [
-  { title: "Create first React project", duration: "43:58 min" },
-  { title: "Create first React project", duration: "43:58 min" },
-  { title: "Create first React project", duration: "43:58 min" },
-  { title: "Create first React project", duration: "43:58 min" },
-  { title: "Future of AI", duration: "04:28 min" },
-  { title: "The evolution and key milestones", duration: "04:28 min" },
-  { title: "Emerging AI technologies", duration: "04:28 min" },
-  { title: "The impact of AI on society", duration: "04:28 min" },
-];
+import { useParams } from "react-router-dom";
+import { CourseService } from "../../services/course.service";
+import { toast } from "sonner";
+import { useEffect, useState } from "react";
+import type { Course } from "../../types/course";
+import { EnrollmentRequestService } from "../../services/enrollment-request.service";
+import { LessonService } from "../../services/lesson.service";
 
 const CourseDetail = () => {
+  const { id } = useParams();
+  const [courseDetail, setCourseDetail] = useState<Course | null>(null);
+  const [lessons, setLessons] = useState([]);
+  const fetchCourseDetail = async () => {
+    try {
+      if (!id) {
+        return toast.error("Lỗi tải dữ liệu");
+      }
+      const res = await CourseService.getCourseById(id);
+      setCourseDetail(res);
+    } catch (error) {
+      console.log({ error });
+    }
+  };
+
+  const fetchLessons = async () => {
+    try {
+      const response = await LessonService.getAllLessons();
+      setLessons(response);
+    } catch (error) {
+      console.error("Failed to fetch lessons", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchLessons();
+  }, []);
+  const handleErollRequest = async () => {
+    const data = localStorage.getItem("currentUser");
+    const user = data ? JSON.parse(data) : null;
+    if (!courseDetail) {
+      return toast.error("Lỗi tải dữ liệu");
+    }
+    try {
+      const res = await EnrollmentRequestService.enrollmentRequest({
+        studentId: user?.id,
+        courseId: courseDetail?.id,
+      });
+      toast.success(res.message);
+    } catch (error) {
+      toast.error(
+        error.response.message ??
+          "Học viên đã gửi yêu cầu hoặc đang theo học khóa học này"
+      );
+    }
+  };
+  useEffect(() => {
+    fetchCourseDetail();
+  }, []);
   return (
     <div style={{ padding: 24 }} className="container">
       <Card
@@ -24,7 +69,7 @@ const CourseDetail = () => {
         }}
       >
         <img
-          src="https://cdn-icons-png.flaticon.com/512/10349/10349437.png"
+          src={courseDetail?.imgUrl}
           alt="Thumbnail"
           style={{
             width: 150,
@@ -34,12 +79,20 @@ const CourseDetail = () => {
           }}
         />
         <div>
-          <h2 style={{ margin: 0 }}>Quản lí điều phối vận tải</h2>
-          <Rate defaultValue={4} disabled style={{ margin: "8px 0" }} />
-          <div>Description!!!</div>
-          <div>Category!!!!</div>
-          <div>Last updated!!!</div>
-          <Button type="primary" danger style={{ marginTop: 10 }}>
+          <h2 style={{ margin: 0 }}>{courseDetail?.courseName}</h2>
+          <Rate
+            value={Number(courseDetail?.ratingAverage)}
+            disabled
+            style={{ margin: "8px 0" }}
+          />
+
+          <div>{courseDetail?.createdAt}</div>
+          <Button
+            type="primary"
+            danger
+            style={{ marginTop: 10 }}
+            onClick={() => handleErollRequest()}
+          >
             Enroll courses
           </Button>
         </div>
@@ -60,13 +113,7 @@ const CourseDetail = () => {
       </div>
 
       <Row gutter={24}>
-        <Col xs={24} md={14}>
-          <img
-            src="https://source.unsplash.com/random/800x400?robot"
-            alt="Course"
-            style={{ width: "100%", borderRadius: 8, marginBottom: 16 }}
-          />
-
+        <Col xs={24} md={14} style={{ color: "black" }}>
           <div style={{ marginBottom: 12 }}>
             <Tag color="blue">Tags</Tag>
             <Tag color="green">Overview</Tag>
@@ -77,12 +124,7 @@ const CourseDetail = () => {
           </div>
 
           <h3>About the course</h3>
-          <p>
-            Artificial intelligence is rapidly transforming industries, shaping
-            the way we work, communicate, and innovate. This course explores the
-            latest advancements in AI, its impact on society, and what the
-            future holds...
-          </p>
+          <p>{courseDetail?.description}</p>
         </Col>
 
         <Col xs={24} md={10}>
@@ -98,7 +140,7 @@ const CourseDetail = () => {
                     item.title
                   }`}
                   description={
-                    <span style={{ color: "#888" }}>{item.duration}</span>
+                    <span style={{ color: "#888" }}>{item.description}</span>
                   }
                 />
               </List.Item>
