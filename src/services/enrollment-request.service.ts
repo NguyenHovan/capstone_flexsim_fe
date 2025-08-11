@@ -22,9 +22,10 @@ export const EnrollmentRequestService = {
     const response = await axiosInstance.get(`${API.GET_ENROLLMENT_REQUEST}`);
     return response.data;
   },
-  acceptEnrollmentRequest: async (id: string) => {
+  updateEnrollmentRequest: async (id: string, status: number) => {
     const response = await axiosInstance.put(
-      `${API.ACCEPT_ENROLLMENT_REQUEST}/${id}`
+      `${API.ACCEPT_ENROLLMENT_REQUEST}/${id}`,
+      status
     );
     return response.data;
   },
