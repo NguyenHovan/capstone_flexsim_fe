@@ -7,6 +7,7 @@ import {
   InfoCircleOutlined,
   SettingOutlined,
   UserOutlined,
+  LogoutOutlined,
 } from "@ant-design/icons";
 import "./instructorSidebar.css";
 import { useNavigate } from "react-router-dom";
@@ -82,6 +83,14 @@ const sidebarItems = [
 
 const InstructorSidebar = () => {
   const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("currentUser");
+    localStorage.removeItem("roleId");
+    navigate("/login");
+  };
+
   return (
     <aside className="org-sidebar">
       <div className="org-sidebar-title">
@@ -99,6 +108,16 @@ const InstructorSidebar = () => {
               <span className="org-sidebar-label">{item.label}</span>
             </li>
           ))}
+
+          {/* Logout */}
+          <li
+            className="org-sidebar-item logout-item"
+            onClick={handleLogout}
+            style={{ color: "red", marginTop: "auto" }}
+          >
+            <LogoutOutlined />
+            <span className="org-sidebar-label">Logout</span>
+          </li>
         </ul>
       </nav>
     </aside>

@@ -1,15 +1,5 @@
 import { useState, useEffect } from "react";
-import {
-  Table,
-  Button,
-  Space,
-  Modal,
-  Form,
-  Select,
-  message,
-  Popconfirm,
-  Tag,
-} from "antd";
+import { Table, Button, Space, Modal, Form, Select, message, Tag } from "antd";
 import { EnrollmentRequestService } from "../../../services/enrollment-request.service";
 import { toast } from "sonner";
 type StatusKey = 1 | 2 | 3;
@@ -40,25 +30,27 @@ const EnrollManage = () => {
     fetchEnrolls();
   }, []);
 
-  const handleAccept = async (id: string) => {
+  const handleUpdateStatus = async (id: string, status: number) => {
     try {
-      await EnrollmentRequestService.acceptEnrollmentRequest(id);
-      toast.success("Chấp nhận enroll thành công");
+      await EnrollmentRequestService.updateEnrollmentRequest(id, status);
+      toast.success(
+        status === 2 ? "Chấp nhận thành công" : "Từ chối thành công"
+      );
       fetchEnrolls();
-    } catch (error) {
-      toast.error("Không thể chấp nhận enroll");
+    } catch {
+      toast.error(status === 2 ? "Không thể chấp nhận" : "Không thể từ chối");
     }
   };
 
-  const handleDelete = async (id: string) => {
-    try {
-      await EnrollmentRequestService.deleteEnrollmentRequest(id);
-      toast.success("Xóa enroll thành công");
-      fetchEnrolls();
-    } catch (error) {
-      toast.error("Không thể xóa enroll");
-    }
-  };
+  // const handleDelete = async (id: string) => {
+  //   try {
+  //     await EnrollmentRequestService.deleteEnrollmentRequest(id);
+  //     toast.success("Xóa enroll thành công");
+  //     fetchEnrolls();
+  //   } catch (error) {
+  //     toast.error("Không thể xóa enroll");
+  //   }
+  // };
 
   const columns = [
     {
@@ -89,28 +81,21 @@ const EnrollManage = () => {
     {
       title: "Actions",
       render: (_: any, record: any) => (
-        <Space>
+        <Space style={{ display: "flex", justifyContent: "flex-start" }}>
           <Button
             type="primary"
-            size="small"
-            onClick={() => handleAccept(record.id)}
-            disabled={record.status === 1}
+            onClick={() => handleUpdateStatus(record.id, 2)}
+            disabled={record.status === 2}
           >
             Accept
           </Button>
-          {/* <Button size="small" onClick={() => openUpdateModal(record)}>
-            Update
-          </Button> */}
-          <Popconfirm
-            title="Bạn có chắc muốn xóa enroll này?"
-            okText="Xóa"
-            cancelText="Hủy"
-            onConfirm={() => handleDelete(record.id)}
+          <Button
+            danger
+            onClick={() => handleUpdateStatus(record.id, 3)}
+            disabled={record.status === 3}
           >
-            <Button danger size="small">
-              Delete
-            </Button>
-          </Popconfirm>
+            Reject
+          </Button>
         </Space>
       ),
     },

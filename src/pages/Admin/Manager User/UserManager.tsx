@@ -20,7 +20,7 @@ import { OrganizationService } from "../../../services/organization-manager.serv
 import type { Account } from "../../../types/account";
 import type { Organization } from "../../../types/organization";
 import type { ColumnsType } from "antd/es/table";
-import "./UserManager.css";
+import "./userManager.css";
 import { toast } from "sonner"; // Import toast from sonner
 
 const { Content } = Layout;

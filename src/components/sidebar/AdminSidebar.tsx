@@ -7,7 +7,7 @@ import {
   LogoutOutlined,
   QuestionCircleOutlined,
 } from "@ant-design/icons";
-import "./adminsidebar.css";
+import "./adminSidebar.css";
 
 const AdminSidebar = () => {
   const navigate = useNavigate();
