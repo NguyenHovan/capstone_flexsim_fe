@@ -6,7 +6,7 @@ import { toast } from "sonner";
 
 const { Option } = Select;
 
-const CreateLessonForm = ({ onCreated }) => {
+const CreateLessonForm = ({ onCreated }: { onCreated: () => void }) => {
   const [topics, setTopics] = useState([]);
 
   const fetchTopics = async () => {
@@ -22,7 +22,7 @@ const CreateLessonForm = ({ onCreated }) => {
     fetchTopics();
   }, []);
 
-  const onFinish = async (values) => {
+  const onFinish = async (values: any) => {
     const payload = {
       ...values,
       status: 1,
@@ -47,7 +47,7 @@ const CreateLessonForm = ({ onCreated }) => {
           rules={[{ required: true, message: "Chọn chủ đề" }]}
         >
           <Select placeholder="Chọn chủ đề">
-            {topics.map((t) => (
+            {topics.map((t: any) => (
               <Option key={t.id} value={t.id}>
                 {t.topicName}
               </Option>

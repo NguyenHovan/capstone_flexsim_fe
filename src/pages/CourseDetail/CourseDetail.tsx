@@ -10,7 +10,7 @@ import { LessonService } from "../../services/lesson.service";
 
 const CourseDetail = () => {
   const { id } = useParams();
-  const [courseDetail, setCourseDetail] = useState<Course | null>(null);
+  const [courseDetail, setCourseDetail] = useState<Course>();
   const [lessons, setLessons] = useState([]);
   const fetchCourseDetail = async () => {
     try {
@@ -48,11 +48,8 @@ const CourseDetail = () => {
         courseId: courseDetail?.id,
       });
       toast.success(res.message);
-    } catch (error) {
-      toast.error(
-        error.response.message ??
-          "Học viên đã gửi yêu cầu hoặc đang theo học khóa học này"
-      );
+    } catch {
+      toast.error("Học viên đã gửi yêu cầu hoặc đang theo học khóa học này");
     }
   };
   useEffect(() => {
@@ -132,7 +129,7 @@ const CourseDetail = () => {
           <List
             itemLayout="horizontal"
             dataSource={lessons}
-            renderItem={(item, index) => (
+            renderItem={(item: any, index: number) => (
               <List.Item>
                 <List.Item.Meta
                   avatar={<PlayCircleOutlined style={{ fontSize: 20 }} />}

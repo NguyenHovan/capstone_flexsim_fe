@@ -9,15 +9,6 @@ import { useNavigate } from "react-router-dom";
 
 const { TabPane } = Tabs;
 
-const fakeCourses = Array.from({ length: 6 }, (_, i) => ({
-  id: i,
-  title: "Khóa học A",
-  organization: "FPTU",
-  students: 40,
-  lessons: 19,
-  image: "https://source.unsplash.com/featured/400x200?ship",
-}));
-
 const CourseList = () => {
   const navigate = useNavigate();
   const [dataSource, setDataSource] = useState<any[]>([]);

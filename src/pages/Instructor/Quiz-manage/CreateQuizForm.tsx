@@ -7,7 +7,7 @@ import { QuizService } from "../../../services/quiz.service";
 
 const { Option } = Select;
 
-const CreateQuizForm = ({ onCreated }) => {
+const CreateQuizForm = ({ onCreated }: { onCreated: () => void }) => {
   const [lessons, setLessons] = useState([]);
 
   // Load danh sách lessons
@@ -24,14 +24,14 @@ const CreateQuizForm = ({ onCreated }) => {
     fetchLessons();
   }, []);
 
-  const onFinish = async (values) => {
+  const onFinish = async (values: any) => {
     const payload = {
       lessonId: values.lessonId,
       quizName: values.quizName,
       totalScore: 0,
-      questions: values.questions.map((q) => ({
+      questions: values.questions.map((q: any) => ({
         description: q.description,
-        answers: q.answers.map((a) => ({
+        answers: q.answers.map((a: any) => ({
           description: a.description,
           isAnswerCorrect: !!a.isAnswerCorrect,
         })),
@@ -53,7 +53,7 @@ const CreateQuizForm = ({ onCreated }) => {
       <Form layout="vertical" onFinish={onFinish}>
         <Form.Item label="Bài học" name="lessonId" rules={[{ required: true }]}>
           <Select placeholder="Chọn bài học">
-            {lessons.map((lesson) => (
+            {lessons.map((lesson: any) => (
               <Option key={lesson.id} value={lesson.id}>
                 {lesson.lessonName}
               </Option>
@@ -69,7 +69,7 @@ const CreateQuizForm = ({ onCreated }) => {
           <Input placeholder="Nhập tên quiz" />
         </Form.Item>
 
-        <Form.List name="questions" rules={[{ required: true }]}>
+        <Form.List name="questions">
           {(fields, { add, remove }) => (
             <>
               {fields.map((field, index) => (

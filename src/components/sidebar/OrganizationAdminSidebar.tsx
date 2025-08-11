@@ -1,8 +1,7 @@
-import { NavLink , useNavigate} from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import {
   HomeOutlined,
-  TeamOutlined,
-  LogoutOutlined ,
+  LogoutOutlined,
   UserOutlined,
   SettingOutlined,
   QuestionCircleOutlined,
@@ -10,9 +9,8 @@ import {
 import "./organizationAdminSidebar.css";
 
 const OrganizationAdminSidebar = () => {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
-  
   const handleLogout = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
     if (window.confirm("Are you sure you want to logout?")) {
@@ -28,7 +26,7 @@ const OrganizationAdminSidebar = () => {
       icon: <HomeOutlined />,
       path: "/organizationAdmin/",
     },
-   
+
     {
       label: "User Manager",
       icon: <UserOutlined />,
@@ -59,7 +57,7 @@ const OrganizationAdminSidebar = () => {
       icon: <SettingOutlined />,
       path: "/organizationAdmin/category-manager",
     },
-  
+
     {
       label: "Order Manager",
       icon: <SettingOutlined />,
@@ -73,7 +71,7 @@ const OrganizationAdminSidebar = () => {
     {
       label: "Logout",
       icon: <LogoutOutlined />,
-      path: "/organizationAdmin/logout", 
+      path: "/organizationAdmin/logout",
       onClick: handleLogout,
     },
   ];
@@ -93,7 +91,9 @@ const OrganizationAdminSidebar = () => {
               onClick={(e) => item.onClick && item.onClick(e)}
             >
               {item.icon}
-              <span className="organizationAdmin-sidebar-label">{item.label}</span>
+              <span className="organizationAdmin-sidebar-label">
+                {item.label}
+              </span>
             </NavLink>
           </li>
         ))}

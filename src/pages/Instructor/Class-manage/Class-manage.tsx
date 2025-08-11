@@ -28,7 +28,7 @@ const ClassManagement = () => {
   const fetchClasses = async () => {
     try {
       setLoading(true);
-      const data = await ClassService.getAllClasses();
+      const data = await ClassService.getAll();
       setDataSource(data);
     } catch (error) {
       toast.error("Failed to fetch classes");
@@ -68,10 +68,10 @@ const ClassManagement = () => {
       title: "Bạn có chắc muốn xóa lớp học này?",
       onOk: async () => {
         try {
-          await ClassService.deleteClass(id);
+          await ClassService.delete(id);
           toast.success("Xóa thành công!");
           fetchClasses();
-        } catch (error) {
+        } catch {
           toast.error("Xóa thất bại!");
         }
       },
@@ -82,10 +82,10 @@ const ClassManagement = () => {
     try {
       const values = await form.validateFields();
       if (isEditing && selectedClassId) {
-        await ClassService.updateClass(selectedClassId, values);
+        await ClassService.update(selectedClassId, values);
         toast.success("Cập nhật lớp học thành công!");
       } else {
-        await ClassService.createClass(values);
+        await ClassService.create(values);
         toast.success("Tạo lớp học thành công!");
       }
       setIsModalVisible(false);
