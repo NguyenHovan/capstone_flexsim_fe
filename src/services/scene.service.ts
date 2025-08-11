@@ -7,16 +7,12 @@ export const SceneService = {
     return res.data;
   },
   createScene: async (payload: FormData) => {
-    const res = await axiosInstance.post(API.CREATE_SCENE, payload, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+    const res = await axiosInstance.post(API.CREATE_SCENE, payload);
     return res.data;
   },
 
   updateScene: async (id: string, payload: FormData) => {
-    const res = await axiosInstance.put(`${API.UPDATE_SCENE}/${id}`, payload, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+    const res = await axiosInstance.put(`${API.UPDATE_SCENE}/${id}`, payload);
     return res.data;
   },
 

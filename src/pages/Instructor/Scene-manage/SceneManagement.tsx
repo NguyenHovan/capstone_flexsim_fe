@@ -192,7 +192,7 @@ const SceneManagement = () => {
             <Input.TextArea rows={3} />
           </Form.Item>
 
-          <Form.Item
+          {/* <Form.Item
             label="Ảnh đại diện"
             name="imgUrl"
             valuePropName="fileList"
@@ -201,7 +201,7 @@ const SceneManagement = () => {
             <Upload listType="picture" maxCount={1} beforeUpload={() => false}>
               <Button icon={<UploadOutlined />}>Chọn ảnh</Button>
             </Upload>
-          </Form.Item>
+          </Form.Item> */}
         </Form>
       </Modal>
     </div>
