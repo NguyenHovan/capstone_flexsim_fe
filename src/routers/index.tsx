@@ -33,7 +33,9 @@ import WorkspaceOrganization from "../pages/OrganizationAdmin/Workspace Manager/
 import UserOrganization from "../pages/OrganizationAdmin/User Manager/UserOrganization";
 import PrivateRoute from "./PrivateRoute";
 import ClassManagerOrgAdmin from "../pages/OrganizationAdmin/Class Manager/ClassOrganization";
-import LessonOrganization from "../pages/OrganizationAdmin/Lesson Manager/LessonOrganization";
+import QuizApp from "../pages/Quiz/QuizApp";
+import LessonManagement from "../pages/Instructor/Manage-Lesson/LessonManagement";
+import EnrollManage from "../pages/Instructor/Manage-Enrollment-Request/EnrollManage";
 
 const MainRoute = () => {
   return (
@@ -84,22 +86,15 @@ const MainRoute = () => {
           }
         />
       </Route>
-      <Route
-        element={<PrivateRoute allowedRoles={["admin"]} />}
-      >
+
+      {/* Admin routes */}
+      <Route element={<PrivateRoute allowedRoles={["admin"]} />}>
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<Navigate to="overview" replace />} />
           <Route path="overview" element={<AdminOverview />} />
-          <Route
-            path="organization-manager"
-            element={<OrganizationManager />}
-          />
+          <Route path="organization-manager" element={<OrganizationManager />} />
           <Route path="user-manager" element={<UserManager />} />
           <Route path="workspace-manager" element={<WorkspaceManager />} />
-          {/* <Route path="scene-manager" element={<SceneManager />} />
-          <Route path="scenario-manager" element={<ScenarioManager />} />
-          <Route path="order-manager" element={<OrderManager />} />
-          <Route path="Subcription-manager" element={<SubcriptionManager />} /> */}
         </Route>
       </Route>
 
@@ -119,16 +114,6 @@ const MainRoute = () => {
 
           
         </Route>
-      </Route>
-
-      <Route element={<InstructorLayout />}>
-        <Route path="/instructor" element={<Overview />} />
-        <Route path="/instructor-course" element={<CourseManagement />} />
-        <Route path="/instructor-class" element={<ManageClass />} />
-        <Route path="/instructor-topic" element={<TopicManagement />} />
-        <Route path="/instructor-scene" element={<SceneManagement />} />
-        <Route path="/instructor-quiz" element={<QuizManagement />} />
-        <Route path="/instructor-review" element={<ReviewManagement />} />
       </Route>
     </Routes>
   );
