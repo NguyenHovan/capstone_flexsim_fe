@@ -15,7 +15,6 @@ export const API = {
   BAN_ACCOUNT: "/api/account/ban_account",
   UNBAN_ACCOUNT: "/api/account/unban_account",
 
-
   //COURSE
   GET_ALL_COURSE: "/api/course/get_all",
   GET_COURSE_ID: "/api/course/get_by_id",
@@ -48,8 +47,6 @@ export const API = {
   //SCENARIO
   GET_ALL_SCENARIO: "/api/scenario/get_all_scenario",
 
-
-
   //QUIZ
   GET_ALL_QUIZ: "/api/quiz/get_all_quiz",
   GET_QUIZ_ID: "/api/quiz/get_quiz",
@@ -65,14 +62,13 @@ export const API = {
   DELETE_REVIEW: "/api/review/delete_review",
   //WORKSPACE
   GET_ALL_WORKSPACE: "/api/workspace/get_all_workSpace",
-  GET_WORKSPACES_BY_ID:"/api/workspace/get_workSpace",
-  CREATE_WORKSPACE:"/api/workspace/create_workSpace",
-  UPDATE_WORKSPACE:"/api/workspace/update_workSpace",
-  DELETE_WORKSPACE:"/api/workspace/delete_workSpace",
+  GET_WORKSPACES_BY_ID: "/api/workspace/get_workSpace",
+  CREATE_WORKSPACE: "/api/workspace/create_workSpace",
+  UPDATE_WORKSPACE: "/api/workspace/update_workSpace",
+  DELETE_WORKSPACE: "/api/workspace/delete_workSpace",
 
   //UPLOAD FILE
-  UPLOAD_FILE:"/api/Cloudinary/image",
-  
+  UPLOAD_FILE: "/api/Cloudinary/image",
 
   //ADMIN
 
@@ -81,32 +77,26 @@ export const API = {
   CREATE_ORGANIZATION: "/api/organization/create_organization",
   UPDATE_ORGANIZATION: "/api/organization/update_organization",
   DELETE_ORGANIZATION: "/api/organization/delete_organization",
-  
-// ORDER 
-  GET_ALL_ORDER:"/api/orders",
-  GET_ORDER_BY_ID:"/api/orders",
-  DELETE_ORDER:"/api/orders",
-  CREATE_ORDER:"/api/orders",
-  UPDATE_ORDER:"/api/orders/status",
+
+  // ORDER
+  GET_ALL_ORDER: "/api/orders",
+  GET_ORDER_BY_ID: "/api/orders",
+  DELETE_ORDER: "/api/orders",
+  CREATE_ORDER: "/api/orders",
+  UPDATE_ORDER: "/api/orders/status",
 
   // SUBCRIPTION PLAND
 
-  GET_ALL_SUBCRIPTION:"/api/subscription-plan/get_all",
-  GET_SUBCRIPTION_BY_ID:"/api/subscription-plan/get",
-  DELETE_SUBCRIPTION:"/api/subscription-plan/delete",
-  CREATE_SUBCRIPTION:"/api/subscription-plan/create",
-  UPDATE_SUBCRIPTION:"/api/subscription-plan/update",
-
-
-
-
+  GET_ALL_SUBCRIPTION: "/api/subscription-plan/get_all",
+  GET_SUBCRIPTION_BY_ID: "/api/subscription-plan/get",
+  DELETE_SUBCRIPTION: "/api/subscription-plan/delete",
+  CREATE_SUBCRIPTION: "/api/subscription-plan/create",
+  UPDATE_SUBCRIPTION: "/api/subscription-plan/update",
 
   //AUTH
 
   //CATEGORY
-  GET_ALL_CATEGORY: "/api/category/get_all_category",
-
-
+  // GET_ALL_CATEGORY: "/api/category/get_all_category",
 
   GET_ALL_CATEGORY: "/api/category/get_all",
 

@@ -6,7 +6,10 @@ import { toast } from "sonner";
 const About = () => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState({
+    avatar: "",
+    fullName: "",
+  });
 
   const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
   const { id: userId, roleId, organizationId, userName } = currentUser;
@@ -14,7 +17,7 @@ const About = () => {
   useEffect(() => {
     if (userId) {
       AccountService.getAccountById(userId)
-        .then((res) => {
+        .then((res: any) => {
           setUser(res);
           form.setFieldsValue(res);
         })
@@ -24,7 +27,7 @@ const About = () => {
     }
   }, [userId, form]);
 
-  const handleUpdate = async (values) => {
+  const handleUpdate = async (values: any) => {
     setLoading(true);
     try {
       const payload = {

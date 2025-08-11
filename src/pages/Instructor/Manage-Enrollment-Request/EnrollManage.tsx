@@ -11,18 +11,18 @@ import {
   Tag,
 } from "antd";
 import { EnrollmentRequestService } from "../../../services/enrollment-request.service";
-
+import { toast } from "sonner";
+type StatusKey = 1 | 2 | 3;
 const EnrollManage = () => {
   const [form] = Form.useForm();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingEnroll, setEditingEnroll] = useState(null);
   const [loading, setLoading] = useState(false);
   const [enrolls, setEnrolls] = useState([]);
 
-  const statusMap = {
-    0: { text: "Pending", color: "orange" },
-    1: { text: "Accepted", color: "green" },
-    2: { text: "Rejected", color: "red" },
+  const statusMap: Record<StatusKey, { text: string; color: string }> = {
+    1: { text: "Pending", color: "orange" },
+    2: { text: "Accepted", color: "green" },
+    3: { text: "Rejected", color: "red" },
   };
 
   const fetchEnrolls = async () => {
@@ -40,37 +40,24 @@ const EnrollManage = () => {
     fetchEnrolls();
   }, []);
 
-  const handleAccept = async (id) => {
+  const handleAccept = async (id: string) => {
     try {
       await EnrollmentRequestService.acceptEnrollmentRequest(id);
-      message.success("Chấp nhận enroll thành công");
+      toast.success("Chấp nhận enroll thành công");
       fetchEnrolls();
     } catch (error) {
-      message.error("Không thể chấp nhận enroll");
+      toast.error("Không thể chấp nhận enroll");
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (id: string) => {
     try {
       await EnrollmentRequestService.deleteEnrollmentRequest(id);
-      message.success("Xóa enroll thành công");
+      toast.success("Xóa enroll thành công");
       fetchEnrolls();
     } catch (error) {
-      message.error("Không thể xóa enroll");
+      toast.error("Không thể xóa enroll");
     }
-  };
-
-  const handleUpdate = (values) => {
-    message.info(
-      `Update enroll id: ${editingEnroll.id} với status: ${values.status} (demo)`
-    );
-    setIsModalOpen(false);
-  };
-
-  const openUpdateModal = (record) => {
-    setEditingEnroll(record);
-    form.setFieldsValue({ status: record.status });
-    setIsModalOpen(true);
   };
 
   const columns = [
@@ -93,7 +80,7 @@ const EnrollManage = () => {
     {
       title: "Status",
       dataIndex: "status",
-      render: (status) => (
+      render: (status: StatusKey) => (
         <Tag color={statusMap[status]?.color || "default"}>
           {statusMap[status]?.text || "Unknown"}
         </Tag>
@@ -101,7 +88,7 @@ const EnrollManage = () => {
     },
     {
       title: "Actions",
-      render: (_, record) => (
+      render: (_: any, record: any) => (
         <Space>
           <Button
             type="primary"
@@ -146,7 +133,7 @@ const EnrollManage = () => {
         onCancel={() => setIsModalOpen(false)}
         onOk={() => form.submit()}
       >
-        <Form form={form} layout="vertical" onFinish={handleUpdate}>
+        <Form form={form} layout="vertical">
           <Form.Item name="status" label="Status">
             <Select>
               <Select.Option value={0}>Pending</Select.Option>

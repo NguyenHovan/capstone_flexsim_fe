@@ -45,7 +45,7 @@ const LessonManagement = () => {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
-      render: (value) => (value === 1 ? "Hoạt động" : "Ẩn"),
+      render: (value: any) => (value === 1 ? "Hoạt động" : "Ẩn"),
     },
   ];
 

@@ -35,7 +35,7 @@ const QuizManagement = () => {
       title: "Bài học",
       dataIndex: "lessonName",
       key: "lessonName",
-      render: (text) => text || "Không có",
+      render: (text: string) => text || "Không có",
     },
     {
       title: "Tổng điểm",
@@ -45,7 +45,7 @@ const QuizManagement = () => {
     {
       title: "Hành động",
       key: "actions",
-      render: (_, record) => (
+      render: () => (
         <Space>
           <Popconfirm title="Bạn chắc chắn muốn xóa?">
             <Button danger>Xóa</Button>

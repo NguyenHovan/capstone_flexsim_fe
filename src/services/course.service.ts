@@ -1,5 +1,4 @@
 import { API } from "../api";
-import type { CreateUpdateCourse } from "../types/course";
 import axiosInstance from "./main.service";
 
 export const CourseService = {
@@ -19,7 +18,7 @@ export const CourseService = {
     );
     return response.data;
   },
-  createCourse: async (payload: CreateUpdateCourse) => {
+  createCourse: async (payload: any) => {
     const response = await axiosInstance.post(`${API.CREATE_COURSE}`, payload, {
       headers: {
         "Content-Type": "multipart/form-data",
@@ -27,7 +26,7 @@ export const CourseService = {
     });
     return response.data;
   },
-  updateCourse: async (id: string, payload: CreateUpdateCourse) => {
+  updateCourse: async (id: string, payload: any) => {
     const response = await axiosInstance.put(
       `${API.UPDATE_COURSE}/${id}`,
       payload
