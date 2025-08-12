@@ -3,7 +3,7 @@ import axiosInstance from "./main.service";
 import { API } from "../api";
 import type { Account } from "../types/account";
 import type { OrganizationAdminForm } from "../types/organizationAdmin";
-import type { AccountForm } from "../types/account";
+import type { AccountForm, UpdateAccountPayload  } from "../types/account";
 import { getErrorMessage } from "../utils/errorHandler";
 
 export const AccountService = {
@@ -67,13 +67,26 @@ export const AccountService = {
     }
   },
 
-  /** Cập nhật tài khoản */
-  updateAccount: async (id: string, payload: Partial<Account>): Promise<Account> => {
+ uploadAvatar: async (file: File): Promise<string> => {
     try {
-      const { data } = await axiosInstance.put(`${API.UPDATE_ACCOUNT}/${id}`, {
-        ...payload,
-        updatedAt: new Date().toISOString(),
+      const formData = new FormData();
+      formData.append("file", file);
+      const { data } = await axiosInstance.post(API.UPLOAD_FILE, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
       });
+      // tuỳ response, chỉnh key nếu BE khác
+      return (data?.url as string) ?? "";
+    } catch (error) {
+      const msg = getErrorMessage(error);
+      console.error("Error uploading avatar:", msg);
+      throw new Error(msg);
+    }
+  },
+
+  /** Cập nhật tài khoản theo schema UpdateAccountPayload */
+  updateAccount: async (id: string, payload: UpdateAccountPayload): Promise<Account> => {
+    try {
+      const { data } = await axiosInstance.put(`${API.UPDATE_ACCOUNT}/${id}`, payload);
       return data as Account;
     } catch (error) {
       const msg = getErrorMessage(error);

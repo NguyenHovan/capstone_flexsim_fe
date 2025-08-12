@@ -36,7 +36,11 @@ import ClassManagerOrgAdmin from "../pages/OrganizationAdmin/Class Manager/Class
 import QuizApp from "../pages/Quiz/QuizApp";
 import LessonManagement from "../pages/Instructor/Manage-Lesson/LessonManagement";
 import EnrollManage from "../pages/Instructor/Manage-Enrollment-Request/EnrollManage";
-import LessonOrganization from "../pages/OrganizationAdmin/Lesson Manager/LessonOrganization";
+import SubscriptionPlanAdmin from "../pages/Admin/Subcription Plan/SubcriptionPlan";
+import OrderOrganization from "../pages/OrganizationAdmin/Order Manager/OrderMananger";
+import PaymentSuccess from "../pages/Payment/PaymentSuccess";
+import PaymentFail from "../pages/Payment/PaymentFailure";
+import OrderAdmin from "../pages/Admin/Order Manager/OrderAdmin";
 
 const MainRoute = () => {
   return (
@@ -46,6 +50,8 @@ const MainRoute = () => {
       {/* <Route path="/signup" element={<SignUpPage />} /> */}
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/verify-code" element={<VerifyCodePage />} />
+       <Route path="/payment/success" element={<PaymentSuccess />} />
+    <Route path="/payment/fail" element={<PaymentFail />} />
 
       {/* Guest/Student layout */}
       <Route element={<LayoutMain />}>
@@ -54,8 +60,9 @@ const MainRoute = () => {
         <Route path="/new-password" element={<NewPasswordPage />} />
         <Route path="/course-list" element={<CourseList />} />
         <Route path="/course-detail/:id" element={<CourseDetail />} />
+        <Route path="/quiz-test/:id" element={<QuizApp />} />
         <Route
-          path="/about"
+          path="/profile"
           element={
             <ProfileLayout>
               <About />
@@ -96,24 +103,38 @@ const MainRoute = () => {
           <Route path="organization-manager" element={<OrganizationManager />} />
           <Route path="user-manager" element={<UserManager />} />
           <Route path="workspace-manager" element={<WorkspaceManager />} />
+          <Route path="subscriptionPlan-manager" element={<SubscriptionPlanAdmin />} />
+          <Route path="order-manager" element={<OrderAdmin />} />
+
         </Route>
       </Route>
 
-     <Route element={<PrivateRoute allowedRoles={["organizationAdmin"]} />}>
+      {/* Organization Admin routes */}
+      <Route element={<PrivateRoute allowedRoles={["organizationAdmin"]} />}>
         <Route path="/organizationAdmin" element={<OrganizationAdminLayout />}>
           <Route index element={<Navigate to="overview" replace />} />
-          <Route path="overview" element={<OrganizationAdminOverview/>} />
+          <Route path="overview" element={<OrganizationAdminOverview />} />
           <Route path="user-manager" element={<UserOrganization />} />
-          <Route path="workspace-manager" element={<WorkspaceOrganization/>} /> 
-          <Route path="class-manager" element={<ClassManagerOrgAdmin />} />
-          <Route path="lesson-manager" element={<LessonOrganization />} />
+          <Route path="workspace-manager" element={<WorkspaceOrganization />} />
+          <Route path="order-manager" element={<OrderOrganization />} />
          
-          {/* 
-          
-          <Route path="category-manager" element={<CategoryOrganization />} />S
-          <Route path="order-manager" element={<OrderOrganization />} /> */}
+          <Route path="class-manager" element={<ClassManagerOrgAdmin />} />
 
-          
+        </Route>
+      </Route>
+
+      {/* Instructor routes */}
+      <Route element={<PrivateRoute allowedRoles={["instructor", "admin"]} />}>
+        <Route element={<InstructorLayout />}>
+          <Route path="/instructor" element={<Overview />} />
+          <Route path="/instructor-course" element={<CourseManagement />} />
+          <Route path="/instructor-class" element={<ManageClass />} />
+          <Route path="/instructor-topic" element={<TopicManagement />} />
+          <Route path="/instructor-scene" element={<SceneManagement />} />
+          <Route path="/instructor-quiz" element={<QuizManagement />} />
+          <Route path="/instructor-review" element={<ReviewManagement />} />
+          <Route path="/instructor-lesson" element={<LessonManagement />} />
+          <Route path="/instructor-enroll-request" element={<EnrollManage />} />
         </Route>
       </Route>
     </Routes>

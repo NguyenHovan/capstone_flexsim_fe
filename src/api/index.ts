@@ -112,7 +112,7 @@ export const API = {
   DELETE_WORKSPACE:"/api/workspace/delete_workSpace",
 
   //UPLOAD FILE
-  UPLOAD_FILE: "/api/Cloudinary/image",
+  UPLOAD_FILE: "/api/Cloudinary/upload",
 
   //ADMIN
 
@@ -126,7 +126,7 @@ export const API = {
   GET_ALL_ORDER:"/api/orders",
   GET_ORDER_ID:"/api/orders",
   DELETE_ORDER:"/api/orders",
-  CREATE_ORDER:"/api/orders",
+  CREATE_ORDER:"/api/orders/create",
   UPDATE_ORDER:"/api/orders/status",
 
   // SUBCRIPTION PLAND
@@ -185,9 +185,9 @@ export const API = {
   DELETE_NOTIFICATION:"/api/notification/delete_notification",
 
   //PAYMENT
-  GET_PAYMENT:"/api/payment/webhook",
-  CREATE_PAYMENT_ORDER:"/api/payment/create_payment",
-  CREATE_PAYMENT:"/api/payment/webhook",
+  
+  CREATE_PAYMENT_BY_ORDER_ID: (orderId: string) => `/api/payment/create-payment/${orderId}`,
+  PAYMENT_UPDATE: `/api/payment/update`,
 
   //QUESTION
   GET_ALL_QUESTION:"/api/question/get_all_question",

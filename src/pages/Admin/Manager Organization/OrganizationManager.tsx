@@ -1,10 +1,10 @@
 import {
-  Layout, Card, Table, Button, Modal, Form, Input, Row, Col, Typography, Switch, message
+  Layout, Card, Table, Button, Modal, Form, Input, Row, Col, Typography, Switch, message, Space
 } from 'antd';
 import {
-  PlusOutlined, EyeOutlined, EditOutlined, DeleteOutlined
+  PlusOutlined, EyeOutlined, EditOutlined, DeleteOutlined, ReloadOutlined
 } from '@ant-design/icons';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { OrganizationService } from '../../../services/organization-manager.service';
 import type { Organization, OrganizationForm } from '../../../types/organization';
 import './organizationManager.css';
@@ -20,46 +20,35 @@ const OrganizationManager: React.FC = () => {
   const [editingOrganization, setEditingOrganization] = useState<Organization | null>(null);
   const [viewingOrganization, setViewingOrganization] = useState<Organization | null>(null);
 
-  useEffect(() => {
-    const fetchOrganizations = async () => {
-      setLoading(true);
-      try {
-        const data = await OrganizationService.getAll();
-        setOrganizations(Array.isArray(data) ? data : []);
-      } catch (error) {
-        message.error('Failed to fetch organizations');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchOrganizations();
+  // === loadOrganizations: tự động fetch lại data từ server ===
+  const loadOrganizations = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await OrganizationService.getAll();
+      setOrganizations(Array.isArray(data) ? data : []);
+    } catch (error) {
+      message.error('Failed to fetch organizations');
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    loadOrganizations();
+  }, [loadOrganizations]);
 
   const handleSaveOrganization = async (values: OrganizationForm) => {
     setLoading(true);
     try {
       if (editingOrganization) {
-        const updatedOrg = await OrganizationService.updateOrganizationById(editingOrganization.id, values);
-
-        setOrganizations(orgs =>
-          orgs.map(org =>
-            org.id === editingOrganization.id
-              ? {
-                  ...org,
-                  ...values,
-                  createdAt: org.createdAt,
-                  updatedAt: updatedOrg.updatedAt || new Date().toISOString(),
-                  deleteAt: org.deleteAt
-                }
-              : org
-          )
-        );
+        await OrganizationService.updateOrganizationById(editingOrganization.id, values);
         message.success('Organization updated successfully');
       } else {
-        const newOrg = await OrganizationService.create(values);
-        setOrganizations(prev => [...prev, newOrg]);
+        await OrganizationService.create(values);
         message.success('Organization created successfully');
       }
+      // Sau khi create/update, luôn refetch từ server để data mới nhất
+      await loadOrganizations();
       handleModalClose();
     } catch (error) {
       message.error('Failed to save organization');
@@ -72,8 +61,9 @@ const OrganizationManager: React.FC = () => {
     setLoading(true);
     try {
       await OrganizationService.deleteOrganizationById(id);
-      setOrganizations(orgs => orgs.filter(org => org.id !== id));
       message.success('Organization deleted successfully');
+      // Refetch sau khi xóa
+      await loadOrganizations();
     } catch (error) {
       message.error('Failed to delete organization');
     } finally {
@@ -118,19 +108,10 @@ const OrganizationManager: React.FC = () => {
         address: record.address,
         isActive: checked,
       };
-      const updatedOrg = await OrganizationService.updateOrganizationById(record.id, payload);
-      setOrganizations(orgs =>
-        orgs.map(org =>
-          org.id === record.id
-            ? {
-                ...org,
-                isActive: checked,
-                updatedAt: updatedOrg.updatedAt || new Date().toISOString()
-              }
-            : org
-        )
-      );
+      await OrganizationService.updateOrganizationById(record.id, payload);
       message.success('Updated active status');
+      // Refetch sau khi toggle
+      await loadOrganizations();
     } catch (error) {
       message.error('Failed to update active status');
     } finally {
@@ -186,11 +167,11 @@ const OrganizationManager: React.FC = () => {
       title: 'Actions',
       key: 'actions',
       render: (_: any, record: Organization) => (
-        <div>
+        <Space>
           <Button icon={<EyeOutlined />} onClick={() => handleViewOrganization(record.id)} />
-          <Button icon={<EditOutlined />} onClick={() => handleEditOrganization(record)} style={{ margin: '0 8px' }} />
+          <Button icon={<EditOutlined />} onClick={() => handleEditOrganization(record)} />
           <Button icon={<DeleteOutlined />} danger onClick={() => handleDeleteOrganization(record.id)} />
-        </div>
+        </Space>
       )
     }
   ];
@@ -203,18 +184,27 @@ const OrganizationManager: React.FC = () => {
             <Title level={2}>Organization Manager</Title>
           </Col>
           <Col>
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => {
-                form.resetFields();
-                setEditingOrganization(null);
-                setViewingOrganization(null);
-                setIsModalOpen(true);
-              }}
-            >
-              Create New Organization 
-            </Button>
+            <Space>
+              <Button
+                icon={<ReloadOutlined />}
+                onClick={loadOrganizations}
+                loading={loading}
+              >
+                Reload
+              </Button>
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={() => {
+                  form.resetFields();
+                  setEditingOrganization(null);
+                  setViewingOrganization(null);
+                  setIsModalOpen(true);
+                }}
+              >
+                Create New Organization
+              </Button>
+            </Space>
           </Col>
         </Row>
         <Card>
@@ -239,6 +229,7 @@ const OrganizationManager: React.FC = () => {
           onCancel={handleModalClose}
           footer={null}
           width={600}
+          destroyOnClose
         >
           {viewingOrganization ? (
             <div>
@@ -266,7 +257,7 @@ const OrganizationManager: React.FC = () => {
               <Form.Item name="address" label="Address" rules={[{ required: true }]}>
                 <Input />
               </Form.Item>
-              <Form.Item name="isActive" label="Active" valuePropName="checked">
+              <Form.Item name="isActive" label="Active" valuePropName="checked" initialValue={true}>
                 <Switch />
               </Form.Item>
               <div style={{ textAlign: 'right' }}>
