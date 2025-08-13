@@ -5,24 +5,31 @@ import type { OrderStatusCode } from "../types/order";
 export type CreatePaymentResponse = {
   orderId?: string;
   orderCode?: number;
-  checkoutUrl?: string; // PayOS URL
-  payUrl?: string;      // nếu backend trả tên khác
+  checkoutUrl?: string;
+  payUrl?: string;
 };
 
 export type PaymentUpdateResponse = {
   orderCode: number;
   orderId?: string;
-  status?: OrderStatusCode; // 0|1|2 nếu backend trả về
+  status?: OrderStatusCode;
 };
 
+const unwrap = (d: any) => (d?.data ?? d);
+
 export const PaymentService = {
+  // ===== Core =====
   async createByOrderId(orderId: string): Promise<CreatePaymentResponse> {
-    const res = await axiosInstance.post(API.CREATE_PAYMENT_BY_ORDER_ID(orderId));
-    return res.data as CreatePaymentResponse;
+    const { data } = await axiosInstance.post(API.CREATE_PAYMENT_BY_ORDER_ID(orderId));
+    return unwrap(data) as CreatePaymentResponse;
   },
 
   async update(body: { orderCode: number }): Promise<PaymentUpdateResponse> {
-    const res = await axiosInstance.put(API.PAYMENT_UPDATE, body);
-    return res.data as PaymentUpdateResponse;
+    const { data } = await axiosInstance.put(API.PAYMENT_UPDATE, body);
+    return unwrap(data) as PaymentUpdateResponse;
   },
+
+  // ===== Aliases =====
+  createPaymentByOrderId(orderId: string) { return this.createByOrderId(orderId); },
+  updatePayment(body: { orderCode: number }) { return this.update(body); },
 };

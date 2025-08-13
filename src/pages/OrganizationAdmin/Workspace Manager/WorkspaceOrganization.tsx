@@ -58,30 +58,30 @@ const WorkspaceOrganization: React.FC = () => {
   const [searchText, setSearchText] = useState("");
   const [statusFilter] = useState<string | null>(null);
 
-  const orgId = getOrgId();
+  const organizationId = getOrgId();
 
-  useEffect(() => {
-    if (!orgId) {
-      message.error("Không tìm thấy organizationId");
-      return;
-    }
-    fetchList();
-  }, [orgId]);
+useEffect(() => {
+  if (!organizationId) {
+    message.error("Không tìm thấy organizationId");
+    return;
+  }
+  fetchList();
+}, [organizationId]);
 
-  const fetchList = async (opts?: { silent?: boolean }) => {
-    const silent = !!opts?.silent;
-    if (!silent) setLoading(true);
-    else setRefreshing(true);
-    try {
-      const all = await WorkspaceService.getAll();
-      setWorkspaces(all.filter((w) => w.organizationId === orgId));
-    } catch (err) {
-      showErrorMessage(err, "Không thể tải danh sách workspace");
-    } finally {
-      if (!silent) setLoading(false);
-      else setRefreshing(false);
-    }
-  };
+const fetchList = async (opts?: { silent?: boolean }) => {
+  const silent = !!opts?.silent;
+  if (!silent) setLoading(true);
+  else setRefreshing(true);
+  try {
+    const items = await WorkspaceService.getAllByOrg(organizationId);
+    setWorkspaces(items);
+  } catch (err) {
+    showErrorMessage(err, "Không thể tải danh sách workspace");
+  } finally {
+    if (!silent) setLoading(false);
+    else setRefreshing(false);
+  }
+};
 
   const filteredData = workspaces
     .filter((ws) =>
@@ -94,7 +94,7 @@ const WorkspaceOrganization: React.FC = () => {
 
   // ===== CREATE =====
   const onCreate = async (vals: any) => {
-    if (!orgId) {
+    if (!organizationId) {
       message.error("Vui lòng đăng nhập");
       return;
     }
@@ -110,7 +110,7 @@ const WorkspaceOrganization: React.FC = () => {
     setLoading(true);
     try {
       const payload: WorkspaceForm = {
-        organizationId: orgId,
+        organizationId: organizationId,
         workSpaceName: vals.workSpaceName.trim(),
         numberOfAccount: Number.isFinite(vals.numberOfAccount)
           ? Number(vals.numberOfAccount)
@@ -335,7 +335,7 @@ const WorkspaceOrganization: React.FC = () => {
             type="primary"
             icon={<PlusOutlined />}
             onClick={() => setCreateVisible(true)}
-            disabled={!orgId}
+            disabled={!organizationId}
           >
             Create workspace
           </Button>

@@ -18,6 +18,7 @@ export const AccountService = {
     }
   },
 
+  
   getAccountById: async (id: string): Promise<Account> => {
     try {
       const { data } = await axiosInstance.get(`${API.GET_ACCOUNT_ID}/${id}`);
@@ -25,6 +26,16 @@ export const AccountService = {
     } catch (error: any) {
       const msg = getErrorMessage(error);
       console.error(`Error fetching account ${id}:`, msg);
+      throw error; 
+    }
+  },
+getAccountByOrgId: async (orgId: string): Promise<Account> => {
+    try {
+      const { data } = await axiosInstance.get(`${API.GET_ALL_ACCOUNT_ORGID}/${orgId}`);
+      return data as Account;
+    } catch (error: any) {
+      const msg = getErrorMessage(error);
+      console.error(`Error fetching account ${orgId}:`, msg);
       throw error; 
     }
   },

@@ -1,6 +1,7 @@
 export const API = {
   //ACCOUNT
   GET_ALL_ACCOUNT: "/api/account/get_all",
+  GET_ALL_ACCOUNT_ORGID: "api/account/get_all_by_org",
   LOGIN: "/api/account/login",
   FORGOT_PASSWORD: "/api/account/forgot_password",
   RESET_PASSWORD: "/api/account/resest_password",
@@ -34,6 +35,8 @@ export const API = {
 
   //COURSE
   GET_ALL_COURSE: "/api/course/get_all",
+  GET_ALL_COURSE_ORGID: "/api/course/get_all_by_org",
+
   GET_COURSE_ID: "/api/course/get_by_id",
   // GET_COURSE_SEARCH: "/api/course/searchCourse",
   CREATE_COURSE: "/api/course/create",
@@ -64,6 +67,7 @@ export const API = {
 
   //SCENE
   GET_ALL_SCENE: "/api/scene/get_all_scene",
+  GET_ALL_SCENE_ORGID: "/api/scene/get_all_by_org",
   GET_SCENE_ID: "/api/scene/get_scene",
   CREATE_SCENE: "/api/scene/create_scene",
   UPDATE_SCENE: "/api/scene/update_scene",
@@ -78,6 +82,7 @@ export const API = {
 
   //SCENARIO
   GET_ALL_SCENARIO: "/api/scenario/get_all_scenario",
+  GET_ALL_SCENARIO_ORGID:"/api/scenario/get_all_by_org",
   GET_SCENARIO_ID: "/api/scenario/get_scenario",
   CREATE_SCENARIO: "/api/scenario/create_scenario",
   UPDATE_SCENARIO: "/api/scenario/update_scenario",
@@ -106,6 +111,7 @@ export const API = {
 
   //WORKSPACE
   GET_ALL_WORKSPACE: "/api/workspace/get_all_workSpace",
+  GET_ALL_WORKSPACE_ORGID:"/api/workspace/get_all_by_org",
   GET_WORKSPACES_ID:"/api/workspace/get_workSpace",
   CREATE_WORKSPACE:"/api/workspace/create_workSpace",
   UPDATE_WORKSPACE:"/api/workspace/update_workSpace",
@@ -114,7 +120,7 @@ export const API = {
   //UPLOAD FILE
   UPLOAD_FILE: "/api/Cloudinary/upload",
 
-  //ADMIN
+  //ORGANIZATION
 
   GET_ALL_ORGANIZATION: "/api/organization/get_all_organization",
   GET_ORGANIZATION_ID: "/api/organization/get_organization",
@@ -136,9 +142,6 @@ export const API = {
   DELETE_SUBCRIPTION:"/api/subscription-plan/delete",
   CREATE_SUBCRIPTION:"/api/subscription-plan/create",
   UPDATE_SUBCRIPTION:"/api/subscription-plan/update",
-
-
-
 
 
   //AUTH

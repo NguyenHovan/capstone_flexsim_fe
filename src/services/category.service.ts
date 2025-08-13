@@ -3,22 +3,18 @@ import { API } from "../api";
 import type { Category, CategoryForm } from "../types/category";
 import { getErrorMessage } from "../utils/errorHandler";
 
+const unwrap = (d: any) => (d?.data ?? d);
+
 export const CategoryService = {
-  getAll: async (): Promise<Category[]> => {
-    try {
-      const { data } = await axiosInstance.get(API.GET_ALL_CATEGORY);
-      return (data?.data ?? data) as Category[];
-    } catch (err) {
-      const msg = getErrorMessage(err);
-      console.error("Error fetching categories:", msg);
-      throw new Error(msg);
-    }
+  getCategories: async () => {
+    const response = await axiosInstance.get(`${API.GET_ALL_CATEGORY}`);
+    return response.data;
   },
 
-  getById: async (id: string): Promise<Category> => {
+  async getById(id: string): Promise<Category> {
     try {
       const { data } = await axiosInstance.get(`${API.GET_CATEGORY_ID}/${id}`);
-      return (data?.data ?? data) as Category;
+      return unwrap(data) as Category;
     } catch (err) {
       const msg = getErrorMessage(err);
       console.error("Error fetching category by id:", msg);
@@ -26,10 +22,10 @@ export const CategoryService = {
     }
   },
 
-  create: async (payload: CategoryForm): Promise<Category> => {
+  async create(payload: CategoryForm): Promise<Category> {
     try {
       const { data } = await axiosInstance.post(API.CREATE_CATEGORY, payload);
-      return (data?.data ?? data) as Category;
+      return unwrap(data) as Category;
     } catch (err) {
       const msg = getErrorMessage(err);
       console.error("Error creating category:", msg);
@@ -37,10 +33,10 @@ export const CategoryService = {
     }
   },
 
-  update: async (id: string, payload: CategoryForm): Promise<Category> => {
+  async update(id: string, payload: CategoryForm): Promise<Category> {
     try {
       const { data } = await axiosInstance.put(`${API.UPDATE_CATEGORY}/${id}`, payload);
-      return (data?.data ?? data) as Category;
+      return unwrap(data) as Category;
     } catch (err) {
       const msg = getErrorMessage(err);
       console.error("Error updating category:", msg);
@@ -48,8 +44,7 @@ export const CategoryService = {
     }
   },
 
-  // theo API bạn đang dùng: POST /delete/{id}
-  delete: async (id: string): Promise<void> => {
+  async delete(id: string): Promise<void> {
     try {
       await axiosInstance.post(`${API.DELETE_CATEGORY}/${id}`);
     } catch (err) {
@@ -58,4 +53,9 @@ export const CategoryService = {
       throw new Error(msg);
     }
   },
+
+  getCategoryById(id: string): Promise<Category> { return this.getById(id); },
+  createCategory(body: CategoryForm): Promise<Category> { return this.create(body); },
+  updateCategory(id: string, body: CategoryForm): Promise<Category> { return this.update(id, body); },
+  deleteCategory(id: string): Promise<void> { return this.delete(id); },
 };
