@@ -10,11 +10,17 @@ import {
   InputNumber,
   Select,
 } from "antd";
-import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import {
+  PlusOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  FolderViewOutlined,
+} from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import { toast } from "sonner";
 import { ClassService } from "../../../services/class.service";
 import { CourseService } from "../../../services/course.service";
+import { useNavigate } from "react-router-dom";
 
 const ClassManagement = () => {
   const [dataSource, setDataSource] = useState<any[]>([]);
@@ -24,7 +30,7 @@ const ClassManagement = () => {
   const [selectedClassId, setSelectedClassId] = useState<string | null>(null);
   const [courses, setCourses] = useState<any[]>([]);
   const [form] = Form.useForm();
-
+  const navigate = useNavigate();
   const fetchClasses = async () => {
     try {
       setLoading(true);
@@ -112,6 +118,12 @@ const ClassManagement = () => {
       title: "Action",
       render: (_, record) => (
         <Space>
+          <Tooltip title="Add Student">
+            <FolderViewOutlined
+              style={{ cursor: "pointer" }}
+              onClick={() => navigate("/instructor-class/add-student")}
+            />
+          </Tooltip>
           <Tooltip title="Edit">
             <EditOutlined
               style={{ cursor: "pointer" }}

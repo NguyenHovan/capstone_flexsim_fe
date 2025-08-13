@@ -36,6 +36,7 @@ import ClassManagerOrgAdmin from "../pages/OrganizationAdmin/Class Manager/Class
 import QuizApp from "../pages/Quiz/QuizApp";
 import LessonManagement from "../pages/Instructor/Manage-Lesson/LessonManagement";
 import EnrollManage from "../pages/Instructor/Manage-Enrollment-Request/EnrollManage";
+import AddStudentPage from "../pages/Instructor/Add-student/Add-student";
 
 const MainRoute = () => {
   return (
@@ -93,7 +94,10 @@ const MainRoute = () => {
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<Navigate to="overview" replace />} />
           <Route path="overview" element={<AdminOverview />} />
-          <Route path="organization-manager" element={<OrganizationManager />} />
+          <Route
+            path="organization-manager"
+            element={<OrganizationManager />}
+          />
           <Route path="user-manager" element={<UserManager />} />
           <Route path="workspace-manager" element={<WorkspaceManager />} />
         </Route>
@@ -116,6 +120,10 @@ const MainRoute = () => {
           <Route path="/instructor" element={<Overview />} />
           <Route path="/instructor-course" element={<CourseManagement />} />
           <Route path="/instructor-class" element={<ManageClass />} />
+          <Route
+            path="/instructor-class/add-student"
+            element={<AddStudentPage />}
+          />
           <Route path="/instructor-topic" element={<TopicManagement />} />
           <Route path="/instructor-scene" element={<SceneManagement />} />
           <Route path="/instructor-quiz" element={<QuizManagement />} />
