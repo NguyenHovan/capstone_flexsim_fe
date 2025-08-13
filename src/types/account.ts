@@ -22,6 +22,19 @@ export type AccountForm = Omit<Account, 'id' | 'createdAt' | 'updatedAt' | 'dele
   isActive: boolean;
 };
 
+export interface UpdateAccountPayload {
+  userName: string;
+  fullName: string;
+  organizationId: string;
+  roleId: number;
+  email: string;
+  phone: string;
+  password?: string;       
+  gender: number;          
+  address: string;
+  avtUrl: string;          
+}
+
 export interface CreateUserForm {
   userName: string;
   password: string;

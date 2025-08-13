@@ -32,10 +32,15 @@ import OrganizationAdminOverview from "../pages/OrganizationAdmin/Overview";
 import WorkspaceOrganization from "../pages/OrganizationAdmin/Workspace Manager/WorkspaceOrganization";
 import UserOrganization from "../pages/OrganizationAdmin/User Manager/UserOrganization";
 import PrivateRoute from "./PrivateRoute";
-import ClassManagerOrgAdmin from "../pages/OrganizationAdmin/Class Manager/ClassOrganization";
 import QuizApp from "../pages/Quiz/QuizApp";
 import LessonManagement from "../pages/Instructor/Manage-Lesson/LessonManagement";
 import EnrollManage from "../pages/Instructor/Manage-Enrollment-Request/EnrollManage";
+import SubscriptionPlanAdmin from "../pages/Admin/Subcription Plan/SubcriptionPlan";
+import OrderOrganization from "../pages/OrganizationAdmin/Order Manager/OrderMananger";
+import PaymentSuccess from "../pages/Payment/PaymentSuccess";
+import PaymentFail from "../pages/Payment/PaymentFailure";
+import OrderAdmin from "../pages/Admin/Order Manager/OrderAdmin";
+
 
 const MainRoute = () => {
   return (
@@ -45,6 +50,8 @@ const MainRoute = () => {
       {/* <Route path="/signup" element={<SignUpPage />} /> */}
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/verify-code" element={<VerifyCodePage />} />
+       <Route path="/payment/success" element={<PaymentSuccess />} />
+    <Route path="/payment/fail" element={<PaymentFail />} />
 
       {/* Guest/Student layout */}
       <Route element={<LayoutMain />}>
@@ -96,6 +103,9 @@ const MainRoute = () => {
           <Route path="organization-manager" element={<OrganizationManager />} />
           <Route path="user-manager" element={<UserManager />} />
           <Route path="workspace-manager" element={<WorkspaceManager />} />
+          <Route path="subscriptionPlan-manager" element={<SubscriptionPlanAdmin />} />
+          <Route path="order-manager" element={<OrderAdmin />} />
+
         </Route>
       </Route>
 
@@ -106,7 +116,10 @@ const MainRoute = () => {
           <Route path="overview" element={<OrganizationAdminOverview />} />
           <Route path="user-manager" element={<UserOrganization />} />
           <Route path="workspace-manager" element={<WorkspaceOrganization />} />
-          <Route path="class-manager" element={<ClassManagerOrgAdmin />} />
+          <Route path="order-manager" element={<OrderOrganization />} />
+         
+
+
         </Route>
       </Route>
 

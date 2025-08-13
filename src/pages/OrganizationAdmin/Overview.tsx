@@ -1,3 +1,4 @@
+// src/pages/organizationAdmin/OrganizationAdminOverview.tsx
 import { Layout, Card, Row, Col, Typography, Spin, Tag } from 'antd';
 import {
   TeamOutlined,
@@ -30,26 +31,42 @@ const getCurrentOrgId = () => {
   try { return JSON.parse(localStorage.getItem('currentUser') || 'null')?.organizationId || ''; }
   catch { return ''; }
 };
+
+const withId = (base: string, id: string) => `${base}${base.endsWith('/') ? '' : '/'}${id}`;
+
 const getOrgIdFromItem = (it: AnyItem) =>
   it?.organizationId ?? it?.orgId ?? it?.organizationID ?? null;
+
 const getCreatedDate = (it: AnyItem): string | null => {
-  const raw = it?.createdAt ?? it?.created_at ?? it?.createdDate ?? it?.created_date ?? it?.created_on ?? it?.createdOn ?? null;
+  const raw =
+    it?.createdAt ?? it?.created_at ??
+    it?.createdDate ?? it?.created_date ??
+    it?.created_on ?? it?.createdOn ?? null;
+
   if (!raw) return null;
   const d = new Date(raw);
   return Number.isNaN(+d) ? null : d.toISOString().slice(0, 10);
 };
+
 const safeList = (d: any): AnyItem[] =>
   Array.isArray(d) ? d : Array.isArray(d?.items) ? d.items : Array.isArray(d?.data) ? d.data : [];
-const addDaily = (daily: DailyStats, list: AnyItem[], key: keyof Counters, orgId: string) => {
+
+const filterByOrgIfPresent = (list: AnyItem[], orgId: string) => {
+  const hasOrgField = list.some(x => getOrgIdFromItem(x) != null);
+  return hasOrgField ? list.filter(x => getOrgIdFromItem(x) === orgId) : list;
+};
+
+const addDaily = (daily: DailyStats, list: AnyItem[], key: keyof Counters) => {
   list.forEach((it) => {
-    if (getOrgIdFromItem(it) !== orgId) return;
     const date = getCreatedDate(it); if (!date) return;
     if (!daily[date]) daily[date] = { ...EMPTY };
     daily[date][key] += 1;
   });
 };
+
 const sum = (arr: number[]) => arr.reduce((a, b) => a + b, 0);
-const pct = (curr: number, prev: number) => (prev === 0 ? (curr > 0 ? 100 : 0) : Math.round(((curr - prev) / prev) * 100));
+const pct = (curr: number, prev: number) =>
+  (prev === 0 ? (curr > 0 ? 100 : 0) : Math.round(((curr - prev) / prev) * 100));
 
 const OrganizationAdminOverview: React.FC = () => {
   const [loading, setLoading] = useState(false);
@@ -64,28 +81,38 @@ const OrganizationAdminOverview: React.FC = () => {
       setLoading(true);
       try {
         const [accRes, wsRes, ordRes] = await Promise.all([
-          axiosInstance.get(API.GET_ALL_ACCOUNT),
-          axiosInstance.get(API.GET_ALL_WORKSPACE),
+          axiosInstance.get(withId(API.GET_ALL_ACCOUNT_ORGID, orgId)),
+          axiosInstance.get(withId(API.GET_ALL_WORKSPACE_ORGID, orgId)),
           axiosInstance.get(API.GET_ALL_ORDER),
         ]);
 
-        const users      = safeList(accRes.data).filter(x => getOrgIdFromItem(x) === orgId);
-        const workspaces = safeList(wsRes.data).filter(x => getOrgIdFromItem(x) === orgId);
-        const orders     = safeList(ordRes.data).filter(x => getOrgIdFromItem(x) === orgId);
+        const users      = safeList(accRes.data);
+        const workspaces = safeList(wsRes.data);
+        const ordersAll  = safeList(ordRes.data);
+        const orders     = filterByOrgIfPresent(ordersAll, orgId);
 
         if (!mounted) return;
-        setTotals({ users: users.length, workspaces: workspaces.length, orders: orders.length });
+
+        setTotals({
+          users: users.length,
+          workspaces: workspaces.length,
+          orders: orders.length
+        });
 
         const daily: DailyStats = {};
-        addDaily(daily, users,      'users',      orgId);
-        addDaily(daily, workspaces, 'workspaces', orgId);
-        addDaily(daily, orders,     'orders',     orgId);
+        addDaily(daily, users,      'users');
+        addDaily(daily, workspaces, 'workspaces');
+        addDaily(daily, orders,     'orders');
 
-        const sorted = Object.fromEntries(Object.entries(daily).sort(([a], [b]) => (a < b ? -1 : 1))) as DailyStats;
+        const sorted = Object.fromEntries(
+          Object.entries(daily).sort(([a], [b]) => (a < b ? -1 : 1))
+        ) as DailyStats;
         setDailyStats(sorted);
       } catch (e) {
         console.error(e);
-      } finally { if (mounted) setLoading(false); }
+      } finally {
+        if (mounted) setLoading(false);
+      }
     })();
     return () => { mounted = false; };
   }, []);
@@ -97,12 +124,12 @@ const OrganizationAdminOverview: React.FC = () => {
   const last7 = dayLabels.slice(last7IdxStart).map(d => dailyStats[d]);
   const prev7 = dayLabels.slice(prev7IdxStart, last7IdxStart).map(d => dailyStats[d]);
   const wow = {
-    users: pct(sum(last7.map(x => x.users)), sum(prev7.map(x => x.users))),
+    users:      pct(sum(last7.map(x => x.users)),      sum(prev7.map(x => x.users))),
     workspaces: pct(sum(last7.map(x => x.workspaces)), sum(prev7.map(x => x.workspaces))),
-    orders: pct(sum(last7.map(x => x.orders)), sum(prev7.map(x => x.orders))),
+    orders:     pct(sum(last7.map(x => x.orders)),     sum(prev7.map(x => x.orders))),
   };
 
-  // monthly aggregates
+  // Monthly aggregates
   const monthlyMap: Record<string, Counters> = useMemo(() => {
     const m: Record<string, Counters> = {};
     Object.entries(dailyStats).forEach(([date, c]) => {
@@ -120,7 +147,7 @@ const OrganizationAdminOverview: React.FC = () => {
   const mWs      = monthLabels.map(m => monthlyMap[m].workspaces);
   const mOrders  = monthLabels.map(m => monthlyMap[m].orders);
 
-  // charts
+  // Charts
   const monthlyBarData = useMemo(() => ({
     labels: monthLabels,
     datasets: [

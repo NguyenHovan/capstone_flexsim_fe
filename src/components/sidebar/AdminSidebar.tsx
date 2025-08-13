@@ -45,7 +45,7 @@ const AdminSidebar = () => {
     {
       label: "Subcription Manager",
       icon: <SettingOutlined />,
-      path: "/admin/subcription-manager",
+      path: "/admin/subscriptionPlan-manager",
     },
     {
       label: "Order Manager",

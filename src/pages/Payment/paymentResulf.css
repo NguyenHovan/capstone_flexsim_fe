@@ -1,0 +1,117 @@
+/* Full page center layout */
+.payres-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: radial-gradient(1000px 600px at center, #f6fffb 0%, #ffffff 80%);
+}
+
+/* Card */
+.payres-card {
+  width: 100%;
+  max-width: 460px;
+  background: #fff;
+  border-radius: 20px;
+  padding: 28px 28px 24px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.06);
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+}
+.payres-card::after {
+  content: "";
+  position: absolute;
+  inset: auto -40% -40% auto;
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: .15;
+}
+.payres-card.success::after { background: #37d399; }
+.payres-card.fail::after { background: #ff6b6b; }
+
+/* Badge */
+.payres-badge {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 8px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #eaffe4;
+  box-shadow: 0 6px 18px rgba(55,211,153,.25) inset;
+}
+.payres-card.fail .payres-badge {
+  background: #ffe9ea;
+  box-shadow: 0 6px 18px rgba(255,107,107,.25) inset;
+}
+.icon { width: 34px; height: 34px; }
+.payres-card.success .icon circle { fill: #37d399; }
+.payres-card.fail .icon circle { fill: #ff6b6b; }
+.payres-card.success .icon path { stroke: #fff; }
+.payres-card.fail .icon path { stroke: #fff; }
+
+/* Title & text */
+.payres-title {
+  margin: 10px 0 2px;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: .2px;
+}
+.payres-sub {
+  color: #6b7280;
+  margin: 0 0 14px;
+}
+.payres-divider {
+  height: 1px;
+  background: repeating-linear-gradient(90deg, #e5e7eb 0 10px, transparent 10px 20px);
+  margin: 12px 0 18px;
+}
+
+/* Rows */
+.payres-rows { display: grid; gap: 10px; text-align: left; }
+.payres-rows .row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+}
+.payres-rows .row span { color: #6b7280; }
+.payres-rows .row strong { font-weight: 600; }
+
+/* Meta & amount (fail page) */
+.payres-amount {
+  font-size: 26px;
+  font-weight: 800;
+  margin-top: 6px;
+}
+.payres-meta {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 6px;
+}
+
+/* Actions */
+.payres-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 18px;
+}
+.payres-actions.gap { margin-top: 22px; }
+
+/* Animation */
+@keyframes floatIn { 
+  from { transform: translateY(8px); opacity: .0; } 
+  to { transform: none; opacity: 1; } 
+}
+.payres-card { animation: floatIn .4s ease-out both; }
+
+
+
+
+
+

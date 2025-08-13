@@ -2,6 +2,7 @@ import axiosInstance from './main.service';
 import { API } from '../api';
 import type { Workspace, WorkspaceForm } from '../types/workspace';
 import { getErrorMessage } from '../utils/errorHandler';
+const unwrap = (d: any) => (d?.data ?? d) as any;
 
 export const WorkspaceService = {
   getAll: async (): Promise<Workspace[]> => {
@@ -14,10 +15,22 @@ export const WorkspaceService = {
       throw new Error(msg);
     }
   },
+    async getAllByOrg(orgId: string): Promise<Workspace[]> {
+    try {
+      const { data } = await axiosInstance.get(
+        `${API.GET_ALL_WORKSPACE_ORGID}/${orgId}`
+      );
+      return unwrap(data) as Workspace[];
+    } catch (err) {
+      const msg = getErrorMessage(err);
+      console.error('Error fetching workspaces by org:', msg);
+      throw new Error(msg);
+    }
+  },
 
   getWorkspaceById: async (id: string): Promise<Workspace> => {
     try {
-      const { data } = await axiosInstance.get(`${API.GET_WORKSPACES_BY_ID}/${id}`);
+      const { data } = await axiosInstance.get(`${API.GET_WORKSPACES_ID}/${id}`);
       return data as Workspace;
     } catch (err: any) {
       const msg = getErrorMessage(err);
