@@ -81,7 +81,7 @@ const AddStudentPage = () => {
                     </Button>,
                   ]}
                 >
-                  {student.fullName}
+                  {student?.account?.fullName}
                 </List.Item>
               )}
             />

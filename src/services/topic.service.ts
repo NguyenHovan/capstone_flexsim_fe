@@ -25,4 +25,10 @@ export const TopicService = {
     const res = await axiosInstance.delete(`${API.DELETE_TOPIC}/${id}`);
     return res.data;
   },
+  getTopicByCourse: async (courseId: string) => {
+    const res = await axiosInstance.get(
+      `${API.GET_TOPIC_BY_COURSE}/${courseId}`
+    );
+    return res.data;
+  },
 };

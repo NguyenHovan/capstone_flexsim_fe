@@ -23,6 +23,9 @@ export const API = {
   UPDATE_COURSE: "/api/course/update",
   DELETE_COURSE: "/api/course/delete",
 
+  //COURSE-PROGRESS
+  GET_MY_COURSE_PROGRESS: "/api/courseProgress/get_my_courseProgress",
+
   //CLASSES
   GET_ALL_CLASS: "/api/class/get_all_class",
   GET_CLASS_ID: "/api/class/get_class",
@@ -36,6 +39,7 @@ export const API = {
   CREATE_TOPIC: "/api/topic/create_topic",
   UPDATE_TOPIC: "/api/topic/update_topic",
   DELETE_TOPIC: "/api/topic/delete_topic",
+  GET_TOPIC_BY_COURSE: "/api/topic/by-course",
 
   //SCENE
   GET_ALL_SCENE: "/api/scene/get_all_scene",
@@ -116,4 +120,5 @@ export const API = {
   //LESSON
   GET_ALL_LESSON: "/api/Lesson/get_all_lesson",
   CREATE_LESSON: "/api/Lesson/create_lesson",
+  GET_LESSON_TOPIC: "/api/lesson/by-topic",
 };
