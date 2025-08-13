@@ -30,4 +30,10 @@ export const LessonService = {
     const res = await axiosInstance.get(`${API.GET_LESSON_TOPIC}/${topicId}`);
     return res.data;
   },
+  getQuizzLesson: async (lessonId: string) => {
+    const res = await axiosInstance.get(
+      `${API.GET_LESSON_QUIZZ}/${lessonId}/quizzes`
+    );
+    return res.data;
+  },
 };

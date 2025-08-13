@@ -21,6 +21,7 @@ const Sidebar = () => {
   const menuItems = [
     { label: "Profile", path: "/profile" },
     { label: "My Course", path: "/my-course" },
+    { label: "My Certificate", path: "/my-certificate" },
     { label: "My Class", path: "/my-class" },
   ];
 

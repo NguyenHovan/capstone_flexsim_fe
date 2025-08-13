@@ -8,10 +8,11 @@ import {
   Avatar,
   Tag,
   Modal,
-  Flex,
+  Typography,
+  Empty,
 } from "antd";
 import { PlayCircleOutlined } from "@ant-design/icons";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { CourseService } from "../../services/course.service";
@@ -21,6 +22,26 @@ import { CourseProgressService } from "../../services/course-progress.service";
 import CourseProgress from "./CourseProgress";
 import type { Course } from "../../types/course";
 import { TopicService } from "../../services/topic.service";
+import { LessonProgressService } from "../../services/lessonProgress.service";
+
+const { Title, Text } = Typography;
+
+const mockCertificates = [
+  {
+    id: "1",
+    name: "Certificate of English Beginner",
+    courseName: "English Basics",
+    issuedDate: "2025-07-20",
+    status: "COMPLETED",
+  },
+  {
+    id: "2",
+    name: "Certificate of React Developer",
+    courseName: "ReactJS Advanced",
+    issuedDate: "2025-08-01",
+    status: "IN_PROGRESS",
+  },
+];
 
 const CourseDetail = () => {
   const { id } = useParams();
@@ -32,6 +53,7 @@ const CourseDetail = () => {
   const [lessons, setLessons] = useState([]);
   const userString = localStorage.getItem("currentUser");
   const currentUser = userString ? JSON.parse(userString) : null;
+  const navigate = useNavigate();
 
   const fetchMyCourseProgress = async () => {
     try {
@@ -73,6 +95,7 @@ const CourseDetail = () => {
       console.error("Failed to fetch lessons", error);
     }
   };
+
   const handleOpenModal = (topic: any) => {
     setSelectedTopic(topic);
     setIsModalVisible(true);
@@ -82,11 +105,16 @@ const CourseDetail = () => {
     setSelectedTopic(null);
     setIsModalVisible(false);
   };
+
   useEffect(() => {
     fetchCourseDetail();
     fetchTopicByCourse();
     fetchMyCourseProgress();
   }, []);
+
+  useEffect(() => {
+    if (selectedTopic) fetchLessonsByTopic();
+  }, [selectedTopic]);
 
   const handleEnrollRequest = async () => {
     if (!courseDetail) return toast.error("Lỗi tải dữ liệu");
@@ -101,13 +129,22 @@ const CourseDetail = () => {
       toast.error("Học viên đã gửi yêu cầu hoặc đang theo học khóa học này");
     }
   };
-  useEffect(() => {
-    if (selectedTopic) {
-      fetchLessonsByTopic();
+
+  const handleComplete = async (lessonId: string) => {
+    try {
+      await LessonProgressService.updateLessonProgress(
+        currentUser.id,
+        lessonId
+      );
+      toast.success("Cập nhật thành công");
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Cập nhật thất bại");
     }
-  }, [selectedTopic]);
+  };
+
   return (
     <div style={{ padding: "24px", maxWidth: 1200, margin: "0 auto" }}>
+      {/* Course Info + My Certificate */}
       <Card
         bodyStyle={{
           display: "flex",
@@ -119,6 +156,7 @@ const CourseDetail = () => {
         }}
       >
         <img
+          className="course-thumbnail"
           src={courseDetail?.imgUrl}
           alt="Thumbnail"
           style={{
@@ -143,9 +181,66 @@ const CourseDetail = () => {
           <Button type="primary" danger onClick={handleEnrollRequest}>
             Enroll Course
           </Button>
+
+          {/* My Certificates */}
+          <div style={{ marginTop: 24 }}>
+            <Title level={4}>My Certificates</Title>
+            {mockCertificates.length === 0 ? (
+              <Empty description="Bạn chưa có chứng chỉ nào" />
+            ) : (
+              <Row gutter={[16, 16]}>
+                {mockCertificates.map((cert) => (
+                  <Col xs={24} sm={12} md={12} key={cert.id}>
+                    <Card
+                      size="small"
+                      title={cert.name}
+                      bordered
+                      style={{
+                        borderRadius: 12,
+                        backgroundColor: "#fafafa",
+                        minHeight: 120,
+                      }}
+                      extra={
+                        <Tag
+                          color={
+                            cert.status === "COMPLETED" ? "green" : "orange"
+                          }
+                        >
+                          {cert.status === "COMPLETED"
+                            ? "Hoàn thành"
+                            : "Đang học"}
+                        </Tag>
+                      }
+                    >
+                      <Text strong>Khóa học: </Text>
+                      <Text>{cert.courseName}</Text>
+                      <br />
+                      <Text strong>Ngày cấp: </Text>
+                      <Text>
+                        {new Date(cert.issuedDate).toLocaleDateString()}
+                      </Text>
+                      {cert.status === "COMPLETED" && (
+                        <Button
+                          type="primary"
+                          size="small"
+                          style={{ marginTop: 8 }}
+                          onClick={() =>
+                            alert(`Download chứng chỉ: ${cert.name}`)
+                          }
+                        >
+                          Tải về
+                        </Button>
+                      )}
+                    </Card>
+                  </Col>
+                ))}
+              </Row>
+            )}
+          </div>
         </div>
       </Card>
 
+      {/* Instructor info */}
       <div
         style={{
           display: "flex",
@@ -216,23 +311,7 @@ const CourseDetail = () => {
                     title={`${(index + 1).toString().padStart(2, "0")}. ${
                       item.topicName
                     }`}
-                    description={
-                      <Flex vertical>
-                        <span style={{ color: "#888" }}>
-                          {item.description}
-                        </span>
-                        <img
-                          src={item.imgUrl}
-                          alt={item.topicName}
-                          style={{
-                            width: 40,
-                            height: 40,
-                            objectFit: "cover",
-                            borderRadius: 4,
-                          }}
-                        />
-                      </Flex>
-                    }
+                    description={item.description}
                   />
                 </List.Item>
               )}
@@ -248,7 +327,6 @@ const CourseDetail = () => {
         >
           {selectedTopic && (
             <div style={{ maxHeight: "70vh", overflowY: "auto" }}>
-              {/* Description chung của topic */}
               {selectedTopic.description && (
                 <p style={{ marginBottom: 16 }}>{selectedTopic.description}</p>
               )}
@@ -264,6 +342,7 @@ const CourseDetail = () => {
                         padding: "12px 16px",
                         borderBottom: "1px solid #eee",
                       }}
+                      onClick={() => navigate(`/quiz-test/${lesson.id}`)}
                     >
                       <List.Item.Meta
                         title={`${(index + 1).toString().padStart(2, "0")}. ${
@@ -271,6 +350,15 @@ const CourseDetail = () => {
                         }`}
                         description={lesson.description}
                       />
+                      <Button
+                        type="primary"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleComplete(lesson.id);
+                        }}
+                      >
+                        Hoàn thành
+                      </Button>
                     </List.Item>
                   )}
                 />

@@ -42,9 +42,7 @@ import PaymentSuccess from "../pages/Payment/PaymentSuccess";
 import PaymentFail from "../pages/Payment/PaymentFailure";
 import OrderAdmin from "../pages/Admin/Order Manager/OrderAdmin";
 import AddStudentPage from "../pages/Instructor/Add-student/Add-student";
-// import LessonOrganization from "../pages/OrganizationAdmin/Lesson Manager/LessonOrganization";
-// import TopicOrganization from "../pages/OrganizationAdmin/Topic Manager/TopicOrganization";
-// import CategoryOrganization from "../pages/OrganizationAdmin/Category Manager/CategoryOrganization";
+import MyCertificate from "../pages/MyCertificate/MyCertificate";
 
 const MainRoute = () => {
   return (
@@ -54,8 +52,8 @@ const MainRoute = () => {
       {/* <Route path="/signup" element={<SignUpPage />} /> */}
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/verify-code" element={<VerifyCodePage />} />
-       <Route path="/payment/success" element={<PaymentSuccess />} />
-    <Route path="/payment/fail" element={<PaymentFail />} />
+      <Route path="/payment/success" element={<PaymentSuccess />} />
+      <Route path="/payment/fail" element={<PaymentFail />} />
 
       {/* Guest/Student layout */}
       <Route element={<LayoutMain />}>
@@ -90,6 +88,14 @@ const MainRoute = () => {
           }
         />
         <Route
+          path="/my-certificate"
+          element={
+            <ProfileLayout>
+              <MyCertificate />
+            </ProfileLayout>
+          }
+        />
+        <Route
           path="/setting"
           element={
             <ProfileLayout>
@@ -110,9 +116,11 @@ const MainRoute = () => {
           />
           <Route path="user-manager" element={<UserManager />} />
           <Route path="workspace-manager" element={<WorkspaceManager />} />
-          <Route path="subscriptionPlan-manager" element={<SubscriptionPlanAdmin />} />
+          <Route
+            path="subscriptionPlan-manager"
+            element={<SubscriptionPlanAdmin />}
+          />
           <Route path="order-manager" element={<OrderAdmin />} />
-
         </Route>
       </Route>
 
@@ -124,9 +132,6 @@ const MainRoute = () => {
           <Route path="user-manager" element={<UserOrganization />} />
           <Route path="workspace-manager" element={<WorkspaceOrganization />} />
           <Route path="order-manager" element={<OrderOrganization />} />
-        
-
-
         </Route>
       </Route>
 
