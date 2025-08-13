@@ -106,40 +106,43 @@ async uploadAvatar(file: File): Promise<string> {
     }
   },
 
-  async updateAccount(
+async updateAccount(
   id: string,
-  payload: { fullName?: string; phone?: string; gender?: number; address?: string; avtUrl?: string },
+  body: {
+    // bắt buộc
+    userName: string;
+    email: string;
+    roleId: number;
+    organizationId: string;
+    isActive: boolean;
+
+    // sửa đổi + các trường còn lại server cần
+    fullName: string;
+    phone?: string;
+    gender?: number;   // map 1/2/3 -> 0/1/2 nếu BE cần
+    address?: string;
+    avtUrl?: string;
+    password?: string; // chỉ khi bạn cho phép đổi
+  }
 ): Promise<Account> {
   try {
-    // Chỉ pick đúng 5 field + chuẩn hoá kiểu
-    const body: any = {};
-    if (payload.fullName !== undefined) body.fullName = String(payload.fullName).trim();
-    if (payload.phone    !== undefined) body.phone    = String(payload.phone).trim();
-    if (payload.address  !== undefined) body.address  = String(payload.address).trim();
-
-    // NOTE: UI của bạn đang dùng genderOptions {1,2,3} trong khi interface comment là 0,1,2.
-    // Map lại nếu cần (bỏ nếu BE chấp nhận 1,2,3):
-    if (payload.gender !== undefined) {
-      const g = parseInt(String(payload.gender), 10);
-      // Nếu BE: 0-Male,1-Female,2-Other còn UI: 1-Male,2-Female,3-Other => map về 0/1/2:
-      const map = { 1: 0, 2: 1, 3: 2 } as Record<number, number>;
+    // nếu BE yêu cầu gender 0/1/2, map từ UI 1/2/3:
+    if (typeof body.gender === 'number') {
+      const g = parseInt(String(body.gender), 10);
+      const map: Record<number, number> = { 1: 0, 2: 1, 3: 2 };
       body.gender = (g in map) ? map[g] : g;
     }
 
-    if (payload.avtUrl !== undefined && String(payload.avtUrl).trim()) {
-      body.avtUrl = String(payload.avtUrl).trim();
-    }
+    const base = String(API.UPDATE_ACCOUNT || '').replace(/\/+$/,'');
+    const url  = `${base}/${encodeURIComponent(id)}`;
 
-    const { data } = await axiosInstance.put(
-      `${API.UPDATE_ACCOUNT}/${id}`,
-      body,
-      { headers: { 'Content-Type': 'application/json' } } // ép JSON trong trường hợp axiosInstance set mặc định multipart
-    );
+    const { data } = await axiosInstance.put(url, body, {
+      headers: { 'Content-Type': 'application/json' },
+    });
     return data as Account;
   } catch (error: any) {
-    console.error('PUT /update_account error detail:', error?.response?.data);
+    console.error('PUT /update_account error detail:', error?.response?.status, error?.response?.data);
     const msg = getErrorMessage(error);
-    console.error(`Error updating account ${id}:`, msg);
     throw new Error(msg);
   }
 },

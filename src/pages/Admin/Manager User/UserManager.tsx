@@ -64,6 +64,10 @@ const GENDER_OPTIONS = [
 const avatarFallback = (name?: string) =>
   `https://ui-avatars.com/api/?name=${encodeURIComponent(name || "U")}`;
 
+// Regex: ≥6 ký tự, có chữ hoa, chữ thường, số, ký tự đặc biệt
+const PASSWORD_REGEX =
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{6,}$/;
+
 const UserManager: React.FC = () => {
   const [users, setUsers] = useState<Account[]>([]);
   const [organizations, setOrganizations] = useState<Organization[]>([]);
@@ -78,7 +82,6 @@ const UserManager: React.FC = () => {
   const [userToDelete, setUserToDelete] = useState<Account | null>(null);
   const [avatarUploading, setAvatarUploading] = useState(false);
 
-  
   const loadUsers = () => {
     setLoading(true);
     AccountService.getAllAccounts()
@@ -112,15 +115,15 @@ const UserManager: React.FC = () => {
           .then(() => {
             toast.success("Organization Admin created successfully");
             form.resetFields();
-            loadUsers(); // Reload the user list
-            setIsCreateModalVisible(false); // Close the modal after success
+            setIsCreateModalVisible(false);
+            loadUsers();
           })
           .catch((err) => {
             const errorMessage =
               err?.response?.data?.message ||
               "This email is already in use. Please choose another one";
 
-            if (errorMessage.toLowerCase().includes("email")) {
+            if (String(errorMessage).toLowerCase().includes("email")) {
               toast.error(
                 "This email is already in use. Please choose another one."
               );
@@ -172,9 +175,9 @@ const UserManager: React.FC = () => {
       email: record.email,
       phone: record.phone,
       gender: typeof record.gender === "number" ? record.gender : 1,
-      address: record.address ,
+      address: record.address,
       avtUrl: record.avtUrl || "",
-      password: "", 
+      password: "", // optional
     });
     setIsEditModalVisible(true);
   };
@@ -223,23 +226,25 @@ const UserManager: React.FC = () => {
     }
   };
 
-  // Update user với payload chuẩn
+  // Update user với payload chuẩn (thêm isActive để khớp type service)
   const handleUpdateUser = () => {
     form.validateFields().then((values) => {
       if (!editingUser) return;
       setLoading(true);
 
       const payload = {
-        userName: values.userName || "",
-        fullName: values.fullName || "",
-        organizationId: values.organizationId || "",
+        userName: String(values.userName || ""),
+        fullName: String(values.fullName || ""),
+        organizationId: String(values.organizationId || ""),
         roleId: Number(values.roleId),
-        email: values.email || "",
-        phone: values.phone || "",
-        password: values.password ? String(values.password) : undefined,
+        email: String(values.email || ""),
+        phone: values.phone ? String(values.phone) : "",
+        password: values.password ? String(values.password) : undefined, // optional
         gender: Number(values.gender), // 1/2/3
-        address: values.address || "Hai Duong",
-        avtUrl: values.avtUrl || "",
+        address: String(values.address || ""),
+        avtUrl: String(values.avtUrl || ""),
+        // bắt buộc theo type của AccountService.updateAccount
+        isActive: Boolean(editingUser?.isActive),
       };
 
       AccountService.updateAccount(editingUser.id, payload)
@@ -262,9 +267,9 @@ const UserManager: React.FC = () => {
   const columns: ColumnsType<Account> = [
     { title: "ID", dataIndex: "id", key: "id", ellipsis: true, width: 180 },
 
-    // Cột hiển thị ảnh theo yêu cầu: label "Imange"
+    // Cột hiển thị ảnh
     {
-      title: "Imange",
+      title: "Image",
       dataIndex: "avtUrl",
       key: "image",
       width: 110,
@@ -523,7 +528,7 @@ const UserManager: React.FC = () => {
           okText="Save"
           cancelText="Cancel"
           confirmLoading={loading}
-          destroyOnClose
+          destroyOnHidden
         >
           <Form form={form} layout="vertical">
             <Form.Item
@@ -545,50 +550,28 @@ const UserManager: React.FC = () => {
               />
             </Form.Item>
 
-            <Form.Item name="roleId" label="Role" rules={[{ required: true }]}>
-              <Select options={ROLE_OPTIONS} />
-            </Form.Item>
 
-            <Form.Item name="userName" label="Username" rules={[{ required: true }]}>
+            <Form.Item name="userName" label="Username" rules={[{ required: true }]} >
               <Input />
             </Form.Item>
-            <Form.Item name="fullName" label="Full Name" rules={[{ required: true }]}>
+            <Form.Item name="fullName" label="Full Name" rules={[{ required: true }]} >
               <Input />
             </Form.Item>
-            <Form.Item name="email" label="Email" rules={[{ required: true, type: "email" }]}>
+            <Form.Item name="email" label="Email" rules={[{ required: true, type: "email" }]} >
               <Input />
             </Form.Item>
-            <Form.Item name="phone" label="Phone" rules={[{ required: true }]}>
+            <Form.Item name="phone" label="Phone" >
               <Input />
             </Form.Item>
 
-            <Form.Item name="gender" label="Gender" rules={[{ required: true }]}>
+            <Form.Item name="gender" label="Gender" >
               <Select options={GENDER_OPTIONS} />
             </Form.Item>
 
-            <Form.Item name="address" label="Address" rules={[{ required: true }]}>
+            <Form.Item name="address" label="Address">
               <Input />
             </Form.Item>
 
-            {/* Password optional: chỉ đổi khi điền */}
-            <Form.Item name="password" label="Password (optional)">
-              <Input.Password placeholder="Leave blank to keep current password" />
-            </Form.Item>
-
-            {/* Avatar URL + Upload */}
-            <Form.Item name="avtUrl" label="Avatar URL">
-              <Input placeholder="Auto-filled after upload (or paste a URL)" />
-            </Form.Item>
-            <Upload
-              accept="image/*"
-              customRequest={handleAvatarUpload}
-              showUploadList={false}
-              disabled={avatarUploading}
-            >
-              <Button icon={<UploadOutlined />} loading={avatarUploading}>
-                {avatarUploading ? "Uploading..." : "Upload Avatar"}
-              </Button>
-            </Upload>
           </Form>
         </Modal>
 
@@ -598,7 +581,7 @@ const UserManager: React.FC = () => {
           open={isCreateModalVisible}
           onCancel={() => setIsCreateModalVisible(false)}
           footer={null}
-          destroyOnClose
+          destroyOnHidden
         >
           <Form form={form} layout="vertical">
             <Form.Item
@@ -643,19 +626,19 @@ const UserManager: React.FC = () => {
             <Form.Item
               name="phone"
               label="Phone"
-              rules={[{ required: true, message: "Please enter your phone number!" }]}
+            
             >
               <Input />
             </Form.Item>
 
-            <Form.Item name="gender" label="Gender" rules={[{ required: true }]}>
+            <Form.Item name="gender" label="Gender" >
               <Select options={GENDER_OPTIONS} />
             </Form.Item>
 
             <Form.Item
               name="address"
               label="Address"
-              rules={[{ required: true, message: "Please enter your address!" }]}
+              
             >
               <Input />
             </Form.Item>
@@ -663,9 +646,21 @@ const UserManager: React.FC = () => {
             <Form.Item
               name="password"
               label="Password"
-              rules={[{ required: true, min: 6, message: "Password must be at least 6 characters!" }]}
+              rules={[
+                { required: true, message: "Please enter password" },
+                {
+                  pattern: PASSWORD_REGEX,
+                  message:
+                    "Password must be at least 6 characters and include uppercase, lowercase, number, and special character",
+                },
+              ]}
             >
-              <Input.Password />
+              <Input.Password
+                onPressEnter={(e) => {
+                  e.preventDefault();
+                  handleCreateOrgAdmin(); 
+                }}
+              />
             </Form.Item>
 
             <Button type="primary" onClick={handleCreateOrgAdmin} loading={loading}>

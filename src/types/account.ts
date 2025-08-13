@@ -32,6 +32,7 @@ export type UpdateAccountPayload = {
   address?: string;
   avtUrl?: string;
 };
+
 export interface CreateUserForm {
   userName: string;
   password: string;
