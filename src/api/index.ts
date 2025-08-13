@@ -68,7 +68,7 @@ export const API = {
   DELETE_WORKSPACE: "/api/workspace/delete_workSpace",
 
   //UPLOAD FILE
-  UPLOAD_FILE: "/api/Cloudinary/image",
+  UPLOAD_FILE: "/api/Cloudinary/upload",
 
   //ADMIN
 

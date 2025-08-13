@@ -34,25 +34,31 @@ const CourseManagement = () => {
   const [form] = Form.useForm();
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchCategories = async () => {
       try {
-        const [catRes, wsRes] = await Promise.all([
-          CategoryService.getCategories(),
-          WorkspaceService.getAll(),
-        ]);
-        console.log("Category Response:", catRes); // Debug
-        console.log("Workspace Response:", wsRes); // Debug
+        const catRes = await CategoryService.getCategories();
+        console.log("Category Response:", catRes);
         setCategories(Array.isArray(catRes) ? catRes : []);
-        setWorkspaces(Array.isArray(wsRes) ? wsRes : []);
       } catch (error) {
-        console.error("Error fetching data:", error);
-        toast.error("Failed to fetch data");
+        console.error("Error fetching categories:", error);
+        setCategories([]); // fallback rỗng
       }
     };
-    fetchData();
-  }, []);
 
-  console.log({ categories, workspaces });
+    const fetchWorkspaces = async () => {
+      try {
+        const wsRes = await WorkspaceService.getAll();
+        console.log("Workspace Response:", wsRes);
+        setWorkspaces(Array.isArray(wsRes) ? wsRes : []);
+      } catch (error) {
+        console.error("Error fetching workspaces:", error);
+        setWorkspaces([]); // fallback rỗng
+      }
+    };
+
+    fetchCategories();
+    fetchWorkspaces();
+  }, []);
 
   const fetchCourses = async () => {
     try {
