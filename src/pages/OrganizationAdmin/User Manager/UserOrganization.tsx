@@ -194,11 +194,8 @@ const UserOrganization: React.FC = () => {
     formEdit.setFieldsValue({
       userName: u.userName,
       fullName: u.fullName,
-      organizationId: u.organizationId,
-      roleId: u.roleId,
       email: u.email,
       phone: u.phone,
-      password: undefined,
       gender: u.gender,
       address: (u as any).address,
       avtUrl: (u as any).avtUrl,
@@ -215,21 +212,14 @@ const UserOrganization: React.FC = () => {
   setSavingEdit(true);
   try {
     let avtUrl: string | undefined = v.avtUrl;
-
-   
-
-    
+  
     if (!avtUrl && editingUser.avtUrl) {
       avtUrl = editingUser.avtUrl;
     }
 
     const payload: any = {
       ...editingUser,
-      userName: v.userName,
       fullName: v.fullName,
-      organizationId: v.organizationId || orgId,
-      roleId: Number(v.roleId),
-      email: v.email,
       phone: v.phone,
       gender: Number(v.gender),
       address: v.address,
@@ -550,11 +540,6 @@ const submitCreateStudent = async () => {
           <Form form={formEdit} layout="vertical">
             <Row gutter={16}>
               <Col span={12}>
-                <Form.Item name="userName" label="Username" rules={[{ required: true }]}>
-                  <Input onPressEnter={(e) => { e.preventDefault(); submitEdit(); }} />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
                 <Form.Item name="fullName" label="Full Name" rules={[{ required: true }]}>
                   <Input onPressEnter={(e) => { e.preventDefault(); submitEdit(); }} />
                 </Form.Item>
@@ -563,17 +548,6 @@ const submitCreateStudent = async () => {
 
             <Row gutter={16}>
               <Col span={12}>
-                <Form.Item name="roleId" label="Role" rules={[{ required: true }]}>
-                  <Select
-                    options={[
-                      { label: 'Org Admin', value: 2 },
-                      { label: 'Instructor', value: 3 },
-                      { label: 'Student', value: 4 },
-                    ] as any}
-                  />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
                 <Form.Item name="gender" label="Gender" >
                   <Select options={genderOptions as any} />
                 </Form.Item>
@@ -581,11 +555,6 @@ const submitCreateStudent = async () => {
             </Row>
 
             <Row gutter={16}>
-              <Col span={12}>
-                <Form.Item name="email" label="Email" rules={[{ required: true }, { type: 'email' }]}>
-                  <Input onPressEnter={(e) => { e.preventDefault(); submitEdit(); }} />
-                </Form.Item>
-              </Col>
               <Col span={12}>
                 <Form.Item name="phone" label="Phone">
                   <Input onPressEnter={(e) => { e.preventDefault(); submitEdit(); }} />

@@ -5,6 +5,8 @@ import type { Account } from "../types/account";
 import type { OrganizationAdminForm } from "../types/organizationAdmin";
 import type { AccountForm, UpdateAccountPayload } from "../types/account";
 import { getErrorMessage } from "../utils/errorHandler";
+const unwrap = (d: any) => (d?.data ?? d) as any;
+
 
 export const AccountService = {
   getAllAccounts: async (): Promise<Account[]> => {
@@ -82,32 +84,66 @@ getAllByOrgId: async (orgId: string): Promise<Account[]> => {
     }
   },
 
-  uploadAvatar: async (file: File): Promise<string> => {
+async uploadAvatar(file: File): Promise<string> {
     try {
       const formData = new FormData();
       formData.append("file", file);
+
       const { data } = await axiosInstance.post(API.UPLOAD_FILE, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+        transformRequest: [(form, headers) => {
+          delete headers["Content-Type"];
+          delete (headers as any)["content-type"];
+          return form as any;
+        }],
       });
-      return (data?.url as string) ?? "";
+
+      const payload = unwrap(data);
+      return (payload?.url as string) ?? "";
     } catch (error: any) {
       const msg = getErrorMessage(error);
       console.error("Error uploading avatar:", msg);
-      throw error; 
+      throw new Error(msg);
     }
   },
 
-  updateAccount: async (id: string, payload: UpdateAccountPayload): Promise<Account> => {
-    try {
-      const { data } = await axiosInstance.put(`${API.UPDATE_ACCOUNT}/${id}`, payload);
-      return data as Account;
-    } catch (error: any) {
-      const msg = getErrorMessage(error);
-      console.error(`Error updating account ${id}:`, msg);
-      throw error; 
-      
+  async updateAccount(
+  id: string,
+  payload: { fullName?: string; phone?: string; gender?: number; address?: string; avtUrl?: string },
+): Promise<Account> {
+  try {
+    // Chỉ pick đúng 5 field + chuẩn hoá kiểu
+    const body: any = {};
+    if (payload.fullName !== undefined) body.fullName = String(payload.fullName).trim();
+    if (payload.phone    !== undefined) body.phone    = String(payload.phone).trim();
+    if (payload.address  !== undefined) body.address  = String(payload.address).trim();
+
+    // NOTE: UI của bạn đang dùng genderOptions {1,2,3} trong khi interface comment là 0,1,2.
+    // Map lại nếu cần (bỏ nếu BE chấp nhận 1,2,3):
+    if (payload.gender !== undefined) {
+      const g = parseInt(String(payload.gender), 10);
+      // Nếu BE: 0-Male,1-Female,2-Other còn UI: 1-Male,2-Female,3-Other => map về 0/1/2:
+      const map = { 1: 0, 2: 1, 3: 2 } as Record<number, number>;
+      body.gender = (g in map) ? map[g] : g;
     }
-  },
+
+    if (payload.avtUrl !== undefined && String(payload.avtUrl).trim()) {
+      body.avtUrl = String(payload.avtUrl).trim();
+    }
+
+    const { data } = await axiosInstance.put(
+      `${API.UPDATE_ACCOUNT}/${id}`,
+      body,
+      { headers: { 'Content-Type': 'application/json' } } // ép JSON trong trường hợp axiosInstance set mặc định multipart
+    );
+    return data as Account;
+  } catch (error: any) {
+    console.error('PUT /update_account error detail:', error?.response?.data);
+    const msg = getErrorMessage(error);
+    console.error(`Error updating account ${id}:`, msg);
+    throw new Error(msg);
+  }
+},
+
 
   deleteAccount: async (id: string): Promise<void> => {
     try {

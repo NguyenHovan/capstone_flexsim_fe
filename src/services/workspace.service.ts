@@ -29,19 +29,6 @@ export const WorkspaceService = {
     }
   },
 
-  async getAllByOrg(orgId: string): Promise<Workspace[]> {
-    try {
-      const { data } = await axiosInstance.get(
-        `${API.GET_ALL_WORKSPACE_ORGID}/${orgId}`
-      );
-      return unwrap(data) as Workspace[];
-    } catch (err) {
-      const msg = getErrorMessage(err);
-      console.error('Error fetching workspaces by org:', msg);
-      throw new Error(msg);
-    }
-  },
-
   async getWorkspaceById(id: string): Promise<Workspace> {
     try {
       const { data } = await axiosInstance.get(`${API.GET_WORKSPACES_ID}/${id}`);

@@ -41,6 +41,7 @@ import OrderOrganization from "../pages/OrganizationAdmin/Order Manager/OrderMan
 import PaymentSuccess from "../pages/Payment/PaymentSuccess";
 import PaymentFail from "../pages/Payment/PaymentFailure";
 import OrderAdmin from "../pages/Admin/Order Manager/OrderAdmin";
+import AddStudentPage from "../pages/Instructor/Add-student/Add-student";
 // import LessonOrganization from "../pages/OrganizationAdmin/Lesson Manager/LessonOrganization";
 // import TopicOrganization from "../pages/OrganizationAdmin/Topic Manager/TopicOrganization";
 // import CategoryOrganization from "../pages/OrganizationAdmin/Category Manager/CategoryOrganization";
