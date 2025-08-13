@@ -121,7 +121,7 @@ const MainRoute = () => {
           <Route path="/instructor-course" element={<CourseManagement />} />
           <Route path="/instructor-class" element={<ManageClass />} />
           <Route
-            path="/instructor-class/add-student"
+            path="/instructor-class/add-student/:id/:courseId"
             element={<AddStudentPage />}
           />
           <Route path="/instructor-topic" element={<TopicManagement />} />

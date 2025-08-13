@@ -100,7 +100,7 @@ const ClassManagement = () => {
       toast.error("Có lỗi xảy ra!");
     }
   };
-
+  console.log({ dataSource });
   const columns: ColumnsType<any> = [
     {
       title: "Class Name",
@@ -121,7 +121,11 @@ const ClassManagement = () => {
           <Tooltip title="Add Student">
             <FolderViewOutlined
               style={{ cursor: "pointer" }}
-              onClick={() => navigate("/instructor-class/add-student")}
+              onClick={() =>
+                navigate(
+                  `/instructor-class/add-student/${record.id}/${record.courseId}`
+                )
+              }
             />
           </Tooltip>
           <Tooltip title="Edit">
