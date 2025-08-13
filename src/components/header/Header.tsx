@@ -8,18 +8,28 @@ import {
 import "./header.css";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
+import { useEffect, useState } from "react";
+import { AccountService } from "../../services/account.service";
 
 const Header = () => {
   const navigate = useNavigate();
   const { user, isLoggedIn } = useAuth();
-
+  const [avatar, setAvatar] = useState<string | null>(null);
+  const fetchUserCurrent = async () => {
+    if (user) {
+      const response = await AccountService.getAccountById(user.id);
+      setAvatar(response?.avtUrl || null);
+    }
+  };
   const handleLogout = () => {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("currentUser");
     localStorage.removeItem("roleId");
     navigate("/login");
   };
-
+  useEffect(() => {
+    fetchUserCurrent();
+  }, []);
   const menu = (
     <Menu>
       <Menu.Item
@@ -67,8 +77,11 @@ const Header = () => {
                 cursor: "pointer",
               }}
             >
-              <Avatar style={{ backgroundColor: "#1890ff", marginRight: 8 }}>
-                {user?.userName?.[0]?.toUpperCase() || "U"}
+              <Avatar
+                src={avatar}
+                style={{ backgroundColor: "#1890ff", marginRight: 8 }}
+              >
+                {(!avatar && user?.userName?.[0]?.toUpperCase()) || "U"}
               </Avatar>
               <span style={{ color: "#fff" }}>{user?.userName}</span>
             </div>
