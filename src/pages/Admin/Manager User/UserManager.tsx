@@ -523,7 +523,7 @@ const UserManager: React.FC = () => {
           okText="Save"
           cancelText="Cancel"
           confirmLoading={loading}
-          destroyOnHidden
+          destroyOnClose
         >
           <Form form={form} layout="vertical">
             <Form.Item
@@ -598,7 +598,7 @@ const UserManager: React.FC = () => {
           open={isCreateModalVisible}
           onCancel={() => setIsCreateModalVisible(false)}
           footer={null}
-          destroyOnHidden
+          destroyOnClose
         >
           <Form form={form} layout="vertical">
             <Form.Item

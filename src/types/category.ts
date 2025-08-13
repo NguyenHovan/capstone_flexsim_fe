@@ -7,3 +7,8 @@ export interface Category {
   deleteAt: string;
   courses: string[];
 }
+
+export interface CategoryForm {
+  categoryName: string;
+  isActive: boolean;
+}

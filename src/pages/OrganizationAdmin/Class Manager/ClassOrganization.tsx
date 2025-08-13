@@ -227,7 +227,7 @@ const ClassManagerOrgAdmin: React.FC = () => {
         open={viewVisible}
         onCancel={() => { setViewVisible(false); setViewData(null); }}
         footer={null}
-        destroyOnHidden
+        destroyOnClose
         width={560}
       >
         {viewData ? (

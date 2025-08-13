@@ -364,7 +364,7 @@ const WorkspaceOrganization: React.FC = () => {
           setImgUrlCreate("");
           setImgFileCreate(null);
         }}
-        destroyOnHidden
+        destroyOnClose
         width={520}
       >
         <Form form={createForm} layout="vertical" onFinish={onCreate}>
@@ -430,7 +430,7 @@ const WorkspaceOrganization: React.FC = () => {
           setImgFileUpdate(null);
           setSelected(null);
         }}
-        destroyOnHidden
+        destroyOnClose
         width={520}
       >
         <Form form={updateForm} layout="vertical" onFinish={onUpdate}>
@@ -486,7 +486,7 @@ const WorkspaceOrganization: React.FC = () => {
           setViewVisible(false);
           setViewData(null);
         }}
-        destroyOnHidden
+        destroyOnClose
         width={520}
       >
         {viewData ? (

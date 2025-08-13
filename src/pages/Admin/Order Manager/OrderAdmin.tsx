@@ -140,18 +140,11 @@ const OrderAdmin: React.FC = () => {
         </Tooltip>
       ),
     },
-    {
-      title: "Order Code",
-      dataIndex: "orderCode",
-      key: "orderCode",
-      width: 140,
-      sorter: (a, b) => (a.orderCode || 0) - (b.orderCode || 0),
-      render: (v?: number) => (v ? <span className="oa-code">{v}</span> : <Text type="secondary">—</Text>),
-    },
+    
     {
       title: "Plan",
-      dataIndex: "subscriptionPlanName",
-      key: "subscriptionPlanName",
+      dataIndex: "subcriptionPlanName",
+      key: "subcriptionPlanName",
       ellipsis: true,
       render: (v: string | undefined) =>
         v ? <span className="oa-plan">{v}</span> : <Text type="secondary">—</Text>,

@@ -1,3 +1,4 @@
+// src/services/topic.service.ts
 import axiosInstance from './main.service';
 import { API } from '../api';
 import type { Topic } from '../types/topic';
@@ -26,17 +27,14 @@ export const TopicService = {
     }
   },
 
+  // ❗ KHÔNG set 'Content-Type' ở đây; để browser tự thêm boundary cho FormData
   createTopic: async (payload: FormData) => {
-    const res = await axiosInstance.post(API.CREATE_TOPIC, payload, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+    const res = await axiosInstance.post(API.CREATE_TOPIC, payload);
     return res.data;
   },
 
   updateTopic: async (id: string, payload: FormData) => {
-    const res = await axiosInstance.put(`${API.UPDATE_TOPIC}/${id}`, payload, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+    const res = await axiosInstance.put(`${API.UPDATE_TOPIC}/${id}`, payload);
     return res.data;
   },
 

@@ -1,5 +1,3 @@
-// lesson.type.ts
-
 export interface Lesson {
   id: string;
   topicId: string;
@@ -11,7 +9,7 @@ export interface Lesson {
   createdAt: string;
   updatedAt: string | null;
   deleteAt: string | null;
-  lessonProgresses: any[]; // nếu muốn type cụ thể hơn thì định nghĩa riêng
+  lessonProgresses: any[]; 
   quizzes: any[];
   statusNavigation: any;
   topic: any;

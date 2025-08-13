@@ -61,9 +61,44 @@ const getOrganizationId = (): string => {
   } catch { return ''; }
 };
 
+/** Map lỗi email trùng từ BE vào field email của form; trả true nếu đã set lỗi */
+const setEmailDuplicateError = (form: any, err: any) => {
+  try {
+    const status = err?.response?.status;
+    const data = err?.response?.data;
+    const errors = data?.errors;
+
+    let msg: string | undefined =
+      errors?.Email?.[0] ||
+      errors?.email?.[0] ||
+      (typeof data === 'string' ? data : undefined) ||
+      data?.message ||
+      data?.title ||
+      err?.message;
+
+    const lower = String(msg || '').toLowerCase();
+    const looksDup =
+      status === 409 ||
+      lower.includes('duplicate') ||
+      lower.includes('already') ||
+      lower.includes('exist') ||
+      lower.includes('đã tồn tại') ||
+      lower.includes('tồn tại');
+
+    if ((msg && /email/i.test(msg)) || looksDup) {
+      form.setFields([{ name: 'email', errors: [msg || 'Email already exists'] }]);
+      return true; // đã set lỗi tại field
+    }
+  } catch { /* noop */ }
+  return false;
+};
+
 const UserOrganization: React.FC = () => {
   const [users, setUsers] = useState<Account[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);           // load list
+  const [savingEdit, setSavingEdit] = useState(false);     // submit edit
+  const [creatingInstructor, setCreatingInstructor] = useState(false); // submit create instructor
+  const [creatingStudent, setCreatingStudent] = useState(false);       // submit create student
 
   const [viewingUser, setViewingUser] = useState<Account | null>(null);
   const [isViewModal, setIsViewModal] = useState(false);
@@ -112,7 +147,7 @@ const UserOrganization: React.FC = () => {
     load();
   }, [orgId]);
 
-  // BroadcastChannel cho auto reload (loadUser orgAdmin) khi tạo/cập nhật/ban/unban
+  // BroadcastChannel cho auto reload giữa các tab
   const bc = useMemo(() => new BroadcastChannel('org-accounts'), []);
   useEffect(() => {
     const onMsg = (e: MessageEvent) => {
@@ -126,6 +161,32 @@ const UserOrganization: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orgId]);
 
+  // ===== helper: reload + close modal + reset form =====
+  const loadUsser = async (opts?: { close?: 'edit' | 'instr' | 'stud' | 'all' }) => {
+    await load();
+    switch (opts?.close) {
+      case 'edit':
+        setIsEditModal(false);
+        setEditingUser(null);
+        formEdit.resetFields();
+        break;
+      case 'instr':
+        setIsCreateInstructor(false);
+        formInstr.resetFields();
+        break;
+      case 'stud':
+        setIsCreateStudent(false);
+        formStud.resetFields();
+        break;
+      case 'all':
+        setIsEditModal(false); setEditingUser(null); formEdit.resetFields();
+        setIsCreateInstructor(false); formInstr.resetFields();
+        setIsCreateStudent(false); formStud.resetFields();
+        break;
+      default: break;
+    }
+  };
+
   // view / edit
   const onView = (u: Account) => { setViewingUser(u); setIsViewModal(true); };
 
@@ -134,12 +195,12 @@ const UserOrganization: React.FC = () => {
     formEdit.setFieldsValue({
       userName: u.userName,
       fullName: u.fullName,
-      organizationId: u.organizationId, // readonly
-      roleId: u.roleId,                 // 3|4
+      organizationId: u.organizationId,
+      roleId: u.roleId, // 3|4
       email: u.email,
       phone: u.phone,
-      password: undefined,              // để trống
-      gender: u.gender,                 // 1..3
+      password: undefined,
+      gender: u.gender,
       address: (u as any).address,
       avtUrl: (u as any).avtUrl,
       isActive: u.isActive
@@ -148,36 +209,36 @@ const UserOrganization: React.FC = () => {
   };
 
   const submitEdit = async () => {
+    if (savingEdit) return;
     const v = await formEdit.validateFields();
     if (!editingUser) return;
-    setLoading(true);
+    setSavingEdit(true);
     try {
       const payload: any = {
         ...editingUser,
         userName: v.userName,
         fullName: v.fullName,
         organizationId: v.organizationId || orgId,
-        roleId: Number(v.roleId),     // 3|4
+        roleId: Number(v.roleId),
         email: v.email,
         phone: v.phone,
-        gender: Number(v.gender),     // 1..3
+        gender: Number(v.gender),
         address: v.address,
         avtUrl: v.avtUrl
       };
-      if (v.password && String(v.password).trim()) {
-        payload.password = v.password;
-      }
+      if (v.password && String(v.password).trim()) payload.password = v.password;
 
       const updated = await AccountService.updateAccount(editingUser.id, payload);
       setUsers(curr => curr.map(x => (x.id === updated.id ? { ...x, ...updated } : x)));
       bc.postMessage({ type: 'account:updated', organizationId: orgId });
-      await load();
+      await loadUsser({ close: 'edit' });      // ✅ đóng + reload
       message.success('User updated');
-      setIsEditModal(false);
-      formEdit.resetFields();
-    } catch (err) {
+    } catch (err: any) {
+      if (setEmailDuplicateError(formEdit, err)) return; // ✅ lỗi email trùng hiện ngay dưới field
       showErrorMessage(err, 'Cannot update user');
-    } finally { setLoading(false); setEditingUser(null); }
+    } finally {
+      setSavingEdit(false);
+    }
   };
 
   // ban / unban
@@ -187,7 +248,7 @@ const UserOrganization: React.FC = () => {
       const a = await AccountService.banAccount(id);
       setUsers(curr => curr.map(x => (x.id === a.id ? { ...x, isActive: false, updatedAt: new Date().toISOString() } : x)));
       bc.postMessage({ type: 'account:banned', organizationId: orgId });
-      await load();
+      await loadUsser(); // reload danh sách
       message.success('User banned');
     } catch (err) {
       showErrorMessage(err, 'Cannot ban user');
@@ -199,7 +260,7 @@ const UserOrganization: React.FC = () => {
       const a = await AccountService.unbanAccount(id);
       setUsers(curr => curr.map(x => (x.id === a.id ? { ...x, isActive: true, updatedAt: new Date().toISOString() } : x)));
       bc.postMessage({ type: 'account:unbanned', organizationId: orgId });
-      await load();
+      await loadUsser(); // reload danh sách
       message.success('User unbanned');
     } catch (err) {
       showErrorMessage(err, 'Cannot unban user');
@@ -208,28 +269,30 @@ const UserOrganization: React.FC = () => {
 
   // create
   const submitCreateInstructor = async () => {
+    if (creatingInstructor) return;
     const vals = await formInstr.validateFields();
-    setLoading(true);
+    setCreatingInstructor(true);
     try {
       const c = await AccountService.registerInstructor({
         ...vals,
-        gender: Number(vals.gender),  // 1..3
+        gender: Number(vals.gender),
         isActive: true,
         organizationId: orgId
       });
       setUsers(u => [c, ...u]);
       bc.postMessage({ type: 'account:created', organizationId: orgId });
-      await load();
+      await loadUsser({ close: 'instr' });     // ✅ đóng + reload
       message.success('Instructor created');
-      setIsCreateInstructor(false);
-      formInstr.resetFields();
-    } catch (err) {
+    } catch (err: any) {
+      if (setEmailDuplicateError(formInstr, err)) return; // ✅ bắt lỗi email trùng
       showErrorMessage(err, 'Cannot create instructor');
-    } finally { setLoading(false); }
+    } finally { setCreatingInstructor(false); }
   };
+
   const submitCreateStudent = async () => {
+    if (creatingStudent) return;
     const vals = await formStud.validateFields();
-    setLoading(true);
+    setCreatingStudent(true);
     try {
       const c = await AccountService.registerStudent({
         ...vals,
@@ -239,18 +302,15 @@ const UserOrganization: React.FC = () => {
       });
       setUsers(u => [c, ...u]);
       bc.postMessage({ type: 'account:created', organizationId: orgId });
-      await load();
+      await loadUsser({ close: 'stud' });      // ✅ đóng + reload
       message.success('Student created');
-    } catch (err) {
+    } catch (err: any) {
+      if (setEmailDuplicateError(formStud, err)) return; // ✅ bắt lỗi email trùng
       showErrorMessage(err, 'Cannot create student');
-    } finally {
-      setIsCreateStudent(false);
-      formStud.resetFields();
-      setLoading(false);
-    }
+    } finally { setCreatingStudent(false); }
   };
 
-  // filter + sort (search theo ký tự userName & fullName)
+  // filter + sort (search theo userName & fullName)
   const dataView = useMemo(() => {
     const q = debounced.toLowerCase();
 
@@ -261,7 +321,7 @@ const UserOrganization: React.FC = () => {
         (u.fullName && u.fullName.toLowerCase().includes(q));
 
       const hitRole = roleFilter === '' ? true : u.roleId === roleFilter;
-      const hitStatus = statusFilter === '' ? true : statusFilter === 'active' ? u.isActive : !u.isActive;
+      const hitStatus = statusFilter === '' ? true : (statusFilter === 'active' ? u.isActive : !u.isActive);
 
       return hitQ && hitRole && hitStatus;
     });
@@ -404,6 +464,7 @@ const UserOrganization: React.FC = () => {
           open={isViewModal}
           footer={<Button onClick={() => setIsViewModal(false)}>Close</Button>}
           onCancel={() => setIsViewModal(false)}
+          destroyOnClose
           width={600}
         >
           {viewingUser && (
@@ -431,19 +492,20 @@ const UserOrganization: React.FC = () => {
           open={isEditModal}
           onOk={submitEdit}
           onCancel={() => { setIsEditModal(false); formEdit.resetFields(); setEditingUser(null); }}
-          confirmLoading={loading}
+          okButtonProps={{ loading: savingEdit, disabled: savingEdit }}
+          destroyOnClose
           width={680}
         >
           <Form form={formEdit} layout="vertical">
             <Row gutter={16}>
               <Col span={12}>
                 <Form.Item name="userName" label="Username" rules={[{ required: true }]}>
-                  <Input />
+                  <Input onPressEnter={(e) => { e.preventDefault(); submitEdit(); }} />
                 </Form.Item>
               </Col>
               <Col span={12}>
                 <Form.Item name="fullName" label="Full Name" rules={[{ required: true }]}>
-                  <Input />
+                  <Input onPressEnter={(e) => { e.preventDefault(); submitEdit(); }} />
                 </Form.Item>
               </Col>
             </Row>
@@ -469,12 +531,12 @@ const UserOrganization: React.FC = () => {
             <Row gutter={16}>
               <Col span={12}>
                 <Form.Item name="email" label="Email" rules={[{ required: true }, { type: 'email' }]}>
-                  <Input />
+                  <Input onPressEnter={(e) => { e.preventDefault(); submitEdit(); }} />
                 </Form.Item>
               </Col>
               <Col span={12}>
                 <Form.Item name="phone" label="Phone" rules={[{ required: true }]}>
-                  <Input />
+                  <Input onPressEnter={(e) => { e.preventDefault(); submitEdit(); }} />
                 </Form.Item>
               </Col>
             </Row>
@@ -482,7 +544,7 @@ const UserOrganization: React.FC = () => {
             <Row gutter={16}>
               <Col span={12}>
                 <Form.Item name="password" label="Password">
-                  <Input.Password placeholder="Leave blank to keep current password" />
+                  <Input.Password placeholder="Leave blank to keep current password" onPressEnter={(e) => { e.preventDefault(); submitEdit(); }} />
                 </Form.Item>
               </Col>
               <Col span={12}>
@@ -495,12 +557,12 @@ const UserOrganization: React.FC = () => {
             <Row gutter={16}>
               <Col span={12}>
                 <Form.Item name="address" label="Address" rules={[{ required: true }]}>
-                  <Input />
+                  <Input onPressEnter={(e) => { e.preventDefault(); submitEdit(); }} />
                 </Form.Item>
               </Col>
               <Col span={12}>
                 <Form.Item name="avtUrl" label="Avatar URL">
-                  <Input placeholder="https://..." />
+                  <Input placeholder="https://..." onPressEnter={(e) => { e.preventDefault(); submitEdit(); }} />
                 </Form.Item>
               </Col>
             </Row>
@@ -513,17 +575,18 @@ const UserOrganization: React.FC = () => {
           open={isCreateInstructor}
           onOk={submitCreateInstructor}
           onCancel={() => { setIsCreateInstructor(false); formInstr.resetFields(); }}
-          confirmLoading={loading}
+          okButtonProps={{ loading: creatingInstructor, disabled: creatingInstructor }}
+          destroyOnClose
           width={600}
         >
           <Form form={formInstr} layout="vertical">
             <Row gutter={16}>
-              <Col span={12}><Form.Item name="userName" label="Username" rules={[{ required: true }]}><Input /></Form.Item></Col>
-              <Col span={12}><Form.Item name="fullName" label="Full Name" rules={[{ required: true }]}><Input /></Form.Item></Col>
+              <Col span={12}><Form.Item name="userName" label="Username" rules={[{ required: true }]}><Input onPressEnter={(e) => { e.preventDefault(); submitCreateInstructor(); }} /></Form.Item></Col>
+              <Col span={12}><Form.Item name="fullName" label="Full Name" rules={[{ required: true }]}><Input onPressEnter={(e) => { e.preventDefault(); submitCreateInstructor(); }} /></Form.Item></Col>
             </Row>
             <Row gutter={16}>
-              <Col span={12}><Form.Item name="email" label="Email" rules={[{ required: true }, { type: 'email' }]}><Input /></Form.Item></Col>
-              <Col span={12}><Form.Item name="phone" label="Phone" rules={[{ required: true }]}><Input /></Form.Item></Col>
+              <Col span={12}><Form.Item name="email" label="Email" rules={[{ required: true }, { type: 'email' }]}><Input onPressEnter={(e) => { e.preventDefault(); submitCreateInstructor(); }} /></Form.Item></Col>
+              <Col span={12}><Form.Item name="phone" label="Phone" rules={[{ required: true }]}><Input onPressEnter={(e) => { e.preventDefault(); submitCreateInstructor(); }} /></Form.Item></Col>
             </Row>
             <Row gutter={16}>
               <Col span={12}>
@@ -533,11 +596,11 @@ const UserOrganization: React.FC = () => {
               </Col>
               <Col span={12}>
                 <Form.Item name="address" label="Address" rules={[{ required: true }]}>
-                  <Input />
+                  <Input onPressEnter={(e) => { e.preventDefault(); submitCreateInstructor(); }} />
                 </Form.Item>
               </Col>
             </Row>
-            <Form.Item name="password" label="Password" rules={[{ required: true }]}><Input.Password /></Form.Item>
+            <Form.Item name="password" label="Password" rules={[{ required: true }]}><Input.Password onPressEnter={(e) => { e.preventDefault(); submitCreateInstructor(); }} /></Form.Item>
           </Form>
         </Modal>
 
@@ -547,17 +610,18 @@ const UserOrganization: React.FC = () => {
           open={isCreateStudent}
           onOk={submitCreateStudent}
           onCancel={() => { setIsCreateStudent(false); formStud.resetFields(); }}
-          confirmLoading={loading}
+          okButtonProps={{ loading: creatingStudent, disabled: creatingStudent }}
+          destroyOnClose
           width={600}
         >
           <Form form={formStud} layout="vertical">
             <Row gutter={16}>
-              <Col span={12}><Form.Item name="userName" label="Username" rules={[{ required: true }]}><Input /></Form.Item></Col>
-              <Col span={12}><Form.Item name="fullName" label="Full Name" rules={[{ required: true }]}><Input /></Form.Item></Col>
+              <Col span={12}><Form.Item name="userName" label="Username" rules={[{ required: true }]}><Input onPressEnter={(e) => { e.preventDefault(); submitCreateStudent(); }} /></Form.Item></Col>
+              <Col span={12}><Form.Item name="fullName" label="Full Name" rules={[{ required: true }]}><Input onPressEnter={(e) => { e.preventDefault(); submitCreateStudent(); }} /></Form.Item></Col>
             </Row>
             <Row gutter={16}>
-              <Col span={12}><Form.Item name="email" label="Email" rules={[{ required: true }, { type: 'email' }]}><Input /></Form.Item></Col>
-              <Col span={12}><Form.Item name="phone" label="Phone" rules={[{ required: true }]}><Input /></Form.Item></Col>
+              <Col span={12}><Form.Item name="email" label="Email" rules={[{ required: true }, { type: 'email' }]}><Input onPressEnter={(e) => { e.preventDefault(); submitCreateStudent(); }} /></Form.Item></Col>
+              <Col span={12}><Form.Item name="phone" label="Phone" rules={[{ required: true }]}><Input onPressEnter={(e) => { e.preventDefault(); submitCreateStudent(); }} /></Form.Item></Col>
             </Row>
             <Row gutter={16}>
               <Col span={12}>
@@ -567,11 +631,11 @@ const UserOrganization: React.FC = () => {
               </Col>
               <Col span={12}>
                 <Form.Item name="address" label="Address" rules={[{ required: true }]}>
-                  <Input />
+                  <Input onPressEnter={(e) => { e.preventDefault(); submitCreateStudent(); }} />
                 </Form.Item>
               </Col>
             </Row>
-            <Form.Item name="password" label="Password" rules={[{ required: true }]}><Input.Password /></Form.Item>
+            <Form.Item name="password" label="Password" rules={[{ required: true }]}><Input.Password onPressEnter={(e) => { e.preventDefault(); submitCreateStudent(); }} /></Form.Item>
           </Form>
         </Modal>
       </Content>
