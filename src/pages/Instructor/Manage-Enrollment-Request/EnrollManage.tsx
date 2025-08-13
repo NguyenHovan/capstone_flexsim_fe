@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Table, Button, Space, Modal, Form, Select, message, Tag } from "antd";
 import { EnrollmentRequestService } from "../../../services/enrollment-request.service";
 import { toast } from "sonner";
-type StatusKey = 1 | 2 | 3;
+type StatusKey = 0 | 1 | 2;
 const EnrollManage = () => {
   const [form] = Form.useForm();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -10,9 +10,9 @@ const EnrollManage = () => {
   const [enrolls, setEnrolls] = useState([]);
 
   const statusMap: Record<StatusKey, { text: string; color: string }> = {
-    1: { text: "Pending", color: "orange" },
-    2: { text: "Accepted", color: "green" },
-    3: { text: "Rejected", color: "red" },
+    0: { text: "Pending", color: "orange" },
+    1: { text: "Accepted", color: "green" },
+    2: { text: "Rejected", color: "red" },
   };
 
   const fetchEnrolls = async () => {
@@ -30,15 +30,23 @@ const EnrollManage = () => {
     fetchEnrolls();
   }, []);
 
-  const handleUpdateStatus = async (id: string, status: number) => {
+  const handleAcp = async (id: string) => {
     try {
-      await EnrollmentRequestService.updateEnrollmentRequest(id, status);
-      toast.success(
-        status === 2 ? "Chấp nhận thành công" : "Từ chối thành công"
-      );
+      await EnrollmentRequestService.acpEnrollmentRequest(id);
+      toast.success("Chấp nhận thành công");
       fetchEnrolls();
     } catch {
-      toast.error(status === 2 ? "Không thể chấp nhận" : "Không thể từ chối");
+      toast.error("Không thể chấp nhận");
+    }
+  };
+
+  const handleReject = async (id: string) => {
+    try {
+      await EnrollmentRequestService.rejectEnrollmentRequest(id);
+      toast.success("Từ chối thành công");
+      fetchEnrolls();
+    } catch {
+      toast.error("Không thể từ chối");
     }
   };
 
@@ -84,15 +92,15 @@ const EnrollManage = () => {
         <Space style={{ display: "flex", justifyContent: "flex-start" }}>
           <Button
             type="primary"
-            onClick={() => handleUpdateStatus(record.id, 2)}
-            disabled={record.status === 2}
+            onClick={() => handleAcp(record.id)}
+            disabled={record.status === 1}
           >
             Accept
           </Button>
           <Button
             danger
-            onClick={() => handleUpdateStatus(record.id, 3)}
-            disabled={record.status === 3}
+            onClick={() => handleReject(record.id)}
+            disabled={record.status === 2}
           >
             Reject
           </Button>

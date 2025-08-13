@@ -22,10 +22,15 @@ export const EnrollmentRequestService = {
     const response = await axiosInstance.get(`${API.GET_ENROLLMENT_REQUEST}`);
     return response.data;
   },
-  updateEnrollmentRequest: async (id: string, status: number) => {
+  acpEnrollmentRequest: async (id: string) => {
     const response = await axiosInstance.put(
-      `${API.ACCEPT_ENROLLMENT_REQUEST}/${id}`,
-      status
+      `${API.ACCEPT_ENROLLMENT_REQUEST}/${id}`
+    );
+    return response.data;
+  },
+  rejectEnrollmentRequest: async (id: string) => {
+    const response = await axiosInstance.put(
+      `${API.REJECT_ENROLLMENT_REQUEST}/${id}`
     );
     return response.data;
   },

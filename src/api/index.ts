@@ -104,7 +104,10 @@ export const API = {
   ENROLLMENT_REQUEST: "/api/enrollmentRequest/create_enrollmentRequest",
   ENROLLMENT_REQUEST_STUDENT: "/api/enrollmentRequest/student",
   GET_ENROLLMENT_REQUEST: "/api/enrollmentRequest/get_all_enrollmentRequest",
-  ACCEPT_ENROLLMENT_REQUEST: "/api/enrollmentRequest/update_enrollmentRequest",
+  ACCEPT_ENROLLMENT_REQUEST:
+    "/api/enrollmentRequest/accepted_enrollmentRequest",
+  REJECT_ENROLLMENT_REQUEST:
+    "/api/enrollmentRequest/rejected_enrollmentRequest",
   DELETE_ENROLLMENT_REQUEST: "/api/enrollmentRequest/delete_enrollmentRequest",
 
   //LESSON

@@ -7,7 +7,7 @@ import { AccountService } from "../../services/account.service";
 const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, isLoggedIn } = useAuth();
+  const { user } = useAuth();
   const [avatar, setAvatar] = useState<string | null>(null);
   const fetchUserCurrent = async () => {
     if (user) {
