@@ -1,10 +1,23 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { Avatar } from "antd";
+import { useAuth } from "../../hooks/useAuth";
+import { useEffect, useState } from "react";
+import { AccountService } from "../../services/account.service";
 
 const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
-
+  const { user } = useAuth();
+  const [avatar, setAvatar] = useState<string | null>(null);
+  const fetchUserCurrent = async () => {
+    if (user) {
+      const response = await AccountService.getAccountById(user.id);
+      setAvatar(response?.avtUrl || null);
+    }
+  };
+  useEffect(() => {
+    fetchUserCurrent();
+  }, []);
   const menuItems = [
     { label: "Profile", path: "/profile" },
     { label: "My Course", path: "/my-course" },
@@ -26,7 +39,7 @@ const Sidebar = () => {
     >
       {/* Avatar */}
       <Avatar
-        src="/avatar.png" // hoặc thay bằng ảnh từ props hoặc URL khác
+        src={avatar || "/avatar.png"} // hoặc thay bằng ảnh từ props hoặc URL khác
         size={64}
         style={{ marginBottom: 32 }}
       />

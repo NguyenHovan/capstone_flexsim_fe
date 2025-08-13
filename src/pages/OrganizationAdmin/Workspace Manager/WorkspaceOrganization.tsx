@@ -224,29 +224,6 @@ const fetchList = async (opts?: { silent?: boolean }) => {
   const columns: ColumnsType<Workspace> = [
     { title: "ID", dataIndex: "id", key: "id", width: 220, ellipsis: true },
     {
-      title: "Name",
-      dataIndex: "workSpaceName",
-      key: "workSpaceName",
-      width: 200,
-      ellipsis: true,
-      sorter: (a, b) => a.workSpaceName.localeCompare(b.workSpaceName),
-    },
-    {
-      title: "Accounts",
-      dataIndex: "numberOfAccount",
-      key: "numberOfAccount",
-      align: "center",
-      width: 120,
-      sorter: (a, b) => a.numberOfAccount - b.numberOfAccount,
-    },
-    {
-      title: "Description",
-      dataIndex: "description",
-      key: "description",
-      width: 240,
-      ellipsis: true,
-    },
-    {
       title: "Image",
       dataIndex: "imgUrl",
       key: "imgUrl",
@@ -269,6 +246,31 @@ const fetchList = async (opts?: { silent?: boolean }) => {
           "—"
         ),
     },
+    {
+      title: "Name",
+      dataIndex: "workSpaceName",
+      key: "workSpaceName",
+      width: 200,
+      ellipsis: true,
+      sorter: (a, b) => a.workSpaceName.localeCompare(b.workSpaceName),
+    },  
+    
+    {
+      title: "Accounts",
+      dataIndex: "numberOfAccount",
+      key: "numberOfAccount",
+      align: "center",
+      width: 120,
+      sorter: (a, b) => a.numberOfAccount - b.numberOfAccount,
+    },
+    {
+      title: "Description",
+      dataIndex: "description",
+      key: "description",
+      width: 240,
+      ellipsis: true,
+    },
+  
     {
       title: "Status",
       dataIndex: "isActive",

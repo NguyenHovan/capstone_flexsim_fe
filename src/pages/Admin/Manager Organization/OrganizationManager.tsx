@@ -229,7 +229,7 @@ const OrganizationManager: React.FC = () => {
           onCancel={handleModalClose}
           footer={null}
           width={600}
-          destroyOnClose
+          destroyOnHidden
         >
           {viewingOrganization ? (
             <div>

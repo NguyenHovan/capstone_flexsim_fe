@@ -12,10 +12,9 @@ import {
   Upload,
   type UploadFile,
 } from "antd";
-import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import { CourseService } from "../../../services/course.service";
-import dayjs from "dayjs";
 import { toast } from "sonner";
 import { CategoryService } from "../../../services/category.service";
 import { WorkspaceService } from "../../../services/workspace.service";
@@ -33,27 +32,33 @@ const CourseManagement = () => {
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [form] = Form.useForm();
 
+  // Fetch categories & workspaces
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchCategories = async () => {
       try {
-        const [catRes, wsRes] = await Promise.all([
-          CategoryService.getCategories(),
-          WorkspaceService.getAll(),
-        ]);
-        console.log("Category Response:", catRes); // Debug
-        console.log("Workspace Response:", wsRes); // Debug
+        const catRes = await CategoryService.getCategories();
         setCategories(Array.isArray(catRes) ? catRes : []);
-        setWorkspaces(Array.isArray(wsRes) ? wsRes : []);
       } catch (error) {
-        console.error("Error fetching data:", error);
-        toast.error("Failed to fetch data");
+        console.error("Error fetching categories:", error);
+        setCategories([]);
       }
     };
-    fetchData();
+
+    const fetchWorkspaces = async () => {
+      try {
+        const wsRes = await WorkspaceService.getAll();
+        setWorkspaces(Array.isArray(wsRes) ? wsRes : []);
+      } catch (error) {
+        console.error("Error fetching workspaces:", error);
+        setWorkspaces([]);
+      }
+    };
+
+    fetchCategories();
+    fetchWorkspaces();
   }, []);
 
-  console.log({ categories, workspaces });
-
+  // Fetch courses
   const fetchCourses = async () => {
     try {
       setLoading(true);
@@ -70,52 +75,80 @@ const CourseManagement = () => {
     fetchCourses();
   }, []);
 
+  // Add new
   const handleAdd = () => {
     form.resetFields();
+    setFileList([]);
     setIsEditing(false);
+    setSelectedCourseId(null);
     setIsModalVisible(true);
   };
 
-  const handleEdit = (record: any) => {
-    setIsEditing(true);
-    setSelectedCourseId(record.id);
-    form.setFieldsValue({
-      ...record,
-      categoryId: record.category?.id,
-      workSpaceId: record.workSpaceId,
-    });
-    setIsModalVisible(true);
-  };
+  // Edit
+  // const handleEdit = (record: any) => {
+  //   setIsEditing(true);
+  //   setSelectedCourseId(record.id);
 
+  //   if (record.imgUrl) {
+  //     setFileList([
+  //       {
+  //         uid: "-1",
+  //         name: "current-image",
+  //         status: "done",
+  //         url: record.imgUrl,
+  //       },
+  //     ]);
+  //   } else {
+  //     setFileList([]);
+  //   }
+
+  //   form.setFieldsValue({
+  //     courseName: record.courseName,
+  //     description: record.description,
+  //     categoryId: record.category?.id || record.categoryId,
+  //     workSpaceId: record.workSpaceId,
+  //     ratingAverage: record.ratingAverage,
+  //   });
+
+  //   setIsModalVisible(true);
+  // };
+
+  // Delete
   const handleDelete = async (id: string) => {
-    Modal.confirm({
-      title: "Bạn có chắc chắn muốn xóa khóa học này?",
-      onOk: async () => {
-        try {
-          await CourseService.deleteCourse(id);
-          toast.success("Xóa thành công!");
-          fetchCourses();
-        } catch (error) {
-          toast.error("Xóa thất bại!");
-        }
-      },
-    });
+    try {
+      await CourseService.deleteCourse(id);
+      toast.success("Xóa thành công!");
+      fetchCourses();
+    } catch (error) {
+      toast.error("Xóa thất bại!");
+    }
   };
 
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
 
-      // Lấy file image (nếu có)
-      const file = values.imgUrl?.[0]?.originFileObj || null;
+      let imgToSend: File | null = null;
+
+      if (values.imgUrl?.[0]?.originFileObj) {
+        imgToSend = values.imgUrl[0].originFileObj;
+      } else if (isEditing && selectedCourseId) {
+        const currentCourse = dataSource.find((c) => c.id === selectedCourseId);
+        if (currentCourse?.imgUrl) {
+          const response = await fetch(currentCourse.imgUrl);
+          const blob = await response.blob();
+          imgToSend = new File([blob], "old-image.jpg", { type: blob.type });
+        }
+      }
+
       const formData = new FormData();
       formData.append("courseName", values.courseName);
       formData.append("description", values.description);
-      formData.append("categoryId", values.categoryId);
-      formData.append("workSpaceId", values.workSpaceId);
-      formData.append("ratingAverage", values.ratingAverage || 0);
-      if (file) {
-        formData.append("imgUrl", file);
+      formData.append("categoryId", String(values.categoryId));
+      formData.append("workSpaceId", String(values.workSpaceId));
+      formData.append("ratingAverage", String(values.ratingAverage || 0));
+      if (imgToSend) {
+        formData.append("imgUrl", imgToSend);
       }
 
       if (isEditing && selectedCourseId) {
@@ -151,26 +184,17 @@ const CourseManagement = () => {
       dataIndex: "isActive",
       render: (val) => (val ? "active" : "inactive"),
     },
-    {
-      title: "Create At",
-      dataIndex: "createdAt",
-      render: (val) => dayjs(val).format("YYYY-MM-DD"),
-    },
-    {
-      title: "Update At",
-      dataIndex: "updatedAt",
-      render: (val) => dayjs(val).format("YYYY-MM-DD"),
-    },
+
     {
       title: "Action",
       render: (_, record) => (
         <Space size="middle">
-          <Tooltip title="Edit">
+          {/* <Tooltip title="Edit">
             <EditOutlined
               style={{ cursor: "pointer" }}
               onClick={() => handleEdit(record)}
             />
-          </Tooltip>
+          </Tooltip> */}
           <Tooltip title="Delete">
             <DeleteOutlined
               style={{ cursor: "pointer", color: "red" }}
@@ -184,7 +208,14 @@ const CourseManagement = () => {
 
   return (
     <div className="course-management-wrapper">
-      <div className="header-section">
+      <div
+        className="header-section"
+        style={{
+          marginBottom: 16,
+          display: "flex",
+          justifyContent: "space-between",
+        }}
+      >
         <Input.Search placeholder="Search course" style={{ width: 250 }} />
         <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
           Add new Course
@@ -259,11 +290,12 @@ const CourseManagement = () => {
             getValueFromEvent={(e) => (Array.isArray(e) ? e : e && e.fileList)}
           >
             <Upload
-              beforeUpload={() => false} // ngăn upload tự động
+              beforeUpload={() => false}
               fileList={fileList}
               onChange={({ fileList }) => setFileList(fileList)}
               accept="image/*"
               maxCount={1}
+              listType="picture"
             >
               <Button>Select Image</Button>
             </Upload>

@@ -78,7 +78,7 @@ const UserManager: React.FC = () => {
   const [userToDelete, setUserToDelete] = useState<Account | null>(null);
   const [avatarUploading, setAvatarUploading] = useState(false);
 
-  // Load user list
+  
   const loadUsers = () => {
     setLoading(true);
     AccountService.getAllAccounts()
@@ -172,9 +172,9 @@ const UserManager: React.FC = () => {
       email: record.email,
       phone: record.phone,
       gender: typeof record.gender === "number" ? record.gender : 1,
-      address: record.address || "Hai Duong", // default theo mẫu bạn gửi
+      address: record.address ,
       avtUrl: record.avtUrl || "",
-      password: "", // để trống nếu không đổi
+      password: "", 
     });
     setIsEditModalVisible(true);
   };

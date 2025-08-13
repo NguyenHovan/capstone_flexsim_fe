@@ -161,8 +161,14 @@ export const API = {
   ENROLLMENT_REQUEST: "/api/enrollmentRequest/create_enrollmentRequest",
   ENROLLMENT_REQUEST_STUDENT: "/api/enrollmentRequest/student",
   GET_ENROLLMENT_REQUEST: "/api/enrollmentRequest/get_all_enrollmentRequest",
-  ACCEPT_ENROLLMENT_REQUEST: "/api/enrollmentRequest/update_enrollmentRequest",
+  ACCEPT_ENROLLMENT_REQUEST:
+    "/api/enrollmentRequest/accepted_enrollmentRequest",
+  REJECT_ENROLLMENT_REQUEST:
+    "/api/enrollmentRequest/rejected_enrollmentRequest",
   DELETE_ENROLLMENT_REQUEST: "/api/enrollmentRequest/delete_enrollmentRequest",
+  GET_STUDENT_ENROLLMENT: "/api/enrollmentRequest/class",
+  GET_STUDENT_ENROLLMENT_CLASS_COURSE: "/api/enrollmentRequest/class-course",
+  ASSIGN_STUDENT_CLASS: "/api/enrollmentRequest/assign-student-to-class",
 
   //LESSON
   GET_ALL_LESSON: "/api/Lesson/get_all_lesson",

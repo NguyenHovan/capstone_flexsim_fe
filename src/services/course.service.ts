@@ -19,8 +19,8 @@ export const CourseService = {
   //   );
   //   return response.data;
   // },
-  createCourse: async (payload: CreateUpdateCourse) => {
-    const response = await axiosInstance.post(`${API.CREATE_COURSE}`, payload);
+  getCourseByOrgId: async (orgId: string) => {
+    const response = await axiosInstance.get(`${API. GET_ALL_COURSE_ORGID}/${orgId}`);
     return response.data;
   },
   updateCourse: async (id: string, payload: CreateUpdateCourse) => {
