@@ -11,7 +11,7 @@ import {
   Flex,
 } from "antd";
 import { PlayCircleOutlined } from "@ant-design/icons";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { CourseService } from "../../services/course.service";
@@ -21,6 +21,7 @@ import { CourseProgressService } from "../../services/course-progress.service";
 import CourseProgress from "./CourseProgress";
 import type { Course } from "../../types/course";
 import { TopicService } from "../../services/topic.service";
+import { LessonProgressService } from "../../services/lessonProgress.service";
 
 const CourseDetail = () => {
   const { id } = useParams();
@@ -32,7 +33,7 @@ const CourseDetail = () => {
   const [lessons, setLessons] = useState([]);
   const userString = localStorage.getItem("currentUser");
   const currentUser = userString ? JSON.parse(userString) : null;
-
+  const navigate = useNavigate();
   const fetchMyCourseProgress = async () => {
     try {
       const response = await CourseProgressService.getMyCourseProgress(
@@ -99,6 +100,17 @@ const CourseDetail = () => {
       toast.success(res.message);
     } catch {
       toast.error("Học viên đã gửi yêu cầu hoặc đang theo học khóa học này");
+    }
+  };
+  const handleComplete = async (lessonId: string) => {
+    try {
+      await LessonProgressService.updateLessonProgress(
+        currentUser.id,
+        lessonId
+      );
+      toast.success("Cập nhật thành công");
+    } catch (error: any) {
+      toast.error(error.response.data.message || "Cập nhật thất bại");
     }
   };
   useEffect(() => {
@@ -248,7 +260,6 @@ const CourseDetail = () => {
         >
           {selectedTopic && (
             <div style={{ maxHeight: "70vh", overflowY: "auto" }}>
-              {/* Description chung của topic */}
               {selectedTopic.description && (
                 <p style={{ marginBottom: 16 }}>{selectedTopic.description}</p>
               )}
@@ -264,6 +275,7 @@ const CourseDetail = () => {
                         padding: "12px 16px",
                         borderBottom: "1px solid #eee",
                       }}
+                      onClick={() => navigate(`/quiz-test/${lesson.id}`)}
                     >
                       <List.Item.Meta
                         title={`${(index + 1).toString().padStart(2, "0")}. ${
@@ -271,6 +283,12 @@ const CourseDetail = () => {
                         }`}
                         description={lesson.description}
                       />
+                      <Button
+                        type="primary"
+                        onClick={() => handleComplete(lesson.id)}
+                      >
+                        Hoàn thành
+                      </Button>
                     </List.Item>
                   )}
                 />

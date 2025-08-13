@@ -216,4 +216,8 @@ export const API = {
   SUBMIT_QUIZ_ANSWER: "/api/quizSubmission/submit_quiz",
 
   GET_LESSON_TOPIC: "/api/lesson/by-topic",
+  GET_LESSON_QUIZZ: "/api/lesson",
+
+  //Lesson progress
+  UPDATE_LESSON_PROGRESS: "/api/lessonProgress/update-lesson-progress",
 };

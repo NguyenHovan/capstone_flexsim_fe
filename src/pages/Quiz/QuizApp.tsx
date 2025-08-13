@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, Button, Radio, Row, Col, Badge } from "antd";
+import { useParams } from "react-router-dom";
+import { LessonService } from "../../services/lesson.service";
 
 const quizData = [
   {
@@ -16,15 +18,27 @@ const quizData = [
 ];
 
 export default function QuizApp() {
+  const [quizzes, setQuizzes] = useState<any[]>([]);
   const [currentQ, setCurrentQ] = useState(0);
   const [answers, setAnswers] = useState(Array(quizData.length).fill(null));
-
+  const { id } = useParams();
   const handleAnswer = (value: number) => {
     const updated = [...answers];
     updated[currentQ] = value;
     setAnswers(updated);
   };
-
+  const fetchQuizLesson = async () => {
+    try {
+      const response = await LessonService.getQuizzLesson(id);
+      setQuizzes(response);
+    } catch (error) {
+      setQuizzes([]);
+      console.log({ error });
+    }
+  };
+  useEffect(() => {
+    fetchQuizLesson();
+  }, []);
   return (
     <div className="container">
       <Row gutter={16} style={{ padding: 24 }}>
