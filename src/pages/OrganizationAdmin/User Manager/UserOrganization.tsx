@@ -65,7 +65,7 @@ const setEmailDuplicateError = (form: any, err: any) => {
     const data = err?.response?.data;
     const errors = data?.errors;
 
-    let msg: string | undefined =
+    const msg: string | undefined =
       errors?.Email?.[0] ||
       errors?.email?.[0] ||
       (typeof data === 'string' ? data : undefined) ||

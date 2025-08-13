@@ -1,4 +1,5 @@
 export const API = {
+  REGISTER: "/api/account/register-admin-account",
   //ACCOUNT
   GET_ALL_ACCOUNT: "/api/account/get_all",
   GET_ALL_ACCOUNT_ORGID: "api/account/get_all_by_org",
@@ -20,18 +21,22 @@ export const API = {
   UNBAN_ACCOUNT: "/api/account/unban_account",
 
   //ACCOUNT OF WORKSPACE
-  GET_ALL_ACCOUNTOFWORKSPACE: "/api/accountOfWorkSpace/get_all_accountOfWorkSpace",
-  GET_ACCOUNTOFWORKSPACES_ID:"/api/accountOfWorkSpace/get_accountOfWorkSpace",
-  CREATE_ACCOUNTOFWORKSPACE:"/api/accountOfWorkSpace/create_accountOfWorkSpace",
-  UPDATE_ACCOUNTOFWORKSPACE:"/api/accountOfWorkSpace/update_accountOfWorkSpace",
-  DELETE_ACCOUNTOFWORKSPACE:"/api/accountOfWorkSpace/delete_accountOfWorkSpace",
+  GET_ALL_ACCOUNTOFWORKSPACE:
+    "/api/accountOfWorkSpace/get_all_accountOfWorkSpace",
+  GET_ACCOUNTOFWORKSPACES_ID: "/api/accountOfWorkSpace/get_accountOfWorkSpace",
+  CREATE_ACCOUNTOFWORKSPACE:
+    "/api/accountOfWorkSpace/create_accountOfWorkSpace",
+  UPDATE_ACCOUNTOFWORKSPACE:
+    "/api/accountOfWorkSpace/update_accountOfWorkSpace",
+  DELETE_ACCOUNTOFWORKSPACE:
+    "/api/accountOfWorkSpace/delete_accountOfWorkSpace",
 
   //ANSWER
-  GET_ALL_ANSWER:"/api/answer/get_all_answer",
-  GET_ANSWER_ID:"/api/answer/get_answer",
-  CREATE_ANSWER:"/api/answer/create_answer",
-  UPDATE_ANSWER:"/api/answer/update_answer",
-  DELETE_ANSWER:"/api/answer/delete_answer",
+  GET_ALL_ANSWER: "/api/answer/get_all_answer",
+  GET_ANSWER_ID: "/api/answer/get_answer",
+  CREATE_ANSWER: "/api/answer/create_answer",
+  UPDATE_ANSWER: "/api/answer/update_answer",
+  DELETE_ANSWER: "/api/answer/delete_answer",
 
   //COURSE
   GET_ALL_COURSE: "/api/course/get_all",
@@ -44,11 +49,14 @@ export const API = {
   DELETE_COURSE: "/api/course/delete",
 
   //COURSE PROGRESS
-  GET_ALL_COURSEPROGRESS:"/api/CourseProgress/get_all_courseProgress",
-  GET_COURSEPROGRESS_ID:"/api/CourseProgress/get_courseProgress",
-  CREATE_COURSEPROGRESS:"/api/CourseProgress/create_courseProgress",
-  UPDATE_COURSEPROGRESS:"/api/CourseProgress/update_courseProgress",
-  DELETE_COURSEPROGRESS:"/api/CourseProgress/delete_courseProgress",
+  GET_ALL_COURSEPROGRESS: "/api/CourseProgress/get_all_courseProgress",
+  GET_COURSEPROGRESS_ID: "/api/CourseProgress/get_courseProgress",
+  CREATE_COURSEPROGRESS: "/api/CourseProgress/create_courseProgress",
+  UPDATE_COURSEPROGRESS: "/api/CourseProgress/update_courseProgress",
+  DELETE_COURSEPROGRESS: "/api/CourseProgress/delete_courseProgress",
+
+  //COURSE-PROGRESS
+  GET_MY_COURSE_PROGRESS: "/api/courseProgress/get_my_courseProgress",
 
   //CLASSES
   GET_ALL_CLASS: "/api/class/get_all_class",
@@ -60,10 +68,11 @@ export const API = {
   //TOPIC
   GET_ALL_TOPIC: "/api/topic/get_all_topic",
   GET_TOPIC_ID: "/api/topic/get_topic",
-  GET_TOPIC_COURSE:"/api/topic/by-course",
+  GET_TOPIC_COURSE: "/api/topic/by-course",
   CREATE_TOPIC: "/api/topic/create_topic",
   UPDATE_TOPIC: "/api/topic/update_topic",
   DELETE_TOPIC: "/api/topic/delete_topic",
+  GET_TOPIC_BY_COURSE: "/api/topic/by-course",
 
   //SCENE
   GET_ALL_SCENE: "/api/scene/get_all_scene",
@@ -82,13 +91,11 @@ export const API = {
 
   //SCENARIO
   GET_ALL_SCENARIO: "/api/scenario/get_all_scenario",
-  GET_ALL_SCENARIO_ORGID:"/api/scenario/get_all_by_org",
+  GET_ALL_SCENARIO_ORGID: "/api/scenario/get_all_by_org",
   GET_SCENARIO_ID: "/api/scenario/get_scenario",
   CREATE_SCENARIO: "/api/scenario/create_scenario",
   UPDATE_SCENARIO: "/api/scenario/update_scenario",
   DELETE_SCENARIO: "/api/scenario/delete_scenario",
-  
-
 
   //QUIZ
   GET_ALL_QUIZ: "/api/quiz/get_all_quiz",
@@ -100,7 +107,7 @@ export const API = {
   DELETE_QUIZ: "/api/quiz/delete_quiz",
 
   //QUIZ SUBMISSION
-  SUBMIT_QUIZ:"/api/quizSubmission/submit_quiz",
+  SUBMIT_QUIZ: "/api/quizSubmission/submit_quiz",
 
   //REVIEW
   GET_ALL_REVIEW: "/api/review/get_all_review",
@@ -111,11 +118,11 @@ export const API = {
 
   //WORKSPACE
   GET_ALL_WORKSPACE: "/api/workspace/get_all_workSpace",
-  GET_ALL_WORKSPACE_ORGID:"/api/workspace/get_all_by_org",
-  GET_WORKSPACES_ID:"/api/workspace/get_workSpace",
-  CREATE_WORKSPACE:"/api/workspace/create_workSpace",
-  UPDATE_WORKSPACE:"/api/workspace/update_workSpace",
-  DELETE_WORKSPACE:"/api/workspace/delete_workSpace",
+  GET_ALL_WORKSPACE_ORGID: "/api/workspace/get_all_by_org",
+  GET_WORKSPACES_ID: "/api/workspace/get_workSpace",
+  CREATE_WORKSPACE: "/api/workspace/create_workSpace",
+  UPDATE_WORKSPACE: "/api/workspace/update_workSpace",
+  DELETE_WORKSPACE: "/api/workspace/delete_workSpace",
 
   //UPLOAD FILE
   UPLOAD_FILE: "/api/Cloudinary/upload",
@@ -127,25 +134,24 @@ export const API = {
   CREATE_ORGANIZATION: "/api/organization/create_organization",
   UPDATE_ORGANIZATION: "/api/organization/update_organization",
   DELETE_ORGANIZATION: "/api/organization/delete_organization",
-  
-// ORDER 
-  GET_ALL_ORDER:"/api/orders",
-  GET_ORDER_ID:"/api/orders",
-  DELETE_ORDER:"/api/orders",
-  CREATE_ORDER:"/api/orders/create",
-  UPDATE_ORDER:"/api/orders/status",
+
+  // ORDER
+  GET_ALL_ORDER: "/api/orders",
+  GET_ORDER_ID: "/api/orders",
+  DELETE_ORDER: "/api/orders",
+  CREATE_ORDER: "/api/orders/create",
+  UPDATE_ORDER: "/api/orders/status",
 
   // SUBCRIPTION PLAND
 
-  GET_ALL_SUBCRIPTION:"/api/subscription-plan/get_all",
-  GET_SUBCRIPTION_ID:"/api/subscription-plan/get",
-  DELETE_SUBCRIPTION:"/api/subscription-plan/delete",
-  CREATE_SUBCRIPTION:"/api/subscription-plan/create",
-  UPDATE_SUBCRIPTION:"/api/subscription-plan/update",
-
+  GET_ALL_SUBCRIPTION: "/api/subscription-plan/get_all",
+  GET_SUBCRIPTION_ID: "/api/subscription-plan/get",
+  DELETE_SUBCRIPTION: "/api/subscription-plan/delete",
+  CREATE_SUBCRIPTION: "/api/subscription-plan/create",
+  UPDATE_SUBCRIPTION: "/api/subscription-plan/update",
 
   //AUTH
-  LOGIN_WITH_GOOGLE:"/api/auth/login_google",
+  LOGIN_WITH_GOOGLE: "/api/auth/login_google",
 
   //CATEGORY
   GET_ALL_CATEGORY: "/api/category/get_all",
@@ -155,7 +161,7 @@ export const API = {
   DELETE_CATEGORY: "/api/category/delete",
 
   //CHAT
-  CREATE_CHAT:"/chat",
+  CREATE_CHAT: "/chat",
 
   //EnrollmentRequest
   ENROLLMENT_REQUEST: "/api/enrollmentRequest/create_enrollmentRequest",
@@ -173,25 +179,25 @@ export const API = {
   //LESSON
   GET_ALL_LESSON: "/api/Lesson/get_all_lesson",
   CREATE_LESSON: "/api/Lesson/create_lesson",
-  GET_LESSON_ID:"/api/Lesson/get_lesson",
-  GET_LESSON_TOPIC_ID:"/api/Lesson/by-topic",
+  GET_LESSON_ID: "/api/Lesson/get_lesson",
+  GET_LESSON_TOPIC_ID: "/api/Lesson/by-topic",
   UPDATE_LESSON: "/api/Lesson/update_lesson",
-  DELETE_LESSON:"/api/Lesson/delete_notification",
+  DELETE_LESSON: "/api/Lesson/delete_notification",
 
   //LESSON PROGRESS
   GET_ALL_LESSONPROGRESS: "/api/LessonProgress/get_all_lessonProgress",
   CREATE_LESSONPROGRESS: "/api/LessonProgress/create_lessonProgress",
-  GET_LESSONPROGRESS_ID:"/api/LessonProgress/get_lessonProgress",
+  GET_LESSONPROGRESS_ID: "/api/LessonProgress/get_lessonProgress",
   UPDATE_LESSONPROGRESS: "/api/LessonProgress/update_lessonProgress",
   UPDATE_LESSONPROGRESS_LESSON: "/api/LessonProgress/update_lesson",
-  DELETE_LESSONPROGRESS:"/api/LessonProgress/delete_lessonProgress",
+  DELETE_LESSONPROGRESS: "/api/LessonProgress/delete_lessonProgress",
 
   //NOTIFICATION
-  GET_ALL_NOTIFICATION:"/api/notification/get_all_notification",
-  GET_NOTIFICATION_ID:"/api/notification/get_notification",
-  CREATE_NOTIFICATION:"/api/notification/create_notification",
-  UPDATE_NOTIFICATION:"/api/notification/update_notification",
-  DELETE_NOTIFICATION:"/api/notification/delete_notification",
+  GET_ALL_NOTIFICATION: "/api/notification/get_all_notification",
+  GET_NOTIFICATION_ID: "/api/notification/get_notification",
+  CREATE_NOTIFICATION: "/api/notification/create_notification",
+  UPDATE_NOTIFICATION: "/api/notification/update_notification",
+  DELETE_NOTIFICATION: "/api/notification/delete_notification",
 
   //PAYMENT
   
@@ -201,13 +207,14 @@ export const API = {
   GET_PAYMENT_ID:"/api/payment/get_payment",
 
   //QUESTION
-  GET_ALL_QUESTION:"/api/question/get_all_question",
-  GET_QUESTION_ID:"/api/question/get_question",
-  CREATE_QUESTION:"/api/question/create_question",
-  UPDATE_QUESTION:"/api/question/update_question",
-  DELETE_QUESTION:"/api/question/delete_question",
+  GET_ALL_QUESTION: "/api/question/get_all_question",
+  GET_QUESTION_ID: "/api/question/get_question",
+  CREATE_QUESTION: "/api/question/create_question",
+  UPDATE_QUESTION: "/api/question/update_question",
+  DELETE_QUESTION: "/api/question/delete_question",
 
   //QUIZ SUBMIT
-  SUBMIT_QUIZ_ANSWER:"/api/quizSubmission/submit_quiz",
+  SUBMIT_QUIZ_ANSWER: "/api/quizSubmission/submit_quiz",
 
+  GET_LESSON_TOPIC: "/api/lesson/by-topic",
 };
