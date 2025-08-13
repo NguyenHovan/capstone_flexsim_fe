@@ -32,7 +32,7 @@ import OrganizationAdminOverview from "../pages/OrganizationAdmin/Overview";
 import WorkspaceOrganization from "../pages/OrganizationAdmin/Workspace Manager/WorkspaceOrganization";
 import UserOrganization from "../pages/OrganizationAdmin/User Manager/UserOrganization";
 import PrivateRoute from "./PrivateRoute";
-import ClassManagerOrgAdmin from "../pages/OrganizationAdmin/Class Manager/ClassOrganization";
+// import ClassManagerOrgAdmin from "../pages/OrganizationAdmin/Class Manager/ClassOrganization";
 import QuizApp from "../pages/Quiz/QuizApp";
 import LessonManagement from "../pages/Instructor/Manage-Lesson/LessonManagement";
 import EnrollManage from "../pages/Instructor/Manage-Enrollment-Request/EnrollManage";
@@ -41,9 +41,9 @@ import OrderOrganization from "../pages/OrganizationAdmin/Order Manager/OrderMan
 import PaymentSuccess from "../pages/Payment/PaymentSuccess";
 import PaymentFail from "../pages/Payment/PaymentFailure";
 import OrderAdmin from "../pages/Admin/Order Manager/OrderAdmin";
-import LessonOrganization from "../pages/OrganizationAdmin/Lesson Manager/LessonOrganization";
-import TopicOrganization from "../pages/OrganizationAdmin/Topic Manager/TopicOrganization";
-import CategoryOrganization from "../pages/OrganizationAdmin/Category Manager/CategoryOrganization";
+// import LessonOrganization from "../pages/OrganizationAdmin/Lesson Manager/LessonOrganization";
+// import TopicOrganization from "../pages/OrganizationAdmin/Topic Manager/TopicOrganization";
+// import CategoryOrganization from "../pages/OrganizationAdmin/Category Manager/CategoryOrganization";
 
 const MainRoute = () => {
   return (
@@ -120,10 +120,7 @@ const MainRoute = () => {
           <Route path="user-manager" element={<UserOrganization />} />
           <Route path="workspace-manager" element={<WorkspaceOrganization />} />
           <Route path="order-manager" element={<OrderOrganization />} />
-         <Route path="topic-manager" element={<TopicOrganization />} />
-          <Route path="class-manager" element={<ClassManagerOrgAdmin />} />
-          <Route path="lesson-manager" element={<LessonOrganization />} />
-          <Route path="category-manager" element={<CategoryOrganization />} />
+        
 
 
         </Route>

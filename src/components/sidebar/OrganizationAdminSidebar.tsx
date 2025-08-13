@@ -37,26 +37,26 @@ const OrganizationAdminSidebar = () => {
       icon: <SettingOutlined />,
       path: "/organizationAdmin/workspace-manager",
     },
-    {
-      label: "Class Manager",
-      icon: <SettingOutlined />,
-      path: "/organizationAdmin/class-manager",
-    },
-    {
-      label: "Lesson Manager",
-      icon: <SettingOutlined />,
-      path: "/organizationAdmin/lesson-manager",
-    },
-    {
-      label: "Topic Manager",
-      icon: <SettingOutlined />,
-      path: "/organizationAdmin/topic-manager",
-    },
-    {
-      label: "Category Manager",
-      icon: <SettingOutlined />,
-      path: "/organizationAdmin/category-manager",
-    },
+    // {
+    //   label: "Class Manager",
+    //   icon: <SettingOutlined />,
+    //   path: "/organizationAdmin/class-manager",
+    // },
+    // {
+    //   label: "Lesson Manager",
+    //   icon: <SettingOutlined />,
+    //   path: "/organizationAdmin/lesson-manager",
+    // },
+    // {
+    //   label: "Topic Manager",
+    //   icon: <SettingOutlined />,
+    //   path: "/organizationAdmin/topic-manager",
+    // },
+    // {
+    //   label: "Category Manager",
+    //   icon: <SettingOutlined />,
+    //   path: "/organizationAdmin/category-manager",
+    // },
 
     {
       label: "Order Manager",

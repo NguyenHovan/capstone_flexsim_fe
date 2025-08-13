@@ -29,16 +29,25 @@ export const AccountService = {
       throw error; 
     }
   },
-getAccountByOrgId: async (orgId: string): Promise<Account> => {
+getAllByOrgId: async (orgId: string): Promise<Account[]> => {
     try {
-      const { data } = await axiosInstance.get(`${API.GET_ALL_ACCOUNT_ORGID}/${orgId}`);
-      return data as Account;
-    } catch (error: any) {
+      const res = await axiosInstance.get(`${API.GET_ALL_ACCOUNT_ORGID}/${orgId}`);
+      const payload = res?.data;
+
+      const list =
+        Array.isArray(payload) ? payload :
+        Array.isArray(payload?.data) ? payload.data :
+        Array.isArray(payload?.items) ? payload.items :
+        [];
+
+      return list as Account[];
+    } catch (error) {
       const msg = getErrorMessage(error);
-      console.error(`Error fetching account ${orgId}:`, msg);
-      throw error; 
+      console.error('Error fetching accounts by orgId:', msg);
+      throw new Error(msg);
     }
   },
+
 
   registerOrganizationAdmin: async (payload: OrganizationAdminForm): Promise<Account> => {
     try {
@@ -96,6 +105,7 @@ getAccountByOrgId: async (orgId: string): Promise<Account> => {
       const msg = getErrorMessage(error);
       console.error(`Error updating account ${id}:`, msg);
       throw error; 
+      
     }
   },
 
