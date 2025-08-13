@@ -1,49 +1,61 @@
 import { useEffect, useState } from "react";
-import { Card, Button, Radio, Row, Col, Badge } from "antd";
+import { Card, Button, Radio, Row, Col, Badge, Empty } from "antd";
 import { useParams } from "react-router-dom";
 import { LessonService } from "../../services/lesson.service";
 
-const quizData = [
-  {
-    question:
-      "The palace was decorated with ___ furnishings and artwork. (Chọn từ trái nghĩa với 'modest')",
-    options: ["simple", "modest", "sumptuous", "sparse"],
-    correct: 2,
-  },
-  {
-    question: "He gave a ___ performance that amazed everyone.",
-    options: ["dull", "incredible", "lazy", "weak"],
-    correct: 1,
-  },
-];
+interface Quiz {
+  quizId: string;
+  quizName: string;
+  options?: string[];
+  correct?: number;
+}
 
 export default function QuizApp() {
-  const [quizzes, setQuizzes] = useState<any[]>([]);
+  const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [currentQ, setCurrentQ] = useState(0);
-  const [answers, setAnswers] = useState(Array(quizData.length).fill(null));
+  const [answers, setAnswers] = useState<number[]>([]);
   const { id } = useParams();
+
+  const fetchQuizLesson = async () => {
+    try {
+      const response = await LessonService.getQuizzLesson(id ?? "");
+      if (response && response.length > 0) {
+        setQuizzes(response);
+        setAnswers(Array(response.length).fill(null));
+      } else {
+        setQuizzes([]);
+      }
+    } catch (error) {
+      console.log({ error });
+      setQuizzes([]);
+    }
+  };
+
+  useEffect(() => {
+    fetchQuizLesson();
+  }, [id]);
+
   const handleAnswer = (value: number) => {
     const updated = [...answers];
     updated[currentQ] = value;
     setAnswers(updated);
   };
-  const fetchQuizLesson = async () => {
-    try {
-      const response = await LessonService.getQuizzLesson(id);
-      setQuizzes(response);
-    } catch (error) {
-      setQuizzes([]);
-      console.log({ error });
-    }
-  };
-  useEffect(() => {
-    fetchQuizLesson();
-  }, []);
+
+  if (!quizzes || quizzes.length === 0) {
+    return (
+      <div style={{ padding: 24 }}>
+        <Empty description="Bài giảng không có quiz" />
+      </div>
+    );
+  }
+
+  const currentQuiz = quizzes[currentQ];
+
   return (
     <div className="container">
       <Row gutter={16} style={{ padding: 24 }}>
         <Col xs={24} md={16}>
-          <Card title={`English Quiz - Q ${currentQ + 1} / ${quizData.length}`}>
+          <Card title={`Quiz - Q ${currentQ + 1} / ${quizzes.length}`}>
             <p
               style={{
                 backgroundColor: "#f6ffed",
@@ -51,24 +63,26 @@ export default function QuizApp() {
                 borderRadius: 6,
               }}
             >
-              {quizData[currentQ].question}
+              {currentQuiz.quizName}
             </p>
 
-            <Radio.Group
-              onChange={(e) => handleAnswer(e.target.value)}
-              value={answers[currentQ]}
-              style={{ display: "block", marginTop: 16 }}
-            >
-              {quizData[currentQ].options.map((opt, idx) => (
-                <Radio
-                  style={{ display: "block", margin: "8px 0" }}
-                  key={idx}
-                  value={idx}
-                >
-                  {opt}
-                </Radio>
-              ))}
-            </Radio.Group>
+            {currentQuiz.options && currentQuiz.options.length > 0 && (
+              <Radio.Group
+                onChange={(e) => handleAnswer(e.target.value)}
+                value={answers[currentQ]}
+                style={{ display: "block", marginTop: 16 }}
+              >
+                {currentQuiz.options.map((opt, idx) => (
+                  <Radio
+                    style={{ display: "block", margin: "8px 0" }}
+                    key={idx}
+                    value={idx}
+                  >
+                    {opt}
+                  </Radio>
+                ))}
+              </Radio.Group>
+            )}
 
             <div
               style={{
@@ -79,13 +93,15 @@ export default function QuizApp() {
             >
               <Button
                 onClick={() => setCurrentQ((prev) => Math.max(prev - 1, 0))}
+                disabled={currentQ === 0}
               >
                 Previous
               </Button>
               <Button
                 onClick={() =>
-                  setCurrentQ((prev) => Math.min(prev + 1, quizData.length - 1))
+                  setCurrentQ((prev) => Math.min(prev + 1, quizzes.length - 1))
                 }
+                disabled={currentQ === quizzes.length - 1}
               >
                 Next
               </Button>
@@ -96,7 +112,7 @@ export default function QuizApp() {
         <Col xs={24} md={8}>
           <Card title="Quiz Status">
             <Row gutter={[8, 8]}>
-              {quizData.map((_, idx) => {
+              {quizzes.map((_, idx) => {
                 const isAnswered = answers[idx] !== null;
                 const isCurrent = currentQ === idx;
                 return (

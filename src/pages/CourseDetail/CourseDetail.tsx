@@ -285,7 +285,10 @@ const CourseDetail = () => {
                       />
                       <Button
                         type="primary"
-                        onClick={() => handleComplete(lesson.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleComplete(lesson.id);
+                        }}
                       >
                         Hoàn thành
                       </Button>
