@@ -84,18 +84,13 @@ const TopicManagement = () => {
   };
 
   const handleDelete = async (id: string) => {
-    Modal.confirm({
-      title: "Bạn có chắc chắn muốn xóa topic này?",
-      onOk: async () => {
-        try {
-          await TopicService.deleteTopic(id);
-          toast.success("Xóa thành công!");
-          fetchTopics();
-        } catch (err) {
-          toast.error("Xóa thất bại!");
-        }
-      },
-    });
+    try {
+      await TopicService.deleteTopic(id);
+      toast.success("Xóa thành công!");
+      fetchTopics();
+    } catch (err) {
+      toast.error("Xóa thất bại!");
+    }
   };
 
   const handleSubmit = async () => {

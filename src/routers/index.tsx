@@ -41,6 +41,7 @@ import PaymentSuccess from "../pages/Payment/PaymentSuccess";
 import PaymentFail from "../pages/Payment/PaymentFailure";
 import OrderAdmin from "../pages/Admin/Order Manager/OrderAdmin";
 
+import AddStudentPage from "../pages/Instructor/Add-student/Add-student";
 
 const MainRoute = () => {
   return (
@@ -100,7 +101,10 @@ const MainRoute = () => {
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<Navigate to="overview" replace />} />
           <Route path="overview" element={<AdminOverview />} />
-          <Route path="organization-manager" element={<OrganizationManager />} />
+          <Route
+            path="organization-manager"
+            element={<OrganizationManager />}
+          />
           <Route path="user-manager" element={<UserManager />} />
           <Route path="workspace-manager" element={<WorkspaceManager />} />
           <Route path="subscriptionPlan-manager" element={<SubscriptionPlanAdmin />} />
@@ -129,6 +133,10 @@ const MainRoute = () => {
           <Route path="/instructor" element={<Overview />} />
           <Route path="/instructor-course" element={<CourseManagement />} />
           <Route path="/instructor-class" element={<ManageClass />} />
+          <Route
+            path="/instructor-class/add-student/:id/:courseId"
+            element={<AddStudentPage />}
+          />
           <Route path="/instructor-topic" element={<TopicManagement />} />
           <Route path="/instructor-scene" element={<SceneManagement />} />
           <Route path="/instructor-quiz" element={<QuizManagement />} />

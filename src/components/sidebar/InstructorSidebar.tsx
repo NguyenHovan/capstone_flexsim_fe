@@ -38,6 +38,12 @@ const sidebarItems = [
     url: "/instructor-enroll-request",
   },
   {
+    key: "Classes",
+    icon: <UserOutlined />,
+    label: "Classes",
+    url: "/instructor-class",
+  },
+  {
     key: "Topics",
     icon: <TeamOutlined />,
     label: "Topics",
