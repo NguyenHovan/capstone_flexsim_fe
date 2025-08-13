@@ -1,0 +1,6 @@
+.ls-filter { display:flex; gap:8px; }
+.ls-pill {
+  border:1px solid #e5e7eb; background:#fff; padding:4px 10px; border-radius:999px;
+  font-size:12px; cursor:pointer;
+}
+.ls-pill.is-active { background:#1677ff; color:#fff; border-color:#1677ff; }

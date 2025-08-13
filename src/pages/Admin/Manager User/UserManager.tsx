@@ -12,20 +12,27 @@ import {
   Switch,
   message,
   Select,
+  Image,
+  Upload,
 } from "antd";
-import { EyeOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import {
+  EyeOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  UploadOutlined,
+} from "@ant-design/icons";
 import { useState, useEffect } from "react";
 import { AccountService } from "../../../services/account.service";
 import { OrganizationService } from "../../../services/organization-manager.service";
 import type { Account } from "../../../types/account";
 import type { Organization } from "../../../types/organization";
 import type { ColumnsType } from "antd/es/table";
+import type { UploadRequestOption as RcCustomRequestOptions } from "rc-upload/lib/interface";
 import "./userManager.css";
-import { toast } from "sonner"; // Import toast from sonner
+import { toast } from "sonner";
 
 const { Content } = Layout;
 const { Title } = Typography;
-const { Option } = Select;
 
 const ROLE_MAP: Record<number, string> = {
   1: "Admin",
@@ -33,11 +40,29 @@ const ROLE_MAP: Record<number, string> = {
   3: "Instructor",
   4: "Student",
 };
+
+// Gender 1/2/3
 const GENDER_MAP: Record<number, string> = {
-  0: "Male",
-  1: "Female",
-  2: "Other",
+  1: "Male",
+  2: "Female",
+  3: "Other",
 };
+
+const ROLE_OPTIONS = [
+  { label: "Admin", value: 1 },
+  { label: "Organization Admin", value: 2 },
+  { label: "Instructor", value: 3 },
+  { label: "Student", value: 4 },
+];
+
+const GENDER_OPTIONS = [
+  { label: "Male", value: 1 },
+  { label: "Female", value: 2 },
+  { label: "Other", value: 3 },
+];
+
+const avatarFallback = (name?: string) =>
+  `https://ui-avatars.com/api/?name=${encodeURIComponent(name || "U")}`;
 
 const UserManager: React.FC = () => {
   const [users, setUsers] = useState<Account[]>([]);
@@ -51,8 +76,9 @@ const UserManager: React.FC = () => {
   const [viewingUser, setViewingUser] = useState<Account | null>(null);
   const [isDeleteConfirmVisible, setIsDeleteConfirmVisible] = useState(false);
   const [userToDelete, setUserToDelete] = useState<Account | null>(null);
+  const [avatarUploading, setAvatarUploading] = useState(false);
 
-  // Load user list
+  
   const loadUsers = () => {
     setLoading(true);
     AccountService.getAllAccounts()
@@ -94,7 +120,7 @@ const UserManager: React.FC = () => {
               err?.response?.data?.message ||
               "This email is already in use. Please choose another one";
 
-            if (errorMessage.includes("Email")) {
+            if (errorMessage.toLowerCase().includes("email")) {
               toast.error(
                 "This email is already in use. Please choose another one."
               );
@@ -109,22 +135,20 @@ const UserManager: React.FC = () => {
             } else {
               toast.error(errorMessage);
             }
-            setLoading(false);
           })
           .finally(() => setLoading(false));
       })
       .catch(() => {
-        setLoading(false);
         toast.error("Validation failed! Please check your input.");
       });
   };
 
+  // Ban/Unban thay vì update full record cho isActive
   const handleToggleActive = (checked: boolean, record: Account) => {
     setLoading(true);
-    AccountService.updateAccount(record.id, { ...record, isActive: checked })
-      .then(() => {
-        loadUsers();
-      })
+    const fn = checked ? AccountService.unbanAccount : AccountService.banAccount;
+    fn(record.id)
+      .then(loadUsers)
       .catch((err) =>
         message.error(
           err?.response?.data?.message || "Failed to update active status"
@@ -141,22 +165,25 @@ const UserManager: React.FC = () => {
   const handleEditUser = (record: Account) => {
     setEditingUser(record);
     form.setFieldsValue({
+      organizationId: record.organizationId,
+      roleId: record.roleId,
       userName: record.userName,
       fullName: record.fullName,
       email: record.email,
       phone: record.phone,
-      gender: typeof record.gender === "number" ? record.gender : 0,
-      address: record.address || "",
+      gender: typeof record.gender === "number" ? record.gender : 1,
+      address: record.address ,
+      avtUrl: record.avtUrl || "",
+      password: "", 
     });
     setIsEditModalVisible(true);
   };
 
-  // Show custom confirm
+  // Xoá
   const handleDeleteUser = (user: Account) => {
     setUserToDelete(user);
     setIsDeleteConfirmVisible(true);
   };
-  // Xác nhận xóa
   const confirmDeleteUser = () => {
     if (!userToDelete) return;
     setLoading(true);
@@ -164,42 +191,66 @@ const UserManager: React.FC = () => {
       .then(() => {
         setUsers((users) => users.filter((u) => u.id !== userToDelete.id));
         message.success("User deleted successfully");
-        setIsDeleteConfirmVisible(false);
-        setUserToDelete(null);
       })
       .catch((err) => {
         message.error(err?.response?.data?.message || "Failed to delete user");
+      })
+      .finally(() => {
         setIsDeleteConfirmVisible(false);
         setUserToDelete(null);
-      })
-      .finally(() => setLoading(false));
+        setLoading(false);
+      });
   };
   const cancelDeleteUser = () => {
     setIsDeleteConfirmVisible(false);
     setUserToDelete(null);
   };
 
-  // Update user (cập nhật real time + lỗi custom)
+  // Upload avatar -> BE -> Cloudinary
+  const handleAvatarUpload = async (options: RcCustomRequestOptions) => {
+    const { file, onError, onSuccess } = options;
+    try {
+      setAvatarUploading(true);
+      const url = await AccountService.uploadAvatar(file as File);
+      form.setFieldValue("avtUrl", url);
+      onSuccess && onSuccess({ url } as any);
+      message.success("Avatar uploaded successfully");
+    } catch (err: any) {
+      onError && onError(err);
+      message.error(err?.message || "Upload avatar failed");
+    } finally {
+      setAvatarUploading(false);
+    }
+  };
+
+  // Update user với payload chuẩn
   const handleUpdateUser = () => {
     form.validateFields().then((values) => {
       if (!editingUser) return;
       setLoading(true);
+
       const payload = {
-        ...editingUser,
-        ...values,
-        gender: Number(values.gender),
-        address: values.address || "",
+        userName: values.userName || "",
+        fullName: values.fullName || "",
+        organizationId: values.organizationId || "",
+        roleId: Number(values.roleId),
+        email: values.email || "",
+        phone: values.phone || "",
+        password: values.password ? String(values.password) : undefined,
+        gender: Number(values.gender), // 1/2/3
+        address: values.address || "Hai Duong",
+        avtUrl: values.avtUrl || "",
       };
+
       AccountService.updateAccount(editingUser.id, payload)
         .then(() => {
-          loadUsers();
+          message.success("User updated successfully");
           setIsEditModalVisible(false);
           setEditingUser(null);
           form.resetFields();
-          message.success("User updated successfully");
+          loadUsers();
         })
         .catch((err) => {
-          // Ưu tiên show lỗi BE trả về (nếu có)
           message.error(
             err?.response?.data?.message || "Failed to update user"
           );
@@ -208,12 +259,33 @@ const UserManager: React.FC = () => {
     });
   };
 
-  const handleCreateModalClose = () => {
-    setIsCreateModalVisible(false);
-  };
-
   const columns: ColumnsType<Account> = [
     { title: "ID", dataIndex: "id", key: "id", ellipsis: true, width: 180 },
+
+    // Cột hiển thị ảnh theo yêu cầu: label "Imange"
+    {
+      title: "Imange",
+      dataIndex: "avtUrl",
+      key: "image",
+      width: 110,
+      render: (url: string, record: Account) => (
+        <Image
+          src={url || avatarFallback(record.fullName || record.userName)}
+          fallback={avatarFallback(record.fullName || record.userName)}
+          width={40}
+          style={{
+            height: 40,
+            objectFit: "cover",
+            borderRadius: 8,
+            display: "block",
+            margin: "0 auto",
+          }}
+          preview={!!url ? { mask: "Preview" } : false}
+          alt={`avatar-${record.userName}`}
+        />
+      ),
+    },
+
     {
       title: "Organization",
       dataIndex: "organizationId",
@@ -230,43 +302,19 @@ const UserManager: React.FC = () => {
       dataIndex: "roleId",
       key: "roleId",
       ellipsis: true,
-      width: 120,
+      width: 140,
       render: (roleId: number) => ROLE_MAP[roleId] || roleId,
     },
-    {
-      title: "Username",
-      dataIndex: "userName",
-      key: "userName",
-      ellipsis: true,
-      width: 140,
-    },
-    {
-      title: "Full Name",
-      dataIndex: "fullName",
-      key: "fullName",
-      ellipsis: true,
-      width: 140,
-    },
-    {
-      title: "Email",
-      dataIndex: "email",
-      key: "email",
-      ellipsis: true,
-      width: 200,
-    },
-    {
-      title: "Phone",
-      dataIndex: "phone",
-      key: "phone",
-      ellipsis: true,
-      width: 120,
-    },
+    { title: "Username", dataIndex: "userName", key: "userName", ellipsis: true, width: 140 },
+    { title: "Full Name", dataIndex: "fullName", key: "fullName", ellipsis: true, width: 160 },
+    { title: "Email", dataIndex: "email", key: "email", ellipsis: true, width: 220 },
+    { title: "Phone", dataIndex: "phone", key: "phone", ellipsis: true, width: 140 },
     {
       title: "Gender",
       dataIndex: "gender",
       key: "gender",
       ellipsis: true,
-      width: 100,
+      width: 120,
       render: (gender: number) => GENDER_MAP[gender] ?? "N/A",
     },
     {
@@ -274,30 +322,15 @@ const UserManager: React.FC = () => {
       dataIndex: "address",
       key: "address",
       ellipsis: true,
-      width: 170,
+      width: 200,
       render: (address: string) => address || "N/A",
-    },
-    {
-      title: "Avatar",
-      dataIndex: "avtUrl",
-      key: "avtUrl",
-      ellipsis: true,
-      width: 90,
-      render: (url: string) =>
-        url ? (
-          <a href={url} target="_blank" rel="noopener noreferrer">
-            View
-          </a>
-        ) : (
-          "N/A"
-        ),
     },
     {
       title: "Email Verified",
       dataIndex: "isEmailVerify",
       key: "isEmailVerify",
       ellipsis: true,
-      width: 120,
+      width: 140,
       render: (v: boolean) => (v ? "Yes" : "No"),
     },
     {
@@ -305,7 +338,7 @@ const UserManager: React.FC = () => {
       dataIndex: "isActive",
       key: "isActive",
       ellipsis: true,
-      width: 90,
+      width: 110,
       render: (isActive: boolean, record: Account) => (
         <Switch
           checked={isActive}
@@ -318,7 +351,7 @@ const UserManager: React.FC = () => {
       dataIndex: "createdAt",
       key: "createdAt",
       ellipsis: true,
-      width: 110,
+      width: 180,
       render: (date: string) =>
         date ? new Date(date).toLocaleString() : "N/A",
     },
@@ -327,7 +360,7 @@ const UserManager: React.FC = () => {
       dataIndex: "updatedAt",
       key: "updatedAt",
       ellipsis: true,
-      width: 170,
+      width: 180,
       render: (date: string) =>
         date ? new Date(date).toLocaleString() : "N/A",
     },
@@ -336,14 +369,14 @@ const UserManager: React.FC = () => {
       dataIndex: "deleteAt",
       key: "deleteAt",
       ellipsis: true,
-      width: 110,
+      width: 180,
       render: (date: string) =>
         date ? new Date(date).toLocaleString() : "N/A",
     },
     {
       title: "Actions",
       key: "actions",
-      width: 200,
+      width: 220,
       render: (_: any, record: Account) => (
         <div>
           <Button
@@ -388,19 +421,20 @@ const UserManager: React.FC = () => {
             </Button>
           </Col>
         </Row>
+
         <Card>
           <Table
             columns={columns}
             dataSource={users}
             rowKey="id"
             pagination={{ pageSize: 10 }}
-            scroll={{ x: 2200 }}
+            scroll={{ x: 2400 }}
             loading={loading}
             bordered
           />
         </Card>
 
-        {/* Modal xem chi tiết */}
+        {/* View details */}
         <Modal
           title="View User Details"
           open={isViewModalVisible}
@@ -415,9 +449,8 @@ const UserManager: React.FC = () => {
               </p>
               <p>
                 <strong>Organization:</strong>{" "}
-                {organizations.find(
-                  (org) => org.id === viewingUser.organizationId
-                )?.organizationName || viewingUser.organizationId}
+                {organizations.find((org) => org.id === viewingUser.organizationId)
+                  ?.organizationName || viewingUser.organizationId}
               </p>
               <p>
                 <strong>Role:</strong> {ROLE_MAP[viewingUser.roleId]}
@@ -477,7 +510,7 @@ const UserManager: React.FC = () => {
           )}
         </Modal>
 
-        {/* Modal chỉnh sửa user */}
+        {/* Edit user */}
         <Modal
           title="Edit User"
           open={isEditModalVisible}
@@ -489,72 +522,95 @@ const UserManager: React.FC = () => {
           onOk={handleUpdateUser}
           okText="Save"
           cancelText="Cancel"
-        >
-          <Form form={form} layout="vertical">
-            <Form.Item
-              name="userName"
-              label="Username"
-              rules={[{ required: true }]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              name="fullName"
-              label="Full Name"
-              rules={[{ required: true }]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              name="email"
-              label="Email"
-              rules={[{ required: true, type: "email" }]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item name="phone" label="Phone" rules={[{ required: true }]}>
-              <Input />
-            </Form.Item>
-            <Form.Item
-              name="gender"
-              label="Gender"
-              rules={[{ required: true }]}
-            >
-              <Select>
-                <Option value={0}>Male</Option>
-                <Option value={1}>Female</Option>
-                <Option value={2}>Other</Option>
-              </Select>
-            </Form.Item>
-            <Form.Item
-              name="address"
-              label="Address"
-              rules={[{ required: true, message: "Please enter address!" }]}
-            >
-              <Input />
-            </Form.Item>
-          </Form>
-        </Modal>
-
-        <Modal
-          title="Create Organization Admin"
-          visible={isCreateModalVisible}
-          onCancel={handleCreateModalClose}
-          footer={null}
+          confirmLoading={loading}
+          destroyOnClose
         >
           <Form form={form} layout="vertical">
             <Form.Item
               name="organizationId"
               label="Organization"
-              rules={[
-                { required: true, message: "Please select an organization!" },
-              ]}
+              rules={[{ required: true, message: "Please select organization" }]}
+            >
+              <Select
+                showSearch
+                options={organizations.map((o) => ({
+                  label: o.organizationName,
+                  value: o.id,
+                }))}
+                filterOption={(input, option) =>
+                  (option?.label as string)
+                    .toLowerCase()
+                    .includes(input.toLowerCase())
+                }
+              />
+            </Form.Item>
+
+            <Form.Item name="roleId" label="Role" rules={[{ required: true }]}>
+              <Select options={ROLE_OPTIONS} />
+            </Form.Item>
+
+            <Form.Item name="userName" label="Username" rules={[{ required: true }]}>
+              <Input />
+            </Form.Item>
+            <Form.Item name="fullName" label="Full Name" rules={[{ required: true }]}>
+              <Input />
+            </Form.Item>
+            <Form.Item name="email" label="Email" rules={[{ required: true, type: "email" }]}>
+              <Input />
+            </Form.Item>
+            <Form.Item name="phone" label="Phone" rules={[{ required: true }]}>
+              <Input />
+            </Form.Item>
+
+            <Form.Item name="gender" label="Gender" rules={[{ required: true }]}>
+              <Select options={GENDER_OPTIONS} />
+            </Form.Item>
+
+            <Form.Item name="address" label="Address" rules={[{ required: true }]}>
+              <Input />
+            </Form.Item>
+
+            {/* Password optional: chỉ đổi khi điền */}
+            <Form.Item name="password" label="Password (optional)">
+              <Input.Password placeholder="Leave blank to keep current password" />
+            </Form.Item>
+
+            {/* Avatar URL + Upload */}
+            <Form.Item name="avtUrl" label="Avatar URL">
+              <Input placeholder="Auto-filled after upload (or paste a URL)" />
+            </Form.Item>
+            <Upload
+              accept="image/*"
+              customRequest={handleAvatarUpload}
+              showUploadList={false}
+              disabled={avatarUploading}
+            >
+              <Button icon={<UploadOutlined />} loading={avatarUploading}>
+                {avatarUploading ? "Uploading..." : "Upload Avatar"}
+              </Button>
+            </Upload>
+          </Form>
+        </Modal>
+
+        {/* Create Org Admin */}
+        <Modal
+          title="Create Organization Admin"
+          open={isCreateModalVisible}
+          onCancel={() => setIsCreateModalVisible(false)}
+          footer={null}
+          destroyOnClose
+        >
+          <Form form={form} layout="vertical">
+            <Form.Item
+              name="organizationId"
+              label="Organization"
+              rules={[{ required: true, message: "Please select an organization!" }]}
             >
               <Select
                 showSearch
                 placeholder="Select an organization"
                 options={organizations.map((org) => ({
-                  label: `${org.organizationName}`,
+                  label: org.organizationName,
                   value: org.id,
                 }))}
               />
@@ -571,9 +627,7 @@ const UserManager: React.FC = () => {
             <Form.Item
               name="fullName"
               label="Full Name"
-              rules={[
-                { required: true, message: "Please enter your full name!" },
-              ]}
+              rules={[{ required: true, message: "Please enter your full name!" }]}
             >
               <Input />
             </Form.Item>
@@ -581,13 +635,7 @@ const UserManager: React.FC = () => {
             <Form.Item
               name="email"
               label="Email"
-              rules={[
-                {
-                  required: true,
-                  type: "email",
-                  message: "Please enter a valid email!",
-                },
-              ]}
+              rules={[{ required: true, type: "email", message: "Please enter a valid email!" }]}
             >
               <Input />
             </Form.Item>
@@ -595,31 +643,19 @@ const UserManager: React.FC = () => {
             <Form.Item
               name="phone"
               label="Phone"
-              rules={[
-                { required: true, message: "Please enter your phone number!" },
-              ]}
+              rules={[{ required: true, message: "Please enter your phone number!" }]}
             >
               <Input />
             </Form.Item>
 
-            <Form.Item
-              name="gender"
-              label="Gender"
-              rules={[{ required: true }]}
-            >
-              <Select>
-                <Option value={0}>Male</Option>
-                <Option value={1}>Female</Option>
-                <Option value={2}>Other</Option>
-              </Select>
+            <Form.Item name="gender" label="Gender" rules={[{ required: true }]}>
+              <Select options={GENDER_OPTIONS} />
             </Form.Item>
 
             <Form.Item
               name="address"
               label="Address"
-              rules={[
-                { required: true, message: "Please enter your address!" },
-              ]}
+              rules={[{ required: true, message: "Please enter your address!" }]}
             >
               <Input />
             </Form.Item>
@@ -627,28 +663,18 @@ const UserManager: React.FC = () => {
             <Form.Item
               name="password"
               label="Password"
-              rules={[
-                {
-                  required: true,
-                  min: 6,
-                  message: "Password must be at least 6 characters!",
-                },
-              ]}
+              rules={[{ required: true, min: 6, message: "Password must be at least 6 characters!" }]}
             >
               <Input.Password />
             </Form.Item>
 
-            <Button
-              type="primary"
-              onClick={handleCreateOrgAdmin}
-              loading={loading}
-            >
+            <Button type="primary" onClick={handleCreateOrgAdmin} loading={loading}>
               Create Organization Admin
             </Button>
           </Form>
         </Modal>
 
-        {/* Modal confirm xóa user thủ công */}
+        {/* Confirm delete */}
         <Modal
           open={isDeleteConfirmVisible}
           title="Confirm Delete"

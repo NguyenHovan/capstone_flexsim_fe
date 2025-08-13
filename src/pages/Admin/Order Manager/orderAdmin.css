@@ -1,0 +1,135 @@
+/* Card & header */
+.oa-card {
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.oa-header {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.oa-title {
+  margin: 0 !important;
+}
+
+.oa-controls {
+  display: flex;
+  gap: 10px;
+}
+
+.oa-filter {
+  width: 180px;
+}
+
+.oa-search {
+  width: 420px;
+}
+
+/* Table */
+.oa-table .ant-table-container {
+  border-radius: 10px;
+}
+
+.oa-table .ant-table-thead > tr > th {
+  background: #fafafa;
+  font-weight: 600;
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.oa-table .ant-table-tbody > tr:nth-child(odd) > td {
+  background: #fcfcff;
+}
+
+.oa-table .ant-table-tbody > tr:hover > td {
+  background: #f6fffb;
+}
+
+/* Cells */
+.oa-id-chip {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
+  background: #f4f6ff;
+  border: 1px solid #e6e9ff;
+  color: #334;
+  padding: 2px 8px;
+  border-radius: 8px;
+  display: inline-block;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+}
+
+.oa-code {
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+.oa-plan {
+  display: inline-block;
+  max-width: 380px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.oa-price {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Status pill */
+.oa-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+
+.oa-status--paid {
+  background: #f6ffed;
+  color: #135200;
+  border-color: #b7eb8f;
+}
+
+.oa-status--cancelled {
+  background: #fff1f0;
+  color: #a8071a;
+  border-color: #ffa39e;
+}
+
+.oa-status--pending {
+  background: #fffbe6;
+  color: #ad6800;
+  border-color: #ffe58f;
+}
+
+/* Dim text for long IDs */
+.oa-dim {
+  color: rgba(0, 0, 0, 0.55);
+  display: inline-block;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Action area */
+.oa-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.oa-status-select {
+  width: 160px;
+}

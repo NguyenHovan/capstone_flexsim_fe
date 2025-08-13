@@ -1,9 +1,10 @@
-// src/pages/organization/user/UserOrganization.tsx
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   Layout, Card, Table, Button, Modal, Form, Input, Row, Col, Typography,
   message, Select, Tag, Space
 } from 'antd';
+import UploadCloudinary from "../../UploadFile/UploadCloudinary";
+
 import {
   EyeOutlined, EditOutlined,
   UserAddOutlined, UserOutlined,
@@ -20,11 +21,13 @@ import './userOrganization.css';
 const { Content } = Layout;
 const { Title } = Typography;
 
-// maps
-const roleNameMap: Record<number, string> = { 3: 'Instructor', 4: 'Student' };
-const genderNameMap: Record<number, string> = { 0: 'Male', 1: 'Female', 2: 'Other' };
 
-// select options
+const roleNameMap: Record<number, string> = {
+  3: 'Instructor',
+  4: 'Student',
+};
+const genderNameMap: Record<number, string> = { 1: 'Male', 2: 'Female', 3: 'Other' };
+
 const roleOptions = [
   { label: 'All roles', value: '' },
   { label: 'Instructor', value: 3 },
@@ -48,7 +51,12 @@ const sortDirOptions = [
   { label: 'Descending', value: 'desc' }
 ] as const;
 
-// helpers
+const genderOptions = [
+  { label: 'Male', value: 1 },
+  { label: 'Female', value: 2 },
+  { label: 'Other', value: 3 },
+] as const;
+
 const getOrganizationId = (): string => {
   try {
     const s = localStorage.getItem('currentUser');
@@ -56,11 +64,44 @@ const getOrganizationId = (): string => {
   } catch { return ''; }
 };
 
+const setEmailDuplicateError = (form: any, err: any) => {
+  try {
+    const status = err?.response?.status;
+    const data = err?.response?.data;
+    const errors = data?.errors;
+
+    const msg: string | undefined =
+      errors?.Email?.[0] ||
+      errors?.email?.[0] ||
+      (typeof data === 'string' ? data : undefined) ||
+      data?.message ||
+      data?.title ||
+      err?.message;
+
+    const lower = String(msg || '').toLowerCase();
+    const looksDup =
+      status === 409 ||
+      lower.includes('duplicate') ||
+      lower.includes('already') ||
+      lower.includes('exist') ||
+      lower.includes('đã tồn tại') ||
+      lower.includes('tồn tại');
+
+    if ((msg && /email/i.test(msg)) || looksDup) {
+      form.setFields([{ name: 'email', errors: [msg || 'Email already exists'] }]);
+      return true; 
+    }
+  } catch {  }
+  return false;
+};
+
 const UserOrganization: React.FC = () => {
   const [users, setUsers] = useState<Account[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);           // load list
+  const [savingEdit, setSavingEdit] = useState(false);     // submit edit
+  const [creatingInstructor, setCreatingInstructor] = useState(false); // submit create instructor
+  const [creatingStudent, setCreatingStudent] = useState(false);       // submit create student
 
-  // dialogs
   const [viewingUser, setViewingUser] = useState<Account | null>(null);
   const [isViewModal, setIsViewModal] = useState(false);
   const [editingUser, setEditingUser] = useState<Account | null>(null);
@@ -70,8 +111,9 @@ const UserOrganization: React.FC = () => {
   const [formInstr] = Form.useForm();
   const [formStud] = Form.useForm();
   const [formEdit] = Form.useForm();
+  const [, setImgUrlUpdate] = useState<string>("");
+  const [, setImgFileUpdate] = useState<File | null>(null);
 
-  // search / filter / sort state
   const [searchText, setSearchText] = useState('');
   const [debounced, setDebounced] = useState('');
   const [roleFilter, setRoleFilter] = useState<number | ''>('');
@@ -79,7 +121,6 @@ const UserOrganization: React.FC = () => {
   const [sortBy, setSortBy] = useState<'userName' | 'fullName' | 'createdAt'>('createdAt');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 
-  // debounce search
   useEffect(() => {
     const t = setTimeout(() => setDebounced(searchText.trim()), 300);
     return () => clearTimeout(t);
@@ -87,13 +128,12 @@ const UserOrganization: React.FC = () => {
 
   const orgId = getOrganizationId();
 
-  // load list
   const load = async () => {
     if (!orgId) return;
     setLoading(true);
     try {
-      const all = await AccountService.getAllAccounts();
-      setUsers(all.filter(u => u.organizationId === orgId && (u.roleId === 3 || u.roleId === 4)));
+      const all = await AccountService.getAllByOrgId(orgId);
+      setUsers(all);
     } catch (err) {
       showErrorMessage(err, 'Failed to load users');
     } finally {
@@ -109,43 +149,113 @@ const UserOrganization: React.FC = () => {
     load();
   }, [orgId]);
 
-  // view / edit
+  const bc = useMemo(() => new BroadcastChannel('org-accounts'), []);
+  useEffect(() => {
+    const onMsg = (e: MessageEvent) => {
+      const msg = e.data as { type: string; organizationId?: string };
+      if (msg?.type?.startsWith('account:') && msg.organizationId === orgId) {
+        load();
+      }
+    };
+    bc.addEventListener('message', onMsg);
+    return () => bc.close();
+  }, [orgId]);
+
+  const loadUsser = async (opts?: { close?: 'edit' | 'instr' | 'stud' | 'all' }) => {
+    await load();
+    switch (opts?.close) {
+      case 'edit':
+        setIsEditModal(false);
+        setEditingUser(null);
+        formEdit.resetFields();
+        break;
+      case 'instr':
+        setIsCreateInstructor(false);
+        formInstr.resetFields();
+        break;
+      case 'stud':
+        setIsCreateStudent(false);
+        formStud.resetFields();
+        break;
+      case 'all':
+        setIsEditModal(false); setEditingUser(null); formEdit.resetFields();
+        setIsCreateInstructor(false); formInstr.resetFields();
+        setIsCreateStudent(false); formStud.resetFields();
+        break;
+      default: break;
+    }
+  };
+
+ 
   const onView = (u: Account) => { setViewingUser(u); setIsViewModal(true); };
+
   const onEdit = (u: Account) => {
     setEditingUser(u);
     formEdit.setFieldsValue({
-      userName: u.userName, fullName: u.fullName, email: u.email, phone: u.phone,
-      gender: genderNameMap[u.gender], roleId: roleNameMap[u.roleId], isActive: u.isActive
+      userName: u.userName,
+      fullName: u.fullName,
+      organizationId: u.organizationId,
+      roleId: u.roleId,
+      email: u.email,
+      phone: u.phone,
+      password: undefined,
+      gender: u.gender,
+      address: (u as any).address,
+      avtUrl: (u as any).avtUrl,
+      isActive: u.isActive
     });
     setIsEditModal(true);
   };
 
   const submitEdit = async () => {
-    const v = await formEdit.validateFields();
-    if (!editingUser) return;
-    setLoading(true);
-    try {
-      const gender =
-        typeof v.gender === 'string'
-          ? Number(Object.keys(genderNameMap).find(k => genderNameMap[Number(k)] === v.gender))
-          : v.gender;
+  if (savingEdit) return;
+  const v = await formEdit.validateFields();
+  if (!editingUser) return;
 
-      const roleId =
-        typeof v.roleId === 'string'
-          ? Number(Object.keys(roleNameMap).find(k => roleNameMap[Number(k)] === v.roleId))
-          : v.roleId;
+  setSavingEdit(true);
+  try {
+    let avtUrl: string | undefined = v.avtUrl;
 
-      const updated = await AccountService.updateAccount(editingUser.id, {
-        ...editingUser, ...v, gender: Number(gender ?? 0), roleId: Number(roleId ?? 3), organizationId: orgId
-      });
-      setUsers(curr => curr.map(x => (x.id === updated.id ? { ...x, ...updated } : x)));
-      message.success('User updated');
-      setIsEditModal(false);
-      formEdit.resetFields();
-    } catch (err) {
-      showErrorMessage(err, 'Cannot update user');
-    } finally { setLoading(false); setEditingUser(null); }
-  };
+   
+
+    
+    if (!avtUrl && editingUser.avtUrl) {
+      avtUrl = editingUser.avtUrl;
+    }
+
+    const payload: any = {
+      ...editingUser,
+      userName: v.userName,
+      fullName: v.fullName,
+      organizationId: v.organizationId || orgId,
+      roleId: Number(v.roleId),
+      email: v.email,
+      phone: v.phone,
+      gender: Number(v.gender),
+      address: v.address,
+      avtUrl, 
+    };
+
+    if (v.password && String(v.password).trim()) {
+      payload.password = v.password;
+    }
+
+    const updated = await AccountService.updateAccount(editingUser.id, payload);
+
+    setUsers(curr => curr.map(x => (x.id === updated.id ? { ...x, ...updated } : x)));
+    bc.postMessage({ type: 'account:updated', organizationId: orgId });
+    
+
+    await loadUsser({ close: 'edit' }); 
+    message.success('User updated');
+  } catch (err: any) {
+    if (setEmailDuplicateError(formEdit, err)) return;
+    showErrorMessage(err, 'Cannot update user');
+  } finally {
+    setSavingEdit(false);
+  }
+};
+
 
   // ban / unban
   const onBan = async (id: string) => {
@@ -153,6 +263,8 @@ const UserOrganization: React.FC = () => {
     try {
       const a = await AccountService.banAccount(id);
       setUsers(curr => curr.map(x => (x.id === a.id ? { ...x, isActive: false, updatedAt: new Date().toISOString() } : x)));
+      bc.postMessage({ type: 'account:banned', organizationId: orgId });
+      await loadUsser();
       message.success('User banned');
     } catch (err) {
       showErrorMessage(err, 'Cannot ban user');
@@ -163,40 +275,67 @@ const UserOrganization: React.FC = () => {
     try {
       const a = await AccountService.unbanAccount(id);
       setUsers(curr => curr.map(x => (x.id === a.id ? { ...x, isActive: true, updatedAt: new Date().toISOString() } : x)));
+      bc.postMessage({ type: 'account:unbanned', organizationId: orgId });
+      await loadUsser();
       message.success('User unbanned');
     } catch (err) {
       showErrorMessage(err, 'Cannot unban user');
     } finally { setLoading(false); }
   };
 
-  // create
+ 
   const submitCreateInstructor = async () => {
-    const vals = await formInstr.validateFields();
-    setLoading(true);
-    try {
-      const c = await AccountService.registerInstructor({ ...vals, isActive: true, organizationId: orgId });
-      setUsers(u => [c, ...u]); message.success('Instructor created');
-      setIsCreateInstructor(false); formInstr.resetFields();
-    } catch (err) {
-      showErrorMessage(err, 'Cannot create instructor');
-    } finally { setLoading(false); }
-  };
-  const submitCreateStudent = async () => {
-    const vals = await formStud.validateFields();
-    setLoading(true);
-    try {
-      const c = await AccountService.registerStudent({ ...vals, isActive: true, organizationId: orgId });
-      setUsers(u => [c, ...u]); message.success('Student created');
-    } catch (err) {
-      showErrorMessage(err, 'Cannot create student');
-    } finally {
-      setIsCreateStudent(false);
-      formStud.resetFields();
-      setLoading(false);
-    }
-  };
+  if (creatingInstructor) return;
+  const vals = await formInstr.validateFields();
+  setCreatingInstructor(true);
+  try {
+    const c = await AccountService.registerInstructor({
+      ...vals,
+      gender: Number(vals.gender),
+      isActive: true,
+      organizationId: orgId
+    });
+    setUsers(u => [c, ...u]);
+    bc.postMessage({ type: 'account:created', organizationId: orgId });
+    
+    setIsCreateInstructor(false);
+    formInstr.resetFields();
 
-  // filter + sort (search theo ký tự userName & fullName)
+    message.success('Instructor created');
+  } catch (err: any) {
+    if (setEmailDuplicateError(formInstr, err)) return;
+    showErrorMessage(err, 'Cannot create instructor');
+  } finally {
+    setCreatingInstructor(false);
+  }
+};
+
+const submitCreateStudent = async () => {
+  if (creatingStudent) return;
+  const vals = await formStud.validateFields();
+  setCreatingStudent(true);
+  try {
+    const c = await AccountService.registerStudent({
+      ...vals,
+      gender: Number(vals.gender),
+      isActive: true,
+      organizationId: orgId
+    });
+    setUsers(u => [c, ...u]);
+    bc.postMessage({ type: 'account:created', organizationId: orgId });
+
+    setIsCreateStudent(false);
+    formStud.resetFields();
+
+    message.success('Student created');
+  } catch (err: any) {
+    if (setEmailDuplicateError(formStud, err)) return;
+    showErrorMessage(err, 'Cannot create student');
+  } finally {
+    setCreatingStudent(false);
+  }
+};
+
   const dataView = useMemo(() => {
     const q = debounced.toLowerCase();
 
@@ -207,7 +346,7 @@ const UserOrganization: React.FC = () => {
         (u.fullName && u.fullName.toLowerCase().includes(q));
 
       const hitRole = roleFilter === '' ? true : u.roleId === roleFilter;
-      const hitStatus = statusFilter === '' ? true : statusFilter === 'active' ? u.isActive : !u.isActive;
+      const hitStatus = statusFilter === '' ? true : (statusFilter === 'active' ? u.isActive : !u.isActive);
 
       return hitQ && hitRole && hitStatus;
     });
@@ -219,8 +358,8 @@ const UserOrganization: React.FC = () => {
         const vb = b.createdAt ? +new Date(b.createdAt) : 0;
         return (va - vb) * dir;
       }
-      const sa = ((a as any)[sortBy] || '').toLowerCase();
-      const sb = ((b as any)[sortBy] || '').toLowerCase();
+      const sa = ((a as any)[sortBy] || '').toLowerCase?.() ?? '';
+      const sb = ((b as any)[sortBy] || '').toLowerCase?.() ?? '';
       if (sa < sb) return -1 * dir;
       if (sa > sb) return 1 * dir;
       return 0;
@@ -229,9 +368,32 @@ const UserOrganization: React.FC = () => {
     return list;
   }, [users, debounced, roleFilter, statusFilter, sortBy, sortDir]);
 
-  // columns
+  
   const columns: ColumnsType<Account> = [
     { title: 'ID', dataIndex: 'id', key: 'id', width: 220, ellipsis: true },
+ {
+      title: "Image",
+      dataIndex: "avtUrl",
+      key: "avtUrl",
+      align: "center",
+      width: 110,
+      render: (url) =>
+        url ? (
+          <img
+            src={url}
+            alt=""
+            style={{
+              width: 48,
+              height: 48,
+              objectFit: "cover",
+              borderRadius: 6,
+              border: "1px solid #eee",
+            }}
+          />
+        ) : (
+          "—"
+        ),
+    },
     { title: 'Username', dataIndex: 'userName', key: 'userName', width: 140 },
     { title: 'Full Name', dataIndex: 'fullName', key: 'fullName', width: 180 },
     { title: 'Email', dataIndex: 'email', key: 'email', width: 220, ellipsis: true },
@@ -350,6 +512,7 @@ const UserOrganization: React.FC = () => {
           open={isViewModal}
           footer={<Button onClick={() => setIsViewModal(false)}>Close</Button>}
           onCancel={() => setIsViewModal(false)}
+          destroyOnHidden
           width={600}
         >
           {viewingUser && (
@@ -363,7 +526,7 @@ const UserOrganization: React.FC = () => {
               </Col>
               <Col span={12}>
                 <p><b>Phone:</b> {viewingUser.phone}</p>
-                <p><b>Role:</b> {roleNameMap[viewingUser.roleId]}</p>
+                <p><b>Role:</b> {roleNameMap[viewingUser.roleId] || viewingUser.roleId}</p>
                 <p><b>Gender:</b> {genderNameMap[viewingUser.gender]}</p>
                 <p><b>Status:</b> {viewingUser.isActive ? 'Active' : 'Not active'}</p>
               </Col>
@@ -376,82 +539,124 @@ const UserOrganization: React.FC = () => {
           title="Edit User"
           open={isEditModal}
           onOk={submitEdit}
-          onCancel={() => { setIsEditModal(false); formEdit.resetFields(); setEditingUser(null); }}
-          confirmLoading={loading}
-          width={600}
+          onCancel={() => { setIsEditModal(false); formEdit.resetFields(); setEditingUser(null); 
+            setImgUrlUpdate("");
+          setImgFileUpdate(null);
+          }}
+          okButtonProps={{ loading: savingEdit, disabled: savingEdit }}
+          destroyOnHidden
+          width={680}
         >
           <Form form={formEdit} layout="vertical">
             <Row gutter={16}>
-              <Col span={12}><Form.Item name="userName" label="Username" rules={[{ required: true }]}><Input /></Form.Item></Col>
-              <Col span={12}><Form.Item name="fullName" label="Full Name" rules={[{ required: true }]}><Input /></Form.Item></Col>
-            </Row>
-            <Row gutter={16}>
-              <Col span={12}><Form.Item name="email" label="Email" rules={[{ required: true }, { type: 'email' }]}><Input /></Form.Item></Col>
-              <Col span={12}><Form.Item name="phone" label="Phone" rules={[{ required: true }]}><Input /></Form.Item></Col>
-            </Row>
-            <Row gutter={16}>
               <Col span={12}>
-                <Form.Item name="gender" label="Gender" rules={[{ required: true }]}>
-                  <Select>
-                    <Select.Option value="Male">Male</Select.Option>
-                    <Select.Option value="Female">Female</Select.Option>
-                    <Select.Option value="Other">Other</Select.Option>
-                  </Select>
+                <Form.Item name="userName" label="Username" rules={[{ required: true }]}>
+                  <Input onPressEnter={(e) => { e.preventDefault(); submitEdit(); }} />
                 </Form.Item>
               </Col>
               <Col span={12}>
-                <Form.Item name="roleId" label="Role" rules={[{ required: true }]}>
-                  <Select>
-                    <Select.Option value="Instructor">Instructor</Select.Option>
-                    <Select.Option value="Student">Student</Select.Option>
-                  </Select>
+                <Form.Item name="fullName" label="Full Name" rules={[{ required: true }]}>
+                  <Input onPressEnter={(e) => { e.preventDefault(); submitEdit(); }} />
                 </Form.Item>
+              </Col>
+            </Row>
+
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item name="roleId" label="Role" rules={[{ required: true }]}>
+                  <Select
+                    options={[
+                      { label: 'Org Admin', value: 2 },
+                      { label: 'Instructor', value: 3 },
+                      { label: 'Student', value: 4 },
+                    ] as any}
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item name="gender" label="Gender" >
+                  <Select options={genderOptions as any} />
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item name="email" label="Email" rules={[{ required: true }, { type: 'email' }]}>
+                  <Input onPressEnter={(e) => { e.preventDefault(); submitEdit(); }} />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item name="phone" label="Phone">
+                  <Input onPressEnter={(e) => { e.preventDefault(); submitEdit(); }} />
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item name="address" label="Address" >
+                  <Input onPressEnter={(e) => { e.preventDefault(); submitEdit(); }} />
+                </Form.Item> 
+                </Col>
+                <Col span={12}>
+                <Form.Item
+                 name="avtUrl"
+                 label="Image (Cloudinary)"
+                 valuePropName="value"
+                rules={[{ required: true, message: 'Please upload an image' }]}
+                >
+                <UploadCloudinary
+                value={formEdit.getFieldValue('avtUrl')}
+                onChange={(url) => formEdit.setFieldsValue({ avtUrl: url })}
+                />
+              </Form.Item>
               </Col>
             </Row>
           </Form>
         </Modal>
 
-        {/* Create Instructor */}
+        
         <Modal
           title="Create New Instructor"
           open={isCreateInstructor}
           onOk={submitCreateInstructor}
           onCancel={() => { setIsCreateInstructor(false); formInstr.resetFields(); }}
-          confirmLoading={loading}
+          okButtonProps={{ loading: creatingInstructor, disabled: creatingInstructor }}
+          destroyOnHidden
           width={600}
         >
           <Form form={formInstr} layout="vertical">
             <Row gutter={16}>
-              <Col span={12}><Form.Item name="userName" label="Username" rules={[{ required: true }]}><Input /></Form.Item></Col>
-              <Col span={12}><Form.Item name="fullName" label="Full Name" rules={[{ required: true }]}><Input /></Form.Item></Col>
+              <Col span={12}><Form.Item name="userName" label="Username" rules={[{ required: true }]}><Input onPressEnter={(e) => { e.preventDefault(); submitCreateInstructor(); }} /></Form.Item></Col>
+              <Col span={12}><Form.Item name="fullName" label="Full Name" rules={[{ required: true }]}><Input onPressEnter={(e) => { e.preventDefault(); submitCreateInstructor(); }} /></Form.Item></Col>
             </Row>
             <Row gutter={16}>
-              <Col span={12}><Form.Item name="email" label="Email" rules={[{ required: true }, { type: 'email' }]}><Input /></Form.Item></Col>
-              <Col span={12}><Form.Item name="phone" label="Phone" rules={[{ required: true }]}><Input /></Form.Item></Col>
+              <Col span={12}><Form.Item name="email" label="Email" rules={[{ required: true }, { type: 'email' }]}><Input onPressEnter={(e) => { e.preventDefault(); submitCreateInstructor(); }} /></Form.Item></Col>
             </Row>
-            <Form.Item name="password" label="Password" rules={[{ required: true }]}><Input.Password /></Form.Item>
+            <Form.Item name="password" label="Password" rules={[{ required: true }]}><Input.Password onPressEnter={(e) => { e.preventDefault(); submitCreateInstructor(); }} /></Form.Item>
           </Form>
         </Modal>
 
-        {/* Create Student */}
+        
         <Modal
           title="Create New Student"
           open={isCreateStudent}
           onOk={submitCreateStudent}
           onCancel={() => { setIsCreateStudent(false); formStud.resetFields(); }}
-          confirmLoading={loading}
+          okButtonProps={{ loading: creatingStudent, disabled: creatingStudent }}
+          destroyOnHidden
           width={600}
         >
           <Form form={formStud} layout="vertical">
             <Row gutter={16}>
-              <Col span={12}><Form.Item name="userName" label="Username" rules={[{ required: true }]}><Input /></Form.Item></Col>
-              <Col span={12}><Form.Item name="fullName" label="Full Name" rules={[{ required: true }]}><Input /></Form.Item></Col>
+              <Col span={12}><Form.Item name="userName" label="Username" rules={[{ required: true }]}><Input onPressEnter={(e) => { e.preventDefault(); submitCreateStudent(); }} /></Form.Item></Col>
+              <Col span={12}><Form.Item name="fullName" label="Full Name" rules={[{ required: true }]}><Input onPressEnter={(e) => { e.preventDefault(); submitCreateStudent(); }} /></Form.Item></Col>
             </Row>
             <Row gutter={16}>
-              <Col span={12}><Form.Item name="email" label="Email" rules={[{ required: true }, { type: 'email' }]}><Input /></Form.Item></Col>
-              <Col span={12}><Form.Item name="phone" label="Phone" rules={[{ required: true }]}><Input /></Form.Item></Col>
+              <Col span={12}><Form.Item name="email" label="Email" rules={[{ required: true }, { type: 'email' }]}><Input onPressEnter={(e) => { e.preventDefault(); submitCreateStudent(); }} /></Form.Item></Col>
             </Row>
-            <Form.Item name="password" label="Password" rules={[{ required: true }]}><Input.Password /></Form.Item>
+            <Form.Item name="password" label="Password" rules={[{ required: true }]}><Input.Password onPressEnter={(e) => { e.preventDefault(); submitCreateStudent(); }} /></Form.Item>
           </Form>
         </Modal>
       </Content>

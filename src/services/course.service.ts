@@ -12,10 +12,14 @@ export const CourseService = {
     return response.data;
   },
 
-  searchCourses: async (name: string, description: string) => {
-    const response = await axiosInstance.get(
-      `${API.GET_COURSE_SEARCH}/${name},${description}`
-    );
+  // searchCourses: async (name: string, description: string) => {
+  //   const response = await axiosInstance.get(
+  //     `${API.GET_COURSE_SEARCH}/${name},${description}`
+  //   );
+  //   return response.data;
+  // },
+  getCourseByOrgId: async (orgId: string) => {
+    const response = await axiosInstance.get(`${API. GET_ALL_COURSE_ORGID}/${orgId}`);
     return response.data;
   },
   createCourse: async (payload: any) => {
