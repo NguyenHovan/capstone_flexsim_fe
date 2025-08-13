@@ -25,7 +25,7 @@ export const PaymentService = {
   },
 
   async update(body: { orderCode: number }): Promise<PaymentUpdateResponse> {
-    const { data } = await axiosInstance.put(API.PAYMENT_UPDATE, body);
+    const { data } = await axiosInstance.put(API.UPDATE_PAYMENT, body);
     return unwrap(data) as PaymentUpdateResponse;
   },
 

@@ -201,8 +201,9 @@ export const API = {
 
   //PAYMENT
   
-  CREATE_PAYMENT_ORDER_ID: "/api/payment/create-payment",
-  UPDATE_PAYMENT: "/api/payment/update",
+ CREATE_PAYMENT_BY_ORDER_ID: (orderId: string) =>
+    `/api/payment/create-payment/${orderId}`,
+   UPDATE_PAYMENT: "/api/payment/update",
   GET_ALL_PAYMENT:"/api/payment/get_all_payment",
   GET_PAYMENT_ID:"/api/payment/get_payment",
 

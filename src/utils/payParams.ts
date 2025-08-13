@@ -1,15 +1,15 @@
 const KEY = "pay_order_code";
 
 export const saveOrderCode = (orderCode: string | number) => {
-  try { sessionStorage.setItem(KEY, String(orderCode)); } catch {}
+  try { localStorage.setItem(KEY, String(orderCode)); } catch {}
 };
 
 export const loadOrderCode = (): string | null => {
-  try { return sessionStorage.getItem(KEY); } catch { return null; }
+  try { return localStorage.getItem(KEY); } catch { return null; }
 };
 
 export const clearOrderCode = () => {
-  try { sessionStorage.removeItem(KEY); } catch {}
+  try { localStorage.removeItem(KEY); } catch {}
 };
 
 export const getQueryParam = (name: string): string | null => {
