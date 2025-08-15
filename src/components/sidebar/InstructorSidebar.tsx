@@ -25,12 +25,12 @@ const sidebarItems = [
     label: "Courses",
     url: "/instructor-course",
   },
-  {
-    key: "Lessons",
-    icon: <AppstoreOutlined />,
-    label: "Lessons",
-    url: "/instructor-lesson",
-  },
+  // {
+  //   key: "Lessons",
+  //   icon: <AppstoreOutlined />,
+  //   label: "Lessons",
+  //   url: "/instructor-lesson",
+  // },
   {
     key: "Enroll Request",
     icon: <AppstoreOutlined />,
@@ -43,12 +43,12 @@ const sidebarItems = [
     label: "Classes",
     url: "/instructor-class",
   },
-  {
-    key: "Topics",
-    icon: <TeamOutlined />,
-    label: "Topics",
-    url: "/instructor-topic",
-  },
+  // {
+  //   key: "Topics",
+  //   icon: <TeamOutlined />,
+  //   label: "Topics",
+  //   url: "/instructor-topic",
+  // },
   {
     key: "Scenarios",
     icon: <DollarOutlined />,
