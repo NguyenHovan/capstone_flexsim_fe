@@ -1,27 +1,31 @@
 import { useEffect, useState } from "react";
 import {
-  Table,
   Input,
   Button,
-  Space,
-  Tooltip,
   Modal,
   Form,
   InputNumber,
   Select,
   Upload,
   type UploadFile,
+  Row,
+  Col,
+  Typography,
+  Flex,
 } from "antd";
-import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
-import type { ColumnsType } from "antd/es/table";
+import { PlusOutlined } from "@ant-design/icons";
 import { CourseService } from "../../../services/course.service";
 import { toast } from "sonner";
 import { CategoryService } from "../../../services/category.service";
 import { WorkspaceService } from "../../../services/workspace.service";
 import type { Workspace } from "../../../types/workspace";
 import type { Category } from "../../../types/category";
+import CardCourse from "./components/CardCourse";
+import { useNavigate } from "react-router-dom";
 
 const CourseManagement = () => {
+  const navigate = useNavigate();
+
   const [dataSource, setDataSource] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -32,7 +36,6 @@ const CourseManagement = () => {
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [form] = Form.useForm();
 
-  // Fetch categories & workspaces
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -116,16 +119,32 @@ const CourseManagement = () => {
   // Delete
   const handleDelete = async (id: string) => {
     try {
+      setLoading(true);
       await CourseService.deleteCourse(id);
       toast.success("Xóa thành công!");
       fetchCourses();
     } catch (error) {
       toast.error("Xóa thất bại!");
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleSubmit = async () => {
+    let userId: string | undefined;
+
+    const currentUserString = localStorage.getItem("currentUser");
+    if (currentUserString) {
+      const currentUser = JSON.parse(currentUserString);
+      userId = currentUser.id;
+    }
+
+    if (!userId) {
+      console.error("User ID not found!");
+      return;
+    }
     try {
+      setLoading(true);
       const values = await form.validateFields();
 
       let imgToSend: File | null = null;
@@ -143,6 +162,7 @@ const CourseManagement = () => {
 
       const formData = new FormData();
       formData.append("courseName", values.courseName);
+      formData.append("instructorId", userId);
       formData.append("description", values.description);
       formData.append("categoryId", String(values.categoryId));
       formData.append("workSpaceId", String(values.workSpaceId));
@@ -163,80 +183,45 @@ const CourseManagement = () => {
       fetchCourses();
     } catch (error) {
       toast.error("Đã có lỗi xảy ra!");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const columns: ColumnsType<any> = [
-    {
-      title: "Course Name",
-      dataIndex: "courseName",
-    },
-    {
-      title: "Category",
-      dataIndex: ["category", "categoryName"],
-    },
-    {
-      title: "Workspace",
-      dataIndex: "workSpaceId",
-    },
-    {
-      title: "Status",
-      dataIndex: "isActive",
-      render: (val) => (val ? "active" : "inactive"),
-    },
-
-    {
-      title: "Action",
-      render: (_, record) => (
-        <Space size="middle">
-          {/* <Tooltip title="Edit">
-            <EditOutlined
-              style={{ cursor: "pointer" }}
-              onClick={() => handleEdit(record)}
-            />
-          </Tooltip> */}
-          <Tooltip title="Delete">
-            <DeleteOutlined
-              style={{ cursor: "pointer", color: "red" }}
-              onClick={() => handleDelete(record.id)}
-            />
-          </Tooltip>
-        </Space>
-      ),
-    },
-  ];
-
   return (
-    <div className="course-management-wrapper">
-      <div
-        className="header-section"
-        style={{
-          marginBottom: 16,
-          display: "flex",
-          justifyContent: "space-between",
-        }}
-      >
-        <Input.Search placeholder="Search course" style={{ width: 250 }} />
-        <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
-          Add new Course
-        </Button>
-      </div>
-
-      <Table
-        columns={columns}
-        dataSource={dataSource}
-        pagination={{ pageSize: 6 }}
-        rowKey="id"
-        loading={loading}
-        bordered
-      />
-
+    <Row gutter={[12, 12]}>
+      <Col span={24}>
+        <Flex justify="space-between">
+          <Typography style={{ fontSize: "30px", fontWeight: "bold" }}>
+            My Course
+          </Typography>
+          <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
+            Add new Course
+          </Button>
+        </Flex>
+      </Col>
+      {dataSource?.map((course: any) => (
+        <Col
+          span={6}
+          onClick={() => navigate(`/instructor-course/detail/${course.id}`)}
+        >
+          <CardCourse
+            author="Nguyen van a"
+            coverUrl={course.imgUrl}
+            title={course.courseName}
+            tag={course.description}
+            onEdit={() => {}}
+            onDelete={() => handleDelete(course.id)}
+          />
+        </Col>
+      ))}
       <Modal
         title={isEditing ? "Update Course" : "Create Course"}
         open={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
         onOk={handleSubmit}
         okText={isEditing ? "Update" : "Create new"}
+        confirmLoading={loading}
       >
         <Form layout="vertical" form={form}>
           <Form.Item
@@ -302,7 +287,7 @@ const CourseManagement = () => {
           </Form.Item>
         </Form>
       </Modal>
-    </div>
+    </Row>
   );
 };
 

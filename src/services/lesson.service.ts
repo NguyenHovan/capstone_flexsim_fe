@@ -25,4 +25,17 @@ export const LessonService = {
     );
     return res.data;
   },
+  deleteLesson: async (lessonId: string) => {
+    const res = await axiosInstance.delete(
+      `${API.DELETE_LESSON_QUIZZ}/${lessonId}`
+    );
+    return res.data;
+  },
+  updateLesson: async (lessonId: string, payload: any) => {
+    const res = await axiosInstance.put(
+      `${API.UPDATE_LESSON_QUIZZ}/${lessonId}`,
+      payload
+    );
+    return res.data;
+  },
 };

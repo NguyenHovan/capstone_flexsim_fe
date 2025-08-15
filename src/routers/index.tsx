@@ -43,6 +43,7 @@ import OrderAdmin from "../pages/Admin/Order Manager/OrderAdmin";
 
 import AddStudentPage from "../pages/Instructor/Add-student/Add-student";
 import MyCertificate from "../pages/MyCertificate/MyCertificate";
+import DetailCoures from "../pages/Instructor/Course-manage/components/DetailCoures";
 
 const MainRoute = () => {
   return (
@@ -140,6 +141,10 @@ const MainRoute = () => {
         <Route element={<InstructorLayout />}>
           <Route path="/instructor" element={<Overview />} />
           <Route path="/instructor-course" element={<CourseManagement />} />
+          <Route
+            path="/instructor-course/detail/:id"
+            element={<DetailCoures />}
+          />
           <Route path="/instructor-class" element={<ManageClass />} />
           <Route
             path="/instructor-class/add-student/:id/:courseId"

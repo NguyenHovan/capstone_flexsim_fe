@@ -217,6 +217,8 @@ export const API = {
 
   GET_LESSON_TOPIC: "/api/lesson/by-topic",
   GET_LESSON_QUIZZ: "/api/lesson",
+  DELETE_LESSON_QUIZZ: "/api/lesson/delete_lesson",
+  UPDATE_LESSON_QUIZZ: "/api/lesson/update_lesson",
 
   //Lesson progress
   UPDATE_LESSON_PROGRESS: "/api/lessonProgress/update-lesson-progress",
