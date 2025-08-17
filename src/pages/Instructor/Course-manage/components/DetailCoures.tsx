@@ -186,31 +186,54 @@ const DetailCoures = () => {
 
         <Collapse
           activeKey={activeKeys}
-          style={{ width: "100%" }}
+          style={{
+            width: "100%",
+            background: "#fafafa",
+            borderRadius: "12px",
+            padding: "8px",
+          }}
           onChange={handleCollapseChange}
         >
           {topics?.map((tp: any) => (
             <Panel
               header={
                 <Flex justify="space-between" align="center">
-                  <Typography style={{ fontWeight: "bold", fontSize: "18px" }}>
-                    {" "}
-                    {tp?.topicName}
+                  <Typography
+                    style={{
+                      fontWeight: "bold",
+                      fontSize: "18px",
+                      color: "#333",
+                    }}
+                  >
+                    📚 {tp?.topicName}
                   </Typography>
                   <Button
-                    style={{ background: "tomato", color: "white" }}
+                    type="primary"
                     icon={<PlusOutlined />}
+                    style={{
+                      background: "linear-gradient(90deg, #ff7e5f, #feb47b)",
+                      border: "none",
+                      color: "white",
+                      fontWeight: 600,
+                      borderRadius: "8px",
+                    }}
                     onClick={(e) => {
                       e.stopPropagation();
                       setSelectedTopic(tp.id);
                       setIsModalVisibleLesson(true);
                     }}
                   >
-                    Add new lesson
+                    Add Lesson
                   </Button>
                 </Flex>
               }
               key={tp.id}
+              style={{
+                background: "#fff",
+                borderRadius: "10px",
+                marginBottom: "12px",
+                border: "1px solid #eee",
+              }}
             >
               {lessonsByTopic[tp.id]?.length ? (
                 lessonsByTopic[tp.id].map((lesson) => (
@@ -218,48 +241,71 @@ const DetailCoures = () => {
                     key={lesson.id}
                     style={{
                       border: "1px solid #f0f0f0",
-                      borderRadius: "8px",
-                      padding: "12px 16px",
-                      marginBottom: "12px",
-                      background: "#fff",
-                      boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
+                      borderRadius: "10px",
+                      padding: "14px 18px",
+                      marginBottom: "14px",
+                      background: "linear-gradient(135deg, #fdfbfb, #ebedee)",
+                      boxShadow: "0 3px 8px rgba(0,0,0,0.05)",
                       display: "flex",
                       justifyContent: "space-between",
                       alignItems: "center",
-                      transition: "all 0.2s",
+                      transition: "all 0.3s ease",
                       cursor: "pointer",
                     }}
                     onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLDivElement).style.transform =
+                        "translateY(-3px)";
                       (e.currentTarget as HTMLDivElement).style.boxShadow =
-                        "0 4px 12px rgba(0,0,0,0.1)";
+                        "0 6px 14px rgba(0,0,0,0.15)";
                     }}
                     onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLDivElement).style.transform =
+                        "translateY(0)";
                       (e.currentTarget as HTMLDivElement).style.boxShadow =
-                        "0 2px 6px rgba(0,0,0,0.05)";
+                        "0 3px 8px rgba(0,0,0,0.05)";
                     }}
                   >
+                    {/* Lesson Info */}
                     <div>
                       <Typography
                         style={{
-                          fontWeight: 600,
+                          fontWeight: 700,
                           fontSize: "16px",
                           color: "#1890ff",
-                          marginBottom: "4px",
+                          marginBottom: "6px",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "6px",
                         }}
                       >
-                        {lesson.lessonName}
+                        🎯 {lesson.lessonName}
                       </Typography>
                       <Typography style={{ fontSize: "14px", color: "#555" }}>
-                        {lesson.description || "No description"}
+                        {lesson.description
+                          ? lesson.description
+                              .split("\n")
+                              .map((line: any, index: number) => (
+                                <p key={index}>{line}</p>
+                              ))
+                          : "No description"}
                       </Typography>
                     </div>
-                    <div style={{ display: "flex", gap: "12px" }}>
+
+                    {/* Action Buttons */}
+                    <div style={{ display: "flex", gap: "14px" }}>
                       <EditOutlined
                         style={{
                           color: "#1890ff",
-                          fontSize: "18px",
+                          fontSize: "20px",
                           cursor: "pointer",
+                          transition: "0.2s",
                         }}
+                        onMouseEnter={(e) =>
+                          ((e.target as HTMLElement).style.color = "#40a9ff")
+                        }
+                        onMouseLeave={(e) =>
+                          ((e.target as HTMLElement).style.color = "#1890ff")
+                        }
                         onClick={(e) => {
                           e.stopPropagation();
                           setSelectedTopic(tp.id);
@@ -270,9 +316,16 @@ const DetailCoures = () => {
                       <DeleteOutlined
                         style={{
                           color: "red",
-                          fontSize: "18px",
+                          fontSize: "20px",
                           cursor: "pointer",
+                          transition: "0.2s",
                         }}
+                        onMouseEnter={(e) =>
+                          ((e.target as HTMLElement).style.color = "#ff4d4f")
+                        }
+                        onMouseLeave={(e) =>
+                          ((e.target as HTMLElement).style.color = "red")
+                        }
                         onClick={(e) => {
                           e.stopPropagation();
                           handleDeleteLesson(lesson.id, tp.id);
@@ -282,8 +335,14 @@ const DetailCoures = () => {
                   </div>
                 ))
               ) : (
-                <p style={{ color: "#888", fontStyle: "italic" }}>
-                  Loading or no lessons
+                <p
+                  style={{
+                    color: "#888",
+                    fontStyle: "italic",
+                    margin: "8px 0",
+                  }}
+                >
+                  ⏳ Loading or no lessons
                 </p>
               )}
             </Panel>
@@ -349,6 +408,7 @@ const DetailCoures = () => {
         }}
         style={{ marginBottom: 24 }}
         footer={null}
+        width={1000}
       >
         <Form
           layout="vertical"
@@ -376,7 +436,7 @@ const DetailCoures = () => {
             name="description"
             rules={[{ required: true, message: "Nhập mô tả" }]}
           >
-            <Input.TextArea rows={3} placeholder="Nhập mô tả bài học" />
+            <Input.TextArea rows={6} placeholder="Nhập mô tả bài học" />
           </Form.Item>
           {editingLesson && (
             <Form.Item

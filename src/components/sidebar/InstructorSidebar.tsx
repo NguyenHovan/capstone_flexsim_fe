@@ -1,7 +1,6 @@
 import {
   HomeOutlined,
   AppstoreOutlined,
-  TeamOutlined,
   BookOutlined,
   DollarOutlined,
   InfoCircleOutlined,
@@ -37,12 +36,12 @@ const sidebarItems = [
     label: "Enroll Request",
     url: "/instructor-enroll-request",
   },
-  {
-    key: "Classes",
-    icon: <UserOutlined />,
-    label: "Classes",
-    url: "/instructor-class",
-  },
+  // {
+  //   key: "Classes",
+  //   icon: <UserOutlined />,
+  //   label: "Classes",
+  //   url: "/instructor-class",
+  // },
   // {
   //   key: "Topics",
   //   icon: <TeamOutlined />,

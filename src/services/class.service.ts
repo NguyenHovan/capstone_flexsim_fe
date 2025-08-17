@@ -1,7 +1,7 @@
-import axiosInstance from './main.service';
-import { API } from '../api';
-import type { ClassItem, ClassForm } from '../types/class';
-import { getErrorMessage } from '../utils/errorHandler';
+import axiosInstance from "./main.service";
+import { API } from "../api";
+import type { ClassItem, ClassForm } from "../types/class";
+import { getErrorMessage } from "../utils/errorHandler";
 
 export const ClassService = {
   getAll: async (): Promise<ClassItem[]> => {
@@ -10,7 +10,7 @@ export const ClassService = {
       return (data?.data ?? data) as ClassItem[];
     } catch (err: any) {
       const msg = getErrorMessage(err);
-      console.error('Error fetching classes:', msg, err.response?.data);
+      console.error("Error fetching classes:", msg, err.response?.data);
       throw new Error(msg);
     }
   },
@@ -21,7 +21,7 @@ export const ClassService = {
       return (data?.data ?? data) as ClassItem;
     } catch (err: any) {
       const msg = getErrorMessage(err);
-      console.error('Error fetching class by ID:', msg, err.response?.data);
+      console.error("Error fetching class by ID:", msg, err.response?.data);
       throw new Error(msg);
     }
   },
@@ -33,25 +33,32 @@ export const ClassService = {
         ...payload,
       };
       const { data } = await axiosInstance.post(API.CREATE_CLASS, body, {
-        headers: { 'Content-Type': 'application/json' },
+        headers: { "Content-Type": "application/json" },
       });
       return (data?.data ?? data) as ClassItem;
     } catch (err: any) {
       const msg = getErrorMessage(err);
-      console.error('Error creating class:', msg, err.response?.data);
+      console.error("Error creating class:", msg, err.response?.data);
       throw new Error(msg);
     }
   },
 
-  update: async (id: string, payload: Partial<ClassForm>): Promise<ClassItem> => {
+  update: async (
+    id: string,
+    payload: Partial<ClassForm>
+  ): Promise<ClassItem> => {
     try {
-      const { data } = await axiosInstance.put(`${API.UPDATE_CLASS}/${id}`, payload, {
-        headers: { 'Content-Type': 'application/json' },
-      });
+      const { data } = await axiosInstance.put(
+        `${API.UPDATE_CLASS}/${id}`,
+        payload,
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
       return (data?.data ?? data) as ClassItem;
     } catch (err: any) {
       const msg = getErrorMessage(err);
-      console.error('Error updating class:', msg, err.response?.data);
+      console.error("Error updating class:", msg, err.response?.data);
       throw new Error(msg);
     }
   },
@@ -61,8 +68,15 @@ export const ClassService = {
       await axiosInstance.delete(`${API.DELETE_CLASS}/${id}`);
     } catch (err: any) {
       const msg = getErrorMessage(err);
-      console.error('Error deleting class:', msg, err.response?.data);
+      console.error("Error deleting class:", msg, err.response?.data);
       throw new Error(msg);
     }
+  },
+
+  getClassByCourse: async (courseId: string) => {
+    const response = await axiosInstance.get(
+      `${API.GET_CLASS_BY_COURSE}/${courseId}`
+    );
+    return response?.data;
   },
 };
