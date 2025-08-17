@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import { Table, Button, Card, Space, Popconfirm } from "antd";
+import { Button, Card } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import CreateQuizForm from "./CreateQuizForm";
 import { QuizService } from "../../../services/quiz.service";
 
 const QuizManagement = () => {
-  const [quizzes, setQuizzes] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [, setQuizzes] = useState([]);
+  const [, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
 
   const fetchQuizzes = async () => {
@@ -25,35 +25,35 @@ const QuizManagement = () => {
     fetchQuizzes();
   }, []);
 
-  const columns = [
-    {
-      title: "Tên Quiz",
-      dataIndex: "quizName",
-      key: "quizName",
-    },
-    {
-      title: "Bài học",
-      dataIndex: "lessonName",
-      key: "lessonName",
-      render: (text: string) => text || "Không có",
-    },
-    {
-      title: "Tổng điểm",
-      dataIndex: "totalScore",
-      key: "totalScore",
-    },
-    {
-      title: "Hành động",
-      key: "actions",
-      render: () => (
-        <Space>
-          <Popconfirm title="Bạn chắc chắn muốn xóa?">
-            <Button danger>Xóa</Button>
-          </Popconfirm>
-        </Space>
-      ),
-    },
-  ];
+  // const columns = [
+  //   {
+  //     title: "Tên Quiz",
+  //     dataIndex: "quizName",
+  //     key: "quizName",
+  //   },
+  //   {
+  //     title: "Bài học",
+  //     dataIndex: "lessonName",
+  //     key: "lessonName",
+  //     render: (text: string) => text || "Không có",
+  //   },
+  //   {
+  //     title: "Tổng điểm",
+  //     dataIndex: "totalScore",
+  //     key: "totalScore",
+  //   },
+  //   {
+  //     title: "Hành động",
+  //     key: "actions",
+  //     render: () => (
+  //       <Space>
+  //         <Popconfirm title="Bạn chắc chắn muốn xóa?">
+  //           <Button danger>Xóa</Button>
+  //         </Popconfirm>
+  //       </Space>
+  //     ),
+  //   },
+  // ];
 
   return (
     <Card
@@ -68,21 +68,11 @@ const QuizManagement = () => {
         </Button>
       }
     >
-      {showForm && (
-        <CreateQuizForm
-          onCreated={() => {
-            setShowForm(false);
-            fetchQuizzes();
-          }}
-        />
-      )}
-
-      <Table
-        dataSource={quizzes}
-        columns={columns}
-        rowKey="id"
-        loading={loading}
-        style={{ marginTop: 24 }}
+      <CreateQuizForm
+        onCreated={() => {
+          setShowForm(false);
+          fetchQuizzes();
+        }}
       />
     </Card>
   );

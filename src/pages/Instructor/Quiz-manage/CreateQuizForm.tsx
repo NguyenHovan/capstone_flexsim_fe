@@ -1,32 +1,15 @@
-import { useEffect, useState } from "react";
-import { Button, Card, Checkbox, Form, Input, Select, Space } from "antd";
+import { Button, Card, Checkbox, Form, Input, Space } from "antd";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 import { toast } from "sonner";
-import { LessonService } from "../../../services/lesson.service";
 import { QuizService } from "../../../services/quiz.service";
-
-const { Option } = Select;
+import { useParams } from "react-router-dom";
 
 const CreateQuizForm = ({ onCreated }: { onCreated: () => void }) => {
-  const [lessons, setLessons] = useState([]);
-
-  // Load danh sách lessons
-  const fetchLessons = async () => {
-    try {
-      const response = await LessonService.getAllLessons();
-      setLessons(response);
-    } catch (error) {
-      console.error("Failed to fetch lessons", error);
-    }
-  };
-
-  useEffect(() => {
-    fetchLessons();
-  }, []);
+  const { lessonId } = useParams();
 
   const onFinish = async (values: any) => {
     const payload = {
-      lessonId: values.lessonId,
+      lessonId: lessonId,
       quizName: values.quizName,
       totalScore: 0,
       questions: values.questions.map((q: any) => ({
@@ -51,16 +34,6 @@ const CreateQuizForm = ({ onCreated }: { onCreated: () => void }) => {
   return (
     <Card title="Tạo Quiz Mới">
       <Form layout="vertical" onFinish={onFinish}>
-        <Form.Item label="Bài học" name="lessonId" rules={[{ required: true }]}>
-          <Select placeholder="Chọn bài học">
-            {lessons.map((lesson: any) => (
-              <Option key={lesson.id} value={lesson.id}>
-                {lesson.lessonName}
-              </Option>
-            ))}
-          </Select>
-        </Form.Item>
-
         <Form.Item
           label="Tên Quiz"
           name="quizName"

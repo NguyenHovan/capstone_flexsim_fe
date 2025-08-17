@@ -60,12 +60,12 @@ const sidebarItems = [
     label: "Scene",
     url: "/instructor-scene",
   },
-  {
-    key: "Quizzes",
-    icon: <SettingOutlined />,
-    label: "Quizzes",
-    url: "/instructor-quiz",
-  },
+  // {
+  //   key: "Quizzes",
+  //   icon: <SettingOutlined />,
+  //   label: "Quizzes",
+  //   url: "/instructor-quiz",
+  // },
   {
     key: "Reviews",
     icon: <UserOutlined />,

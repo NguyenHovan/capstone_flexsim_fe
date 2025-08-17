@@ -2,6 +2,7 @@ import {
   DeleteOutlined,
   EditOutlined,
   PlusOutlined,
+  QuestionCircleOutlined,
   UploadOutlined,
 } from "@ant-design/icons";
 import {
@@ -18,7 +19,7 @@ import {
   Upload,
 } from "antd";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { TopicService } from "../../../../services/topic.service";
 import { CourseService } from "../../../../services/course.service";
 import { SceneService } from "../../../../services/scene.service";
@@ -26,6 +27,7 @@ import { toast } from "sonner";
 import { LessonService } from "../../../../services/lesson.service";
 const { Panel } = Collapse;
 const DetailCoures = () => {
+  const navigate = useNavigate();
   const { id } = useParams();
   const [loading, setLoading] = useState(false);
   const [topics, setTopics] = useState([]);
@@ -280,7 +282,13 @@ const DetailCoures = () => {
                       >
                         🎯 {lesson.lessonName}
                       </Typography>
-                      <Typography style={{ fontSize: "14px", color: "#555" }}>
+                      <Typography
+                        style={{
+                          fontSize: "14px",
+                          color: "#555",
+                          maxWidth: "90%",
+                        }}
+                      >
                         {lesson.description
                           ? lesson.description
                               .split("\n")
@@ -293,6 +301,24 @@ const DetailCoures = () => {
 
                     {/* Action Buttons */}
                     <div style={{ display: "flex", gap: "14px" }}>
+                      <QuestionCircleOutlined
+                        style={{
+                          color: "#52c41a",
+                          fontSize: "20px",
+                          cursor: "pointer",
+                          transition: "0.2s",
+                        }}
+                        onMouseEnter={(e) =>
+                          ((e.target as HTMLElement).style.color = "#73d13d")
+                        }
+                        onMouseLeave={(e) =>
+                          ((e.target as HTMLElement).style.color = "#52c41a")
+                        }
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/instructor-quiz/${lesson.id}`);
+                        }}
+                      />
                       <EditOutlined
                         style={{
                           color: "#1890ff",

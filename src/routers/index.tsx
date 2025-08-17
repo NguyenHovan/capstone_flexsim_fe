@@ -152,7 +152,10 @@ const MainRoute = () => {
           />
           <Route path="/instructor-topic" element={<TopicManagement />} />
           <Route path="/instructor-scene" element={<SceneManagement />} />
-          <Route path="/instructor-quiz" element={<QuizManagement />} />
+          <Route
+            path="/instructor-quiz/:lessonId"
+            element={<QuizManagement />}
+          />
           <Route path="/instructor-review" element={<ReviewManagement />} />
           <Route path="/instructor-lesson" element={<LessonManagement />} />
           <Route path="/instructor-enroll-request" element={<EnrollManage />} />
