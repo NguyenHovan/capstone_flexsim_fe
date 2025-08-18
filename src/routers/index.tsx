@@ -43,6 +43,7 @@ import PaymentFail from "../pages/Payment/PaymentFailure";
 import OrderAdmin from "../pages/Admin/Order Manager/OrderAdmin";
 import AddStudentPage from "../pages/Instructor/Add-student/Add-student";
 import MyCertificate from "../pages/MyCertificate/MyCertificate";
+import ContentCourse from "../pages/Instructor/Course-manage/ContentCourse";
 
 const MainRoute = () => {
   return (
@@ -140,6 +141,10 @@ const MainRoute = () => {
         <Route element={<InstructorLayout />}>
           <Route path="/instructor" element={<Overview />} />
           <Route path="/instructor-course" element={<CourseManagement />} />
+          <Route
+            path="/instructor-course/detail/:id"
+            element={<ContentCourse />}
+          />
           <Route path="/instructor-class" element={<ManageClass />} />
           <Route
             path="/instructor-class/add-student/:id/:courseId"
@@ -147,7 +152,10 @@ const MainRoute = () => {
           />
           <Route path="/instructor-topic" element={<TopicManagement />} />
           <Route path="/instructor-scene" element={<SceneManagement />} />
-          <Route path="/instructor-quiz" element={<QuizManagement />} />
+          <Route
+            path="/instructor-quiz/:lessonId"
+            element={<QuizManagement />}
+          />
           <Route path="/instructor-review" element={<ReviewManagement />} />
           <Route path="/instructor-lesson" element={<LessonManagement />} />
           <Route path="/instructor-enroll-request" element={<EnrollManage />} />

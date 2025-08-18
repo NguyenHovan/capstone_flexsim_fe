@@ -1,7 +1,6 @@
 import {
   HomeOutlined,
   AppstoreOutlined,
-  TeamOutlined,
   BookOutlined,
   DollarOutlined,
   InfoCircleOutlined,
@@ -25,30 +24,30 @@ const sidebarItems = [
     label: "Courses",
     url: "/instructor-course",
   },
-  {
-    key: "Lessons",
-    icon: <AppstoreOutlined />,
-    label: "Lessons",
-    url: "/instructor-lesson",
-  },
+  // {
+  //   key: "Lessons",
+  //   icon: <AppstoreOutlined />,
+  //   label: "Lessons",
+  //   url: "/instructor-lesson",
+  // },
   {
     key: "Enroll Request",
     icon: <AppstoreOutlined />,
     label: "Enroll Request",
     url: "/instructor-enroll-request",
   },
-  {
-    key: "Classes",
-    icon: <UserOutlined />,
-    label: "Classes",
-    url: "/instructor-class",
-  },
-  {
-    key: "Topics",
-    icon: <TeamOutlined />,
-    label: "Topics",
-    url: "/instructor-topic",
-  },
+  // {
+  //   key: "Classes",
+  //   icon: <UserOutlined />,
+  //   label: "Classes",
+  //   url: "/instructor-class",
+  // },
+  // {
+  //   key: "Topics",
+  //   icon: <TeamOutlined />,
+  //   label: "Topics",
+  //   url: "/instructor-topic",
+  // },
   {
     key: "Scenarios",
     icon: <DollarOutlined />,
@@ -61,12 +60,12 @@ const sidebarItems = [
     label: "Scene",
     url: "/instructor-scene",
   },
-  {
-    key: "Quizzes",
-    icon: <SettingOutlined />,
-    label: "Quizzes",
-    url: "/instructor-quiz",
-  },
+  // {
+  //   key: "Quizzes",
+  //   icon: <SettingOutlined />,
+  //   label: "Quizzes",
+  //   url: "/instructor-quiz",
+  // },
   {
     key: "Reviews",
     icon: <UserOutlined />,

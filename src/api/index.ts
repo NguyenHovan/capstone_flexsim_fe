@@ -64,6 +64,7 @@ export const API = {
   CREATE_CLASS: "/api/class/create_class",
   UPDATE_CLASS: "/api/class/update_class",
   DELETE_CLASS: "/api/class/delete_class",
+  GET_CLASS_BY_COURSE: "/api/class/get_classes_by_course",
 
   //TOPIC
   GET_ALL_TOPIC: "/api/topic/get_all_topic",
@@ -219,6 +220,8 @@ export const API = {
 
   GET_LESSON_TOPIC: "/api/lesson/by-topic",
   GET_LESSON_QUIZZ: "/api/lesson",
+  DELETE_LESSON_QUIZZ: "/api/lesson/delete_lesson",
+  UPDATE_LESSON_QUIZZ: "/api/lesson/update_lesson",
 
   //Lesson progress
   UPDATE_LESSON_PROGRESS: "/api/lessonProgress/update-lesson-progress",

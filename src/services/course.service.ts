@@ -19,7 +19,9 @@ export const CourseService = {
   //   return response.data;
   // },
   getCourseByOrgId: async (orgId: string) => {
-    const response = await axiosInstance.get(`${API. GET_ALL_COURSE_ORGID}/${orgId}`);
+    const response = await axiosInstance.get(
+      `${API.GET_ALL_COURSE_ORGID}/${orgId}`
+    );
     return response.data;
   },
   createCourse: async (payload: any) => {
@@ -38,7 +40,7 @@ export const CourseService = {
     return response.data;
   },
   deleteCourse: async (id: string) => {
-    const response = await axiosInstance.post(`${API.DELETE_COURSE}/${id}`);
+    const response = await axiosInstance.delete(`${API.DELETE_COURSE}/${id}`);
     return response.data;
   },
 };

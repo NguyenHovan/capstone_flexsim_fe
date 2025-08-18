@@ -8,7 +8,7 @@ import {
   Modal,
   Form,
   InputNumber,
-  Select,
+  Flex,
 } from "antd";
 import {
   PlusOutlined,
@@ -19,22 +19,21 @@ import {
 import type { ColumnsType } from "antd/es/table";
 import { toast } from "sonner";
 import { ClassService } from "../../../services/class.service";
-import { CourseService } from "../../../services/course.service";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 const ClassManagement = () => {
+  const { id } = useParams();
   const [dataSource, setDataSource] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedClassId, setSelectedClassId] = useState<string | null>(null);
-  const [courses, setCourses] = useState<any[]>([]);
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const fetchClasses = async () => {
     try {
       setLoading(true);
-      const data = await ClassService.getAll();
+      const data = await ClassService.getClassByCourse(id ?? "");
       setDataSource(data);
     } catch (error) {
       toast.error("Failed to fetch classes");
@@ -43,14 +42,8 @@ const ClassManagement = () => {
     }
   };
 
-  const fetchCourses = async () => {
-    const res = await CourseService.getAllCourses();
-    setCourses(res || []);
-  };
-
   useEffect(() => {
     fetchClasses();
-    fetchCourses();
   }, []);
 
   const handleAdd = () => {
@@ -64,7 +57,7 @@ const ClassManagement = () => {
     setSelectedClassId(record.id);
     form.setFieldsValue({
       ...record,
-      courseId: record.course?.id,
+      courseId: id,
     });
     setIsModalVisible(true);
   };
@@ -88,10 +81,10 @@ const ClassManagement = () => {
     try {
       const values = await form.validateFields();
       if (isEditing && selectedClassId) {
-        await ClassService.update(selectedClassId, values);
+        await ClassService.update(selectedClassId, { ...values, courseId: id });
         toast.success("Cập nhật lớp học thành công!");
       } else {
-        await ClassService.create(values);
+        await ClassService.create({ ...values, courseId: id });
         toast.success("Tạo lớp học thành công!");
       }
       setIsModalVisible(false);
@@ -100,16 +93,12 @@ const ClassManagement = () => {
       toast.error("Có lỗi xảy ra!");
     }
   };
-  console.log({ dataSource });
   const columns: ColumnsType<any> = [
     {
       title: "Class Name",
       dataIndex: "className",
     },
-    {
-      title: "Course",
-      dataIndex: ["course", "courseName"],
-    },
+
     {
       title: "Số lượng học viên",
       dataIndex: "numberOfStudent",
@@ -147,12 +136,16 @@ const ClassManagement = () => {
 
   return (
     <div>
-      <div className="header-section">
+      <Flex
+        justify="space-between"
+        className="header-section"
+        style={{ marginBottom: 12 }}
+      >
         <Input.Search placeholder="Search class" style={{ width: 250 }} />
         <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
           Thêm lớp học
         </Button>
-      </div>
+      </Flex>
 
       <Table
         columns={columns}
@@ -184,19 +177,6 @@ const ClassManagement = () => {
             rules={[{ required: true, message: "Vui lòng nhập số lượng" }]}
           >
             <InputNumber min={0} style={{ width: "100%" }} />
-          </Form.Item>
-          <Form.Item
-            label="Khóa học"
-            name="courseId"
-            rules={[{ required: true, message: "Vui lòng chọn khóa học" }]}
-          >
-            <Select placeholder="Chọn khóa học">
-              {courses.map((c) => (
-                <Select.Option key={c.id} value={c.id}>
-                  {c.courseName}
-                </Select.Option>
-              ))}
-            </Select>
           </Form.Item>
         </Form>
       </Modal>
