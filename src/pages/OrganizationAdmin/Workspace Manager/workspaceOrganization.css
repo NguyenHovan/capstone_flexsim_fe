@@ -1,10 +1,40 @@
-.ws-actions {
-  display: flex;
-  gap: 6px;
+/* Course list: chống tràn & card rõ ràng */
+.course-list { max-width: 100%; }
+.course-list .ant-list-item-meta { align-items: center; }
+.course-list .ant-list-item-meta-content { min-width: 0; }
+
+.course-list-item {
+  border: 1px solid #e5e7eb;  /* gray-200 */
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  background: #fff;
+  overflow: hidden;           /* quan trọng để không tràn */
+}
+.course-list-item:hover { border-color: #94a3b8; }
+
+.course-title-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 8px;
+  align-items: center;
+}
+.course-title {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-weight: 600;
 }
 
-.ant-table-wrapper .ant-table-container table > thead > tr > th.ant-table-cell-fix-right,
-.ant-table-wrapper .ant-table-container table > tbody > tr > td.ant-table-cell-fix-right {
-  background: #fff; /* Giữ nền trắng khi scroll */
-  z-index: 2; /* Giữ trên các cột khác */
+.course-desc-wrap { max-width: 100%; }
+.course-meta-line {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+.course-desc {
+  margin: 0;
+  word-break: break-word;
 }

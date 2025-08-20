@@ -4,7 +4,6 @@ import type {
   ChangePassword,
   ForgotPassword,
   Login,
-  Register,
 } from "../types/auth";
 
 export const AuthService = {

@@ -1,0 +1,56 @@
+.workspace-table .ant-table,
+.workspace-table .ant-table-container,
+.workspace-table .ant-table-cell {
+  border-color: #cbd5e1; 
+}
+.workspace-table .ant-table-thead > tr > th {
+  background: #f1f5f9;    
+  border-color: #cbd5e1;
+  font-weight: 600;
+}
+.workspace-table .ant-table-tbody > tr.row-striped > td {
+  background-color: #f8fafc;
+}
+
+.course-list { max-width: 100%; }
+.course-list .ant-list-item-meta { align-items: center; }
+.course-list .ant-list-item-meta-content { min-width: 0; }
+
+.course-list-item {
+  border: 1px solid #e5e7eb;      
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  background: #fff;
+  overflow: hidden;                
+}
+.course-list-item:hover { border-color: #94a3b8; } 
+
+.course-title-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.course-title {
+  min-width: 0;              
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-weight: 600;
+}
+
+.course-desc-wrap { max-width: 100%; }
+.course-meta-line {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+
+.course-desc {
+  margin: 0;
+  word-break: break-word;
+}

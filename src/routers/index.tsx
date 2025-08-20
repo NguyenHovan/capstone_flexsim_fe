@@ -44,6 +44,9 @@ import OrderAdmin from "../pages/Admin/Order Manager/OrderAdmin";
 import AddStudentPage from "../pages/Instructor/Add-student/Add-student";
 import MyCertificate from "../pages/MyCertificate/MyCertificate";
 import ContentCourse from "../pages/Instructor/Course-manage/ContentCourse";
+import AdminProfile from "../pages/Admin/Profile/AdminProfile";
+import OrgAdminProfile from "../pages/OrganizationAdmin/Profile/OrgAdminProfile";
+import OrgAdminSubscriptionPlans from "../pages/OrganizationAdmin/Subcription/Subcription";
 
 const MainRoute = () => {
   return (
@@ -122,6 +125,7 @@ const MainRoute = () => {
             element={<SubscriptionPlanAdmin />}
           />
           <Route path="order-manager" element={<OrderAdmin />} />
+          <Route path="admin-profile" element={<AdminProfile />} />
         </Route>
       </Route>
 
@@ -132,7 +136,9 @@ const MainRoute = () => {
           <Route path="overview" element={<OrganizationAdminOverview />} />
           <Route path="user-manager" element={<UserOrganization />} />
           <Route path="workspace-manager" element={<WorkspaceOrganization />} />
+          <Route path="subscription" element={<OrgAdminSubscriptionPlans />} />
           <Route path="order-manager" element={<OrderOrganization />} />
+          <Route path="orgAdmin-profile" element={<OrgAdminProfile />} />
         </Route>
       </Route>
 

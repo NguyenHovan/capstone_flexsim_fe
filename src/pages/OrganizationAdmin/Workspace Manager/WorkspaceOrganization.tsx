@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Table,
   Button,
@@ -12,6 +12,10 @@ import {
   message,
   Tag,
   Space,
+  List,
+  Avatar,
+  Typography,
+  Tooltip,
 } from "antd";
 import {
   PlusOutlined,
@@ -21,10 +25,29 @@ import {
 } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import type { Workspace, WorkspaceForm } from "../../../types/workspace";
-import { WorkspaceService } from "../../../services/workspace.service";
+import type { Course } from "../../../types/course";
+import type { Account } from "../../../types/account";
 import UploadCloudinary from "../../UploadFile/UploadCloudinary";
 import { showErrorMessage } from "../../../utils/errorHandler";
+import { WorkspaceService } from "../../../services/workspace.service";
+import { CourseService } from "../../../services/course.service";
+import { AccountService } from "../../../services/account.service";
 import "./workspaceOrganization.css";
+
+const { Paragraph, Text } = Typography;
+
+/* ===== Helpers ===== */
+const norm = (s?: string) =>
+  (s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+const normalizeId = (s?: string | null) => (s ? s.trim().toLowerCase() : "");
+const compareStr = (a?: string, b?: string) =>
+  (a || "").localeCompare(b || "", "vi", { sensitivity: "base" });
+const isPlaceholder = (s?: string | null) => {
+  const t = (s || "").trim().toLowerCase();
+  return !t || t === "string" || t === "null" || t === "undefined";
+};
+const FALLBACK_COURSE_AVATAR =
+  "https://ui-avatars.com/api/?background=random&name=C";
 
 const getOrgId = (): string => {
   try {
@@ -37,6 +60,9 @@ const getOrgId = (): string => {
 
 const WorkspaceOrganization: React.FC = () => {
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [accounts, setAccounts] = useState<Account[]>([]);
+
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -58,59 +84,136 @@ const WorkspaceOrganization: React.FC = () => {
   const [searchText, setSearchText] = useState("");
   const [statusFilter] = useState<string | null>(null);
 
+  // per-row “show more” state (by workspace id)
+  const [showAllCoursesCell, setShowAllCoursesCell] = useState<Record<string, boolean>>({});
+
   const organizationId = getOrgId();
 
-useEffect(() => {
-  if (!organizationId) {
-    message.error("Không tìm thấy organizationId");
-    return;
-  }
-  fetchList();
-}, [organizationId]);
+  useEffect(() => {
+    if (!organizationId) {
+      message.error("Missing organizationId.");
+      return;
+    }
+    fetchAll();
+  }, [organizationId]);
 
-const fetchList = async (opts?: { silent?: boolean }) => {
-  const silent = !!opts?.silent;
-  if (!silent) setLoading(true);
-  else setRefreshing(true);
-  try {
-    const items = await WorkspaceService.getAllByOrg(organizationId);
-    setWorkspaces(items);
-  } catch (err) {
-    showErrorMessage(err, "Không thể tải danh sách workspace");
-  } finally {
-    if (!silent) setLoading(false);
-    else setRefreshing(false);
-  }
-};
+  const fetchAll = async () => {
+    setLoading(true);
+    try {
+      const [ws, cs, accs] = await Promise.all([
+        WorkspaceService.getAllByOrg(organizationId),
+        CourseService.getCourseByOrgId(organizationId), // chỉ các course của org này
+        AccountService.getAllAccounts(), // để map instructorId -> fullName
+      ]);
+      setWorkspaces(Array.isArray(ws) ? ws : []);
+      setCourses(Array.isArray(cs) ? cs : []);
+      setAccounts(Array.isArray(accs) ? accs : []);
+    } catch (err) {
+      showErrorMessage(err, "Failed to fetch data.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const filteredData = workspaces
-    .filter((ws) =>
-      ws.workSpaceName?.toLowerCase().includes(searchText.toLowerCase())
-    )
-    .filter((ws) => {
-      if (statusFilter === null) return true;
-      return statusFilter === "active" ? ws.isActive : !ws.isActive;
+  const fetchList = async (opts?: { silent?: boolean }) => {
+    const silent = !!opts?.silent;
+    if (!silent) setLoading(true);
+    else setRefreshing(true);
+    try {
+      const items = await WorkspaceService.getAllByOrg(organizationId);
+      setWorkspaces(items);
+
+      // refresh course list cùng lúc để luôn đúng
+      const cs = await CourseService.getCourseByOrgId(organizationId);
+      setCourses(Array.isArray(cs) ? cs : []);
+    } catch (err) {
+      showErrorMessage(err, "Failed to fetch workspaces.");
+    } finally {
+      if (!silent) setLoading(false);
+      else setRefreshing(false);
+    }
+  };
+
+  /* ===== Index & helpers ===== */
+  const accountsById = useMemo(() => {
+    const map = new Map<string, Account>();
+    accounts.forEach((a) => map.set(normalizeId(a.id), a));
+    return map;
+  }, [accounts]);
+
+  const coursesByWorkspaceId = useMemo(() => {
+    const map = new Map<string, Course[]>();
+    courses.forEach((c) => {
+      const k = normalizeId(c.workSpaceId);
+      if (!map.has(k)) map.set(k, []);
+      map.get(k)!.push(c);
     });
+    return map;
+  }, [courses]);
 
-  // ===== CREATE =====
+  const getInstructorFullName = (c: Course) => {
+    const id = normalizeId(c.instructorId);
+    if (id) {
+      const acc = accountsById.get(id);
+      const name =
+        (!isPlaceholder(acc?.fullName) && acc?.fullName) ||
+        (!isPlaceholder(acc?.userName) && acc?.userName) ||
+        "";
+      if (name) return { text: name, id: c.instructorId || "" };
+    }
+    const nested =
+      (c as any)?.instructor?.fullName ||
+      (c as any)?.instructor?.userName ||
+      "";
+    return { text: nested || "Unknown", id: c.instructorId || "" };
+  };
+
+  /* ===== Search / Filter ===== */
+  const filteredData = useMemo(() => {
+    const kw = norm(searchText);
+    return workspaces
+      .filter((ws) => {
+        if (statusFilter === null) return true;
+        return statusFilter === "active" ? ws.isActive : !ws.isActive;
+      })
+      .filter((ws) => {
+        if (!kw) return true;
+
+        const list = coursesByWorkspaceId.get(normalizeId(ws.id)) || [];
+        const courseTexts = list.flatMap((c) => {
+          const ins = getInstructorFullName(c).text;
+          return [norm(c.courseName), norm(ins)];
+        });
+
+        const fields = [
+          norm(ws.workSpaceName),
+          norm(ws.description),
+          norm(ws.id),
+          ...courseTexts,
+        ];
+        return fields.some((x) => x.startsWith(kw) || x.includes(kw));
+      });
+  }, [workspaces, coursesByWorkspaceId, searchText, statusFilter, accountsById]);
+
+  /* ===== CRUD ===== */
   const onCreate = async (vals: any) => {
     if (!organizationId) {
-      message.error("Vui lòng đăng nhập");
+      message.error("Please sign in.");
       return;
     }
     if (!imgUrlCreate && !imgFileCreate) {
-      message.error("Vui lòng upload ảnh trước khi lưu");
+      message.error("Please upload an image before saving.");
       return;
     }
     if (!vals.workSpaceName?.trim() || !vals.description?.trim()) {
-      message.error("WorkSpaceName và Description là bắt buộc");
+      message.error("Workspace name and description are required.");
       return;
     }
 
     setLoading(true);
     try {
       const payload: WorkspaceForm = {
-        organizationId: organizationId,
+        organizationId,
         workSpaceName: vals.workSpaceName.trim(),
         numberOfAccount: Number.isFinite(vals.numberOfAccount)
           ? Number(vals.numberOfAccount)
@@ -125,19 +228,18 @@ const fetchList = async (opts?: { silent?: boolean }) => {
       });
       await fetchList({ silent: true });
 
-      message.success("Tạo workspace thành công");
+      message.success("Workspace created successfully.");
       setCreateVisible(false);
       createForm.resetFields();
       setImgUrlCreate("");
       setImgFileCreate(null);
     } catch (err) {
-      showErrorMessage(err, "Không thể tạo workspace");
+      showErrorMessage(err, "Failed to create workspace.");
     } finally {
       setLoading(false);
     }
   };
 
-  // ===== UPDATE =====
   const onUpdate = async (vals: any) => {
     if (!selected) return;
 
@@ -151,43 +253,40 @@ const fetchList = async (opts?: { silent?: boolean }) => {
       if (Number.isFinite(vals.numberOfAccount))
         body.numberOfAccount = Number(vals.numberOfAccount);
       if (vals.description?.trim()) body.description = vals.description.trim();
-      if (imgUrlUpdate && imgUrlUpdate !== selected.imgUrl)
-        body.imgUrl = imgUrlUpdate;
+      if (imgUrlUpdate && imgUrlUpdate !== selected.imgUrl) body.imgUrl = imgUrlUpdate;
 
       await WorkspaceService.updateWorkspace(selected.id, body, {
         imgFile: imgFileUpdate || undefined,
       });
       await fetchList({ silent: true });
 
-      message.success("Cập nhật workspace thành công");
-
+      message.success("Workspace updated successfully.");
       setUpdateVisible(false);
       updateForm.resetFields();
       setImgUrlUpdate("");
       setImgFileUpdate(null);
       setSelected(null);
     } catch (err) {
-      showErrorMessage(err, "Không thể cập nhật workspace");
+      showErrorMessage(err, "Failed to update workspace.");
     } finally {
       setLoading(false);
     }
   };
 
-  // ===== DELETE =====
   const handleDelete = async (id: string) => {
     Modal.confirm({
-      title: "Xóa workspace?",
-      content: "Hành động không thể hoàn tác.",
-      okText: "Xóa",
+      title: "Delete workspace?",
+      content: "This action cannot be undone.",
+      okText: "Delete",
       okButtonProps: { danger: true },
       onOk: async () => {
         setLoading(true);
         try {
           await WorkspaceService.deleteWorkspace(id);
           await fetchList({ silent: true });
-          message.success("Xóa workspace thành công");
+          message.success("Workspace deleted successfully.");
         } catch (err) {
-          showErrorMessage(err, "Không thể xóa workspace");
+          showErrorMessage(err, "Failed to delete workspace.");
         } finally {
           setLoading(false);
         }
@@ -195,7 +294,6 @@ const fetchList = async (opts?: { silent?: boolean }) => {
     });
   };
 
-  // ===== VIEW =====
   const handleView = async (rec: Workspace) => {
     try {
       setLoading(true);
@@ -203,7 +301,7 @@ const fetchList = async (opts?: { silent?: boolean }) => {
       setViewData(data);
       setViewVisible(true);
     } catch (err) {
-      showErrorMessage(err, "Không thể lấy thông tin workspace");
+      showErrorMessage(err, "Failed to fetch workspace details.");
     } finally {
       setLoading(false);
     }
@@ -221,15 +319,69 @@ const fetchList = async (opts?: { silent?: boolean }) => {
     setUpdateVisible(true);
   };
 
+  /* ===== Course list renderer (anti-overflow) ===== */
+  const renderCourseList = (list: Course[], opts?: { dense?: boolean }) => {
+    if (list.length === 0) return <Text type="secondary">No courses.</Text>;
+    return (
+      <List
+        className="course-list"
+        size={opts?.dense ? "small" : "default"}
+        itemLayout="horizontal"
+        dataSource={list}
+        renderItem={(c) => {
+          const ins = getInstructorFullName(c);
+          const avatarSrc = (c.imgUrl || "").trim() ? c.imgUrl : FALLBACK_COURSE_AVATAR;
+          return (
+            <List.Item key={c.id} className="course-list-item">
+              <List.Item.Meta
+                avatar={<Avatar src={avatarSrc} shape="square" />}
+                title={
+                  <div className="course-title-row">
+                    <Text className="course-title" ellipsis={{ tooltip: c.courseName }}>
+                      {c.courseName}
+                    </Text>
+                    {typeof c.ratingAverage === "number" && <Tag>{c.ratingAverage.toFixed(1)}</Tag>}
+                    <Tag color={c.isActive ? "green" : "red"}>{c.isActive ? "Active" : "Inactive"}</Tag>
+                  </div>
+                }
+                description={
+                  <div className="course-desc-wrap">
+                    <div className="course-meta-line">
+                      <Tooltip title={ins.id ? `Instructor ID: ${ins.id}` : ""}>
+                        <span>
+                          <b>Instructor:</b> {ins.text}
+                        </span>
+                      </Tooltip>
+                      <span>
+                        <b>Created:</b>{" "}
+                        {c.createdAt ? new Date(c.createdAt).toLocaleDateString() : "N/A"}
+                      </span>
+                    </div>
+                    {c.description && (
+                      <Paragraph className="course-desc" ellipsis={{ rows: 2, tooltip: c.description }}>
+                        {c.description}
+                      </Paragraph>
+                    )}
+                  </div>
+                }
+              />
+            </List.Item>
+          );
+        }}
+      />
+    );
+  };
+
+  /* ===== Columns ===== */
   const columns: ColumnsType<Workspace> = [
-    { title: "ID", dataIndex: "id", key: "id", width: 220, ellipsis: true },
+    { title: "ID", dataIndex: "id", key: "id", width: 220, ellipsis: true, sorter: (a, b) => compareStr(a.id, b.id) },
     {
       title: "Image",
       dataIndex: "imgUrl",
       key: "imgUrl",
       align: "center",
       width: 110,
-      render: (url) =>
+      render: (url: string) =>
         url ? (
           <img
             src={url}
@@ -252,16 +404,47 @@ const fetchList = async (opts?: { silent?: boolean }) => {
       key: "workSpaceName",
       width: 200,
       ellipsis: true,
-      sorter: (a, b) => a.workSpaceName.localeCompare(b.workSpaceName),
-    },  
-    
+      sorter: (a, b) => compareStr(a.workSpaceName, b.workSpaceName),
+    },
     {
       title: "Accounts",
       dataIndex: "numberOfAccount",
       key: "numberOfAccount",
       align: "center",
       width: 120,
-      sorter: (a, b) => a.numberOfAccount - b.numberOfAccount,
+      sorter: (a, b) => (a.numberOfAccount || 0) - (b.numberOfAccount || 0),
+    },
+    {
+      title: "Courses",
+      key: "courses",
+      width: 460,
+      render: (_: any, rec: Workspace) => {
+        const key = normalizeId(rec.id);
+        const fullList = coursesByWorkspaceId.get(key) || [];
+        const expanded = !!showAllCoursesCell[key];
+        const displayList = expanded ? fullList : fullList.slice(0, 3);
+        const count = fullList.length;
+
+        return (
+          <div>
+            <Text strong>{count}</Text> {count === 1 ? "course" : "courses"}
+            <div style={{ marginTop: 6 }}>
+              {renderCourseList(displayList, { dense: true })}
+              {count > 3 && (
+                <Button
+                  type="link"
+                  size="small"
+                  onClick={() =>
+                    setShowAllCoursesCell((prev) => ({ ...prev, [key]: !expanded }))
+                  }
+                >
+                  {expanded ? "Show less" : "Show more"}
+                </Button>
+              )}
+            </div>
+          </div>
+        );
+      },
     },
     {
       title: "Description",
@@ -270,7 +453,6 @@ const fetchList = async (opts?: { silent?: boolean }) => {
       width: 240,
       ellipsis: true,
     },
-  
     {
       title: "Status",
       dataIndex: "isActive",
@@ -285,6 +467,7 @@ const fetchList = async (opts?: { silent?: boolean }) => {
         value === "active" ? record.isActive : !record.isActive,
       render: (v: boolean) =>
         v ? <Tag color="green">Active</Tag> : <Tag color="red">Inactive</Tag>,
+      sorter: (a, b) => Number(a.isActive) - Number(b.isActive),
     },
     {
       title: "Actions",
@@ -293,26 +476,13 @@ const fetchList = async (opts?: { silent?: boolean }) => {
       align: "center",
       render: (_, rec) => (
         <Space wrap>
-          <Button
-            icon={<EyeOutlined />}
-            size="small"
-            onClick={() => handleView(rec)}
-          >
+          <Button icon={<EyeOutlined />} size="small" onClick={() => handleView(rec)}>
             View
           </Button>
-          <Button
-            icon={<EditOutlined />}
-            size="small"
-            onClick={() => handleEdit(rec)}
-          >
+          <Button icon={<EditOutlined />} size="small" onClick={() => handleEdit(rec)}>
             Edit
           </Button>
-          <Button
-            icon={<DeleteOutlined />}
-            size="small"
-            danger
-            onClick={() => handleDelete(rec.id)}
-          >
+          <Button icon={<DeleteOutlined />} size="small" danger onClick={() => handleDelete(rec.id)}>
             Delete
           </Button>
         </Space>
@@ -325,11 +495,11 @@ const fetchList = async (opts?: { silent?: boolean }) => {
       <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
         <Col>
           <Input.Search
-            placeholder="Search Workspace by name"
+            placeholder="Search by name / description / course / instructor"
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
             allowClear
-            style={{ width: 280 }}
+            style={{ width: 360 }}
           />
         </Col>
         <Col>
@@ -345,13 +515,13 @@ const fetchList = async (opts?: { silent?: boolean }) => {
       </Row>
 
       <Card>
-        <Table
+        <Table<Workspace>
           rowKey="id"
           columns={columns}
           dataSource={filteredData}
           loading={loading || refreshing}
           pagination={{ pageSize: 10 }}
-          scroll={{ x: 1200 }}
+          scroll={{ x: 1500 }}
         />
       </Card>
 
@@ -366,7 +536,7 @@ const fetchList = async (opts?: { silent?: boolean }) => {
           setImgUrlCreate("");
           setImgFileCreate(null);
         }}
-        destroyOnClose
+        destroyOnHidden
         width={520}
       >
         <Form form={createForm} layout="vertical" onFinish={onCreate}>
@@ -432,7 +602,7 @@ const fetchList = async (opts?: { silent?: boolean }) => {
           setImgFileUpdate(null);
           setSelected(null);
         }}
-        destroyOnClose
+        destroyOnHidden
         width={520}
       >
         <Form form={updateForm} layout="vertical" onFinish={onUpdate}>
@@ -488,39 +658,30 @@ const fetchList = async (opts?: { silent?: boolean }) => {
           setViewVisible(false);
           setViewData(null);
         }}
-        destroyOnClose
-        width={520}
+        destroyOnHidden
+        width={700}
       >
         {viewData ? (
           <div>
-            <p>
-              <strong>ID:</strong> {viewData.id}
-            </p>
-            <p>
-              <strong>Name:</strong> {viewData.workSpaceName}
-            </p>
-            <p>
-              <strong>Description:</strong> {viewData.description}
-            </p>
-            <p>
-              <strong>Accounts:</strong> {viewData.numberOfAccount}
-            </p>
-            <p>
-              <strong>Status:</strong>{" "}
-              {viewData.isActive ? "Active" : "Inactive"}
-            </p>
+            <p><strong>ID:</strong> {viewData.id}</p>
+            <p><strong>Name:</strong> {viewData.workSpaceName}</p>
+            <p><strong>Description:</strong> {viewData.description}</p>
+            <p><strong>Accounts:</strong> {viewData.numberOfAccount}</p>
+            <p><strong>Status:</strong> {viewData.isActive ? "Active" : "Inactive"}</p>
             {viewData.imgUrl && (
               <img
                 src={viewData.imgUrl}
                 alt=""
-                style={{
-                  width: "100%",
-                  maxHeight: 200,
-                  objectFit: "cover",
-                  borderRadius: 8,
-                }}
+                style={{ width: "100%", maxHeight: 220, objectFit: "cover", borderRadius: 8 }}
               />
             )}
+
+            <div style={{ marginTop: 16 }}>
+              <Text strong>Courses in this workspace:</Text>
+              <div style={{ marginTop: 8 }}>
+                {renderCourseList(coursesByWorkspaceId.get(normalizeId(viewData.id)) || [])}
+              </div>
+            </div>
           </div>
         ) : (
           <p>Loading...</p>

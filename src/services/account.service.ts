@@ -1,9 +1,8 @@
-// src/services/account.service.ts
 import axiosInstance from "./main.service";
 import { API } from "../api";
 import type { Account } from "../types/account";
 import type { OrganizationAdminForm } from "../types/organizationAdmin";
-import type { AccountForm, UpdateAccountPayload } from "../types/account";
+import type { AccountForm} from "../types/account";
 import { getErrorMessage } from "../utils/errorHandler";
 const unwrap = (d: any) => (d?.data ?? d) as any;
 
@@ -109,24 +108,20 @@ async uploadAvatar(file: File): Promise<string> {
 async updateAccount(
   id: string,
   body: {
-    // bắt buộc
     userName: string;
     email: string;
     roleId: number;
     organizationId: string;
     isActive: boolean;
-
-    // sửa đổi + các trường còn lại server cần
     fullName: string;
     phone?: string;
-    gender?: number;   // map 1/2/3 -> 0/1/2 nếu BE cần
+    gender?: number;   
     address?: string;
     avtUrl?: string;
-    password?: string; // chỉ khi bạn cho phép đổi
+    password?: string; 
   }
 ): Promise<Account> {
   try {
-    // nếu BE yêu cầu gender 0/1/2, map từ UI 1/2/3:
     if (typeof body.gender === 'number') {
       const g = parseInt(String(body.gender), 10);
       const map: Record<number, number> = { 1: 0, 2: 1, 3: 2 };
