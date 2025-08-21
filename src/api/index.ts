@@ -20,6 +20,12 @@ export const API = {
   BAN_ACCOUNT: "/api/account/ban_account",
   UNBAN_ACCOUNT: "/api/account/unban_account",
 
+  IMPORT_INSTRUCTOR:"/api/account/import-instructors",
+  IMPORT_STUDENT:"/api/account/import-students",
+  EXPORT_INSTRUCTOR: "/api/account/instructors",
+  EXPORT_STUDENT:"/api/account/students",
+
+
   //ACCOUNT OF WORKSPACE
   GET_ALL_ACCOUNTOFWORKSPACE:
     "/api/accountOfWorkSpace/get_all_accountOfWorkSpace",
