@@ -26,4 +26,9 @@ export const QuizService = {
     const res = await axiosInstance.delete(`${API.DELETE_QUIZ}/${id}`);
     return res.data;
   },
+
+  getQuizByLessonId: async (id: string) => {
+    const res = await axiosInstance.get(`${API.GET_QUIZ_LESSON}/${id}`);
+    return res.data;
+  },
 };

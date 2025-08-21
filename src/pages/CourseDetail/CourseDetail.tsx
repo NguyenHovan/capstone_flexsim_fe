@@ -8,8 +8,7 @@ import {
   Avatar,
   Tag,
   Modal,
-  Typography,
-  Empty,
+  Flex,
 } from "antd";
 import { PlayCircleOutlined } from "@ant-design/icons";
 import { useNavigate, useParams } from "react-router-dom";
@@ -22,26 +21,6 @@ import { CourseProgressService } from "../../services/course-progress.service";
 import CourseProgress from "./CourseProgress";
 import type { Course } from "../../types/course";
 import { TopicService } from "../../services/topic.service";
-import { LessonProgressService } from "../../services/lessonProgress.service";
-
-const { Title, Text } = Typography;
-
-const mockCertificates = [
-  {
-    id: "1",
-    name: "Certificate of English Beginner",
-    courseName: "English Basics",
-    issuedDate: "2025-07-20",
-    status: "COMPLETED",
-  },
-  {
-    id: "2",
-    name: "Certificate of React Developer",
-    courseName: "ReactJS Advanced",
-    issuedDate: "2025-08-01",
-    status: "IN_PROGRESS",
-  },
-];
 
 const CourseDetail = () => {
   const { id } = useParams();
@@ -64,6 +43,7 @@ const CourseDetail = () => {
       setMyProgress(response);
     } catch (error) {
       console.log(error);
+      setMyProgress(null);
     }
   };
 
@@ -96,11 +76,6 @@ const CourseDetail = () => {
     }
   };
 
-  const handleOpenModal = (topic: any) => {
-    setSelectedTopic(topic);
-    setIsModalVisible(true);
-  };
-
   const handleCloseModal = () => {
     setSelectedTopic(null);
     setIsModalVisible(false);
@@ -127,18 +102,6 @@ const CourseDetail = () => {
       toast.success(res.message);
     } catch {
       toast.error("Học viên đã gửi yêu cầu hoặc đang theo học khóa học này");
-    }
-  };
-
-  const handleComplete = async (lessonId: string) => {
-    try {
-      await LessonProgressService.updateLessonProgress(
-        currentUser.id,
-        lessonId
-      );
-      toast.success("Cập nhật thành công");
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Cập nhật thất bại");
     }
   };
 
@@ -170,71 +133,46 @@ const CourseDetail = () => {
         />
         <div style={{ flex: 1 }}>
           <h2 style={{ marginBottom: 8 }}>{courseDetail?.courseName}</h2>
+
           <Rate
             value={Number(courseDetail?.ratingAverage)}
             disabled
             style={{ marginBottom: 8 }}
           />
+
           <div style={{ color: "#555", marginBottom: 16 }}>
             Created at: {courseDetail?.createdAt}
           </div>
-          <Button type="primary" danger onClick={handleEnrollRequest}>
-            Enroll Course
-          </Button>
 
-          {/* My Certificates */}
-          <div style={{ marginTop: 24 }}>
-            <Title level={4}>My Certificates</Title>
-            {mockCertificates.length === 0 ? (
-              <Empty description="Bạn chưa có chứng chỉ nào" />
-            ) : (
-              <Row gutter={[16, 16]}>
-                {mockCertificates.map((cert) => (
-                  <Col xs={24} sm={12} md={12} key={cert.id}>
-                    <Card
-                      size="small"
-                      title={cert.name}
-                      bordered
-                      style={{
-                        borderRadius: 12,
-                        backgroundColor: "#fafafa",
-                        minHeight: 120,
-                      }}
-                      extra={
-                        <Tag
-                          color={
-                            cert.status === "COMPLETED" ? "green" : "orange"
-                          }
-                        >
-                          {cert.status === "COMPLETED"
-                            ? "Hoàn thành"
-                            : "Đang học"}
-                        </Tag>
-                      }
-                    >
-                      <Text strong>Khóa học: </Text>
-                      <Text>{cert.courseName}</Text>
-                      <br />
-                      <Text strong>Ngày cấp: </Text>
-                      <Text>
-                        {new Date(cert.issuedDate).toLocaleDateString()}
-                      </Text>
-                      {cert.status === "COMPLETED" && (
-                        <Button
-                          type="primary"
-                          size="small"
-                          style={{ marginTop: 8 }}
-                          onClick={() =>
-                            alert(`Download chứng chỉ: ${cert.name}`)
-                          }
-                        >
-                          Tải về
-                        </Button>
-                      )}
-                    </Card>
-                  </Col>
-                ))}
-              </Row>
+          <div style={{ display: "flex", gap: "12px" }}>
+            <Button
+              type="primary"
+              danger
+              onClick={handleEnrollRequest}
+              disabled={myProgress}
+              style={{ borderRadius: "8px" }}
+            >
+              Enroll Course
+            </Button>
+
+            {myProgress?.status === 3 && (
+              <Button
+                type="default"
+                onClick={() =>
+                  window.open(
+                    "https://res.cloudinary.com/dsfrqevvg/raw/upload/v1755755739/LogiSimEdu_Certificates/certificate_d648765e-aea2-4241-8f04-a1ff25bc423e_edd533fd-2a81-46e7-a32b-22c598e07397.pdf",
+                    "_blank"
+                  )
+                }
+                style={{
+                  borderRadius: "8px",
+                  background: "linear-gradient(90deg, #36d1dc, #5b86e5)",
+                  color: "white",
+                  fontWeight: 600,
+                }}
+              >
+                Show Certificate
+              </Button>
             )}
           </div>
         </div>
@@ -275,48 +213,52 @@ const CourseDetail = () => {
         </Col>
 
         <Col xs={24} md={10}>
-          <Card
-            style={{
-              marginBottom: 24,
-              borderRadius: 8,
-              backgroundColor: "#fafafa",
-            }}
-          >
-            <h4 style={{ marginBottom: 16 }}>Your Progress</h4>
-            {myProgress && <CourseProgress data={myProgress} />}
-          </Card>
+          {myProgress && (
+            <>
+              <Card
+                style={{
+                  marginBottom: 24,
+                  borderRadius: 8,
+                  backgroundColor: "#fafafa",
+                }}
+              >
+                <h4 style={{ marginBottom: 16 }}>Your Progress</h4>
+                {myProgress && <CourseProgress data={myProgress} />}
+              </Card>
 
-          <Card
-            title="Lessons"
-            style={{ borderRadius: 8 }}
-            bodyStyle={{ padding: 12 }}
-          >
-            <List
-              itemLayout="horizontal"
-              dataSource={topics}
-              renderItem={(item: any, index: number) => (
-                <List.Item
-                  style={{
-                    padding: "12px 8px",
-                    borderBottom: "1px solid #eee",
-                  }}
-                  onClick={() => handleOpenModal(item)}
-                >
-                  <List.Item.Meta
-                    avatar={
-                      <PlayCircleOutlined
-                        style={{ fontSize: 20, color: "#1890ff" }}
+              <Card
+                title="Lessons"
+                style={{ borderRadius: 8 }}
+                bodyStyle={{ padding: 12 }}
+              >
+                <List
+                  itemLayout="horizontal"
+                  dataSource={topics}
+                  renderItem={(item: any, index: number) => (
+                    <List.Item
+                      style={{
+                        padding: "12px 8px",
+                        borderBottom: "1px solid #eee",
+                      }}
+                      onClick={() => navigate(`/topic-detail/${item.id}`)}
+                    >
+                      <List.Item.Meta
+                        avatar={
+                          <PlayCircleOutlined
+                            style={{ fontSize: 20, color: "#1890ff" }}
+                          />
+                        }
+                        title={`${(index + 1).toString().padStart(2, "0")}. ${
+                          item.topicName
+                        }`}
+                        description={item.description}
                       />
-                    }
-                    title={`${(index + 1).toString().padStart(2, "0")}. ${
-                      item.topicName
-                    }`}
-                    description={item.description}
-                  />
-                </List.Item>
-              )}
-            />
-          </Card>
+                    </List.Item>
+                  )}
+                />
+              </Card>
+            </>
+          )}
         </Col>
         <Modal
           visible={isModalVisible}
@@ -344,21 +286,24 @@ const CourseDetail = () => {
                       }}
                       onClick={() => navigate(`/quiz-test/${lesson.id}`)}
                     >
-                      <List.Item.Meta
-                        title={`${(index + 1).toString().padStart(2, "0")}. ${
-                          lesson.lessonName
-                        }`}
-                        description={lesson.description}
-                      />
-                      <Button
-                        type="primary"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleComplete(lesson.id);
-                        }}
-                      >
-                        Hoàn thành
-                      </Button>
+                      <Flex vertical style={{ width: "100%" }}>
+                        <List.Item.Meta
+                          title={`${(index + 1).toString().padStart(2, "0")}. ${
+                            lesson.lessonName
+                          }`}
+                          description={lesson.description}
+                        />
+                        <Button
+                          style={{ marginTop: 24, width: 120 }}
+                          type="primary"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleComplete(lesson.id);
+                          }}
+                        >
+                          Learning
+                        </Button>
+                      </Flex>
                     </List.Item>
                   )}
                 />

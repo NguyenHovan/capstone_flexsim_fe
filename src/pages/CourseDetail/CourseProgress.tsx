@@ -23,11 +23,11 @@ interface CourseProgressProps {
 const CourseProgress: React.FC<CourseProgressProps> = ({ data }) => {
   const getStatusTag = (status: number) => {
     switch (status) {
-      case 0:
-        return <Tag color="default">Not Start</Tag>;
       case 1:
-        return <Tag color="processing">Processing</Tag>;
+        return <Tag color="default">Not Start</Tag>;
       case 2:
+        return <Tag color="processing">Processing</Tag>;
+      case 3:
         return <Tag color="success">Done</Tag>;
       default:
         return <Tag>Không xác định</Tag>;

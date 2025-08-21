@@ -43,4 +43,22 @@ export const CourseService = {
     const response = await axiosInstance.delete(`${API.DELETE_COURSE}/${id}`);
     return response.data;
   },
+  getCourseByInstructorId: async () => {
+    const currentUser = JSON.parse(
+      localStorage.getItem("currentUser") || "null"
+    );
+    if (!currentUser || !currentUser.id) {
+      return [];
+    }
+    const response = await axiosInstance.get(
+      `${API.GET_COURSE_BY_INSTRUCTOR}/${currentUser.id}`
+    );
+    return response.data;
+  },
+  getCourseByCategoryId: async (categoryId: string) => {
+    const response = await axiosInstance.get(
+      `${API.GET_COURSE_BY_CATEGORY_ID}/${categoryId}`
+    );
+    return response.data;
+  },
 };

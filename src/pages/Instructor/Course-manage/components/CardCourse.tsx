@@ -1,11 +1,11 @@
 import React from "react";
-import { Card, Tag } from "antd";
+import { Card, Rate } from "antd";
 import { DeleteFilled, EditOutlined } from "@ant-design/icons";
 
 interface CardCourseProps {
   title: string;
   author: string;
-  tag: string;
+  rating: number;
   coverUrl: string;
   onEdit?: () => void;
   onDelete: () => void;
@@ -14,7 +14,7 @@ interface CardCourseProps {
 const CardCourse: React.FC<CardCourseProps> = ({
   title,
   author,
-  tag,
+  rating,
   coverUrl,
   onEdit,
   onDelete,
@@ -33,11 +33,11 @@ const CardCourse: React.FC<CardCourseProps> = ({
         <img
           alt={title}
           src={coverUrl}
-          style={{ width: "100%", height: 160, objectFit: "cover" }}
+          style={{ width: "100%", height: 300, objectFit: "cover" }}
         />
       }
     >
-      <Tag
+      {/* <Tag
         color="red"
         style={{
           position: "absolute",
@@ -46,9 +46,9 @@ const CardCourse: React.FC<CardCourseProps> = ({
           fontWeight: "bold",
         }}
       >
-        {tag}
-      </Tag>
-
+        {rating}
+      </Tag> */}
+      <Rate value={rating} />
       <div
         style={{
           position: "absolute",

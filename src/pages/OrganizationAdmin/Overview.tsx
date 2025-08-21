@@ -323,13 +323,14 @@ const OrganizationAdminOverview: React.FC = () => {
       }));
       const rows = prune(rawRows);
 
+      // cộng đủ fields + ép kiểu để TS không đòi 'label'
       const sums = rows.reduce<Pick<Counters,'students'|'instructors'|'workspaces'|'orders'|'courses'>>(
         (a, r) => ({
           students:    a.students    + r.students,
           instructors: a.instructors + r.instructors,
           workspaces:  a.workspaces  + r.workspaces,
           orders:      a.orders      + r.orders,
-          courses:     a.courses     + r.courses, 
+          courses:     a.courses     + r.courses ,
         }),
         { ...EMPTY_DAILY }
       );
@@ -371,7 +372,7 @@ const OrganizationAdminOverview: React.FC = () => {
           instructors: a.instructors + r.instructors,
           workspaces:  a.workspaces  + r.workspaces,
           orders:      a.orders      + r.orders,
-          courses:     a.courses     + r.courses, 
+          courses:     a.courses     + r.courses,
         }),
         { ...EMPTY_DAILY }
       );
@@ -447,13 +448,14 @@ const OrganizationAdminOverview: React.FC = () => {
     };
   }, [dailyStats, dayLabelsAll.length, granularity, anchorDate]);
 
+  // Charts
   const barData = useMemo(() => ({
     labels: filtered.barLabels,
     datasets: [
-      { label: 'Students',    data: filtered.barSeries.Students,    backgroundColor: ADMIN_COLORS.teal,  borderRadius: 0, borderSkipped: false, maxBarThickness: 36, barPercentage: 0.8, categoryPercentage: 0.6 },
-      { label: 'Instructors', data: filtered.barSeries.Instructors, backgroundColor: ADMIN_COLORS.navy,  borderRadius: 0, borderSkipped: false, maxBarThickness: 36, barPercentage: 0.8, categoryPercentage: 0.6 },
-      { label: 'Workspaces',  data: filtered.barSeries.Workspaces,  backgroundColor: ADMIN_COLORS.gray,  borderRadius: 0, borderSkipped: false, maxBarThickness: 36, barPercentage: 0.8, categoryPercentage: 0.6 },
-      { label: 'Orders',      data: filtered.barSeries.Orders,      backgroundColor: ADMIN_COLORS.cyan,  borderRadius: 0, borderSkipped: false, maxBarThickness: 36, barPercentage: 0.8, categoryPercentage: 0.6 },
+      { label: 'Students',    data: filtered.barSeries.Students,    backgroundColor: ADMIN_COLORS.teal,  borderRadius: 10, borderSkipped: false, maxBarThickness: 36, barPercentage: 0.8, categoryPercentage: 0.6 },
+      { label: 'Instructors', data: filtered.barSeries.Instructors, backgroundColor: ADMIN_COLORS.navy,  borderRadius: 10, borderSkipped: false, maxBarThickness: 36, barPercentage: 0.8, categoryPercentage: 0.6 },
+      { label: 'Workspaces',  data: filtered.barSeries.Workspaces,  backgroundColor: ADMIN_COLORS.gray,  borderRadius: 10, borderSkipped: false, maxBarThickness: 36, barPercentage: 0.8, categoryPercentage: 0.6 },
+      { label: 'Orders',      data: filtered.barSeries.Orders,      backgroundColor: ADMIN_COLORS.cyan,  borderRadius: 10, borderSkipped: false, maxBarThickness: 36, barPercentage: 0.8, categoryPercentage: 0.6 },
     ]
   }), [filtered.barLabels.join(','), filtered.barSeries]);
 
@@ -536,6 +538,7 @@ const OrganizationAdminOverview: React.FC = () => {
 
   const resetToday = () => setAnchorDate(dayjs());
 
+  // Metric cards (màu admin + purple cho Courses) — hiển thị % WoW dạng số
   const cards = [
     { key: 'students',    title: 'Total Students',    icon: <TeamOutlined />,         value: totals.students,    percent: wow.students,    className: 'metric--tealSolid'   },
     { key: 'instructors', title: 'Total Instructors', icon: <UserOutlined />,         value: totals.instructors, percent: wow.instructors, className: 'metric--navySolid'   },
@@ -547,7 +550,7 @@ const OrganizationAdminOverview: React.FC = () => {
   // Table columns
   const orderCols = [
     {
-      title: 'Order Code',
+      title: '#',
       dataIndex: 'orderCode',
       key: 'orderCode',
       render: (_: any, r: OrderRow) => r.orderCode ?? r.id?.slice(-6)?.toUpperCase() ?? '—',
@@ -681,7 +684,7 @@ const OrganizationAdminOverview: React.FC = () => {
           <Row gutter={[20, 20]} style={{ marginTop: 8 }}>
             <Col span={24}>
               <Card className="panel-card">
-                <div className="panel-title">Recent Successful Payments</div>
+                <div className="panel-title">Recent Orders (you paid)</div>
                 <Table
                   size="middle"
                   rowKey="id"

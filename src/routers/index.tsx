@@ -47,6 +47,8 @@ import ContentCourse from "../pages/Instructor/Course-manage/ContentCourse";
 import AdminProfile from "../pages/Admin/Profile/AdminProfile";
 import OrgAdminProfile from "../pages/OrganizationAdmin/Profile/OrgAdminProfile";
 import OrgAdminSubscriptionPlans from "../pages/OrganizationAdmin/Subcription/Subcription";
+import QuizDetail from "../pages/Instructor/Quiz-manage/Quiz-Detail";
+import TopicDetail from "../pages/TopicDetail/TopicDetail";
 
 const MainRoute = () => {
   return (
@@ -67,6 +69,7 @@ const MainRoute = () => {
         <Route path="/course-list" element={<CourseList />} />
         <Route path="/course-detail/:id" element={<CourseDetail />} />
         <Route path="/quiz-test/:id" element={<QuizApp />} />
+        <Route path="/topic-detail/:id" element={<TopicDetail />} />
         <Route
           path="/profile"
           element={
@@ -165,6 +168,7 @@ const MainRoute = () => {
           <Route path="/instructor-review" element={<ReviewManagement />} />
           <Route path="/instructor-lesson" element={<LessonManagement />} />
           <Route path="/instructor-enroll-request" element={<EnrollManage />} />
+          <Route path="/instructor-quiz-detail/:id" element={<QuizDetail />} />
         </Route>
       </Route>
     </Routes>
