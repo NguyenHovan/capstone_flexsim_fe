@@ -1,7 +1,12 @@
-import { Layout, Card, Row, Col, Typography, Spin, Tag } from 'antd';
+// src/pages/admin/Overview.tsx
+import {
+  Layout, Card, Row, Col, Typography, Spin, Tag,
+  DatePicker, Segmented, Button, Space, Table
+} from 'antd';
 import {
   AppstoreOutlined, TeamOutlined, CheckCircleOutlined,
-  ShoppingCartOutlined, AimOutlined
+  ShoppingCartOutlined, AimOutlined, DownloadOutlined,
+  ReloadOutlined, FilterOutlined
 } from '@ant-design/icons';
 import { useEffect, useMemo, useState } from 'react';
 import { Bar, Doughnut } from 'react-chartjs-2';
@@ -9,12 +14,20 @@ import {
   Chart as ChartJS, Tooltip, Legend, BarElement, ArcElement,
   CategoryScale, LinearScale
 } from 'chart.js';
+import type { ChartOptions } from 'chart.js'; 
+import dayjs from 'dayjs';
+import type { Dayjs } from 'dayjs';
+import weekOfYear from 'dayjs/plugin/weekOfYear';
+import isoWeek from 'dayjs/plugin/isoWeek';
+
 import { toast } from 'sonner';
 import axiosInstance from '../../api/axiosInstance';
 import { API } from '../../api';
-import type { ChartOptions } from 'chart.js';
-import './overview.css';
 
+import { OrderService } from '../../services/order.service';
+import './overview.css';
+dayjs.extend(weekOfYear);
+dayjs.extend(isoWeek);
 ChartJS.register(Tooltip, Legend, BarElement, ArcElement, CategoryScale, LinearScale);
 
 const { Content } = Layout;
@@ -23,18 +36,32 @@ const { Title } = Typography;
 type AnyItem = Record<string, any>;
 type Counters = { users: number; organizations: number; workspaces: number; orders: number; };
 type DailyStats = Record<string, Counters>;
+type Granularity = 'week' | 'month' | 'year';
 
 interface DashboardStats {
   totalOrganizations: number;
   totalUsers: number;
   totalWorkspaces: number;
   totalOrders: number;
-  dailyStats: DailyStats;
+  dailyStats: DailyStats; // keyed by YYYY-MM-DD
 }
+
+/** View model cho bảng Recent Orders */
+type OrderRow = {
+  id: string;
+  orderCode?: number | null;
+  status?: 0 | 1 | 2;
+  createdAt?: string;
+  orderTime?: string;
+  price?: number;
+  totalPrice?: number;
+  subscriptionPlanId?: string;   // chuẩn hoá: subscriptionId | subscriptionPlanId | subcriptionPlanId
+  subscriptionPlanName?: string; // tên gói map từ /subscription-plan/get_all
+};
 
 const EMPTY: Counters = { users: 0, organizations: 0, workspaces: 0, orders: 0 };
 
-// helpers
+/* ================= helpers ================= */
 const getCreatedDate = (it: AnyItem): string | null => {
   const raw =
     it?.createdAt ?? it?.created_at ?? it?.createdDate ?? it?.created_date ??
@@ -42,15 +69,17 @@ const getCreatedDate = (it: AnyItem): string | null => {
   if (!raw) return null;
   const d = new Date(raw);
   if (Number.isNaN(+d)) return null;
-  return d.toISOString().slice(0, 10);
+  // ổn định timezone
+  return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
 };
 const safeList = (d: any): AnyItem[] =>
   Array.isArray(d) ? d : Array.isArray(d?.items) ? d.items : Array.isArray(d?.data) ? d.data : [];
 const safeCount = (d: any): number =>
-  Array.isArray(d) ? d.length :
-  Array.isArray(d?.items) ? d.items.length :
-  Array.isArray(d?.data) ? d.data.length :
-  (typeof d?.total === 'number' ? d.total : 0);
+  Array.isArray(d) ? d.length
+    : Array.isArray(d?.items) ? d.items.length
+    : Array.isArray(d?.data) ? d.data.length
+    : (typeof d?.total === 'number' ? d.total : 0);
+
 const addDaily = (daily: DailyStats, list: AnyItem[], key: keyof Counters) => {
   list.forEach((it) => {
     const date = getCreatedDate(it); if (!date) return;
@@ -61,15 +90,46 @@ const addDaily = (daily: DailyStats, list: AnyItem[], key: keyof Counters) => {
 const sum = (arr: number[]) => arr.reduce((a, b) => a + b, 0);
 const pct = (curr: number, prev: number) =>
   (prev === 0 ? (curr > 0 ? 100 : 0) : Math.round(((curr - prev) / prev) * 100));
+const buildDateRange = (start: Dayjs, end: Dayjs) => {
+  const out: string[] = [];
+  let d = start.startOf('day');
+  const last = end.startOf('day');
+  while (d.isBefore(last) || d.isSame(last, 'day')) {
+    out.push(d.format('YYYY-MM-DD'));
+    d = d.add(1, 'day');
+  }
+  return out;
+};
+const monthsInYear = (y: number) =>
+  Array.from({ length: 12 }, (_, i) => dayjs().year(y).month(i).format('YYYY-MM'));
+/* palette giống mẫu weekly sales */
+const COLORS = {
+  teal: '#2ED3C6',   // Users
+  navy: '#223A54',   // Organizations
+  gray: '#E3E7EF',   // Workspaces
+  cyan: '#7AD6E0',   // Orders
+};
 
+/* ================= component ================= */
 const AdminOverview: React.FC = () => {
   const [stats, setStats] = useState<DashboardStats>({
     totalOrganizations: 0, totalUsers: 0, totalWorkspaces: 0, totalOrders: 0, dailyStats: {}
   });
   const [loading, setLoading] = useState(false);
 
+  // filters
+  const [granularity, setGranularity] = useState<Granularity>('week'); // default giống mẫu
+  const [anchorDate, setAnchorDate] = useState<Dayjs>(dayjs());
+
+  // recent orders
+  const [recentOrders, setRecentOrders] = useState<OrderRow[]>([]);
+  const [loadingOrders, setLoadingOrders] = useState(false);
+  const [planNameById, setPlanNameById] = useState<Record<string, string>>({});
+
   useEffect(() => {
     let mounted = true;
+
+    // tải các tổng & daily stats
     (async () => {
       setLoading(true);
       try {
@@ -110,15 +170,70 @@ const AdminOverview: React.FC = () => {
         if (mounted) setLoading(false);
       }
     })();
+
+    // tải recent orders + map tên subscription theo subscriptionId
+    (async () => {
+      setLoadingOrders(true);
+      try {
+        const [plansRes, orders] = await Promise.all([
+          axiosInstance.get(API.GET_ALL_SUBCRIPTION),
+          OrderService.getAll(),
+        ]);
+
+        // map id -> name từ API subscription-plan/get_all
+        const plans = Array.isArray(plansRes.data?.data)
+          ? plansRes.data.data
+          : Array.isArray(plansRes.data)
+          ? plansRes.data
+          : [];
+        const planMap: Record<string, string> = {};
+        plans.forEach((p: any) => {
+          const pid = String(p?.id ?? p?.planId ?? p?._id ?? '');
+          const pname = String(p?.name ?? p?.planName ?? p?.title ?? p?.displayName ?? p?.code ?? '');
+          if (pid) planMap[pid] = pname;
+        });
+        if (mounted) setPlanNameById(planMap);
+
+        // chuẩn hoá Order -> OrderRow và gắn tên plan (ưu tiên subscriptionId)
+        const rows: OrderRow[] = (orders ?? []).map((o: any) => {
+          const pid =
+            o?.subscriptionId ?? o?.subscriptionPlanId ?? o?.subcriptionPlanId ?? null;
+          return {
+            id: o.id,
+            orderCode: o.orderCode ?? null,
+            status: o.status,
+            createdAt: o.createdAt,
+            orderTime: o.orderTime,
+            price: o.price,
+            totalPrice: o.totalPrice ?? o.price,
+            subscriptionPlanId: pid ?? undefined,
+            subscriptionPlanName: (pid && planMap[String(pid)]) || o.subscriptionPlanName,
+          };
+        });
+
+        rows.sort(
+          (a, b) =>
+            new Date(b.createdAt ?? b.orderTime ?? 0).getTime() -
+            new Date(a.createdAt ?? a.orderTime ?? 0).getTime()
+        );
+        if (mounted) setRecentOrders(rows.slice(0, 8));
+      } catch (e) {
+        console.error(e);
+        toast.error('Không tải được danh sách đơn hàng');
+      } finally {
+        if (mounted) setLoadingOrders(false);
+      }
+    })();
+
     return () => { mounted = false; };
   }, []);
 
-  // ===== cards (WoW 7d) =====
-  const dayLabels = useMemo(() => Object.keys(stats.dailyStats), [stats.dailyStats]);
-  const last7IdxStart = Math.max(0, dayLabels.length - 7);
-  const prev7IdxStart = Math.max(0, dayLabels.length - 14);
-  const last7 = dayLabels.slice(last7IdxStart).map(d => stats.dailyStats[d]);
-  const prev7 = dayLabels.slice(prev7IdxStart, last7IdxStart).map(d => stats.dailyStats[d]);
+  /* ---- cards (WoW 7d) ---- */
+  const dayLabelsAll = useMemo(() => Object.keys(stats.dailyStats), [stats.dailyStats]);
+  const last7IdxStart = Math.max(0, dayLabelsAll.length - 7);
+  const prev7IdxStart = Math.max(0, dayLabelsAll.length - 14);
+  const last7 = dayLabelsAll.slice(last7IdxStart).map(d => stats.dailyStats[d]);
+  const prev7 = dayLabelsAll.slice(prev7IdxStart, last7IdxStart).map(d => stats.dailyStats[d]);
   const wow = {
     users: pct(sum(last7.map(x => x.users)), sum(prev7.map(x => x.users))),
     organizations: pct(sum(last7.map(x => x.organizations)), sum(prev7.map(x => x.organizations))),
@@ -126,97 +241,309 @@ const AdminOverview: React.FC = () => {
     orders: pct(sum(last7.map(x => x.orders)), sum(prev7.map(x => x.orders))),
   };
 
+  // Ô Total dùng màu phẳng trùng màu cột (teal/navy/gray/cyan)
   const cards = [
-    { key: 'users', title: 'Total Users', icon: <TeamOutlined />, value: stats.totalUsers, percent: wow.users, className: 'metric--peach' },
-    { key: 'organizations', title: 'Total Organizations', icon: <AppstoreOutlined />, value: stats.totalOrganizations, percent: wow.organizations, className: 'metric--violet' },
-    { key: 'workspaces', title: 'Total Workspaces', icon: <CheckCircleOutlined />, value: stats.totalWorkspaces, percent: wow.workspaces, className: 'metric--teal' },
-    { key: 'orders', title: 'Total Orders', icon: <ShoppingCartOutlined />, value: stats.totalOrders, percent: wow.orders, className: 'metric--blue' },
+    { key: 'users',          title: 'Total Users',         icon: <TeamOutlined />,         value: stats.totalUsers,         percent: wow.users,         className: 'metric--tealSolid' },
+    { key: 'organizations',  title: 'Total Organizations', icon: <AppstoreOutlined />,    value: stats.totalOrganizations, percent: wow.organizations, className: 'metric--navySolid' },
+    { key: 'workspaces',     title: 'Total Workspaces',    icon: <CheckCircleOutlined />, value: stats.totalWorkspaces,    percent: wow.workspaces,    className: 'metric--graySolid' },
+    { key: 'orders',         title: 'Total Orders',        icon: <ShoppingCartOutlined />,value: stats.totalOrders,        percent: wow.orders,        className: 'metric--cyanSolid' },
   ] as const;
 
-  // ===== MONTHLY aggregates (YYYY-MM -> totals) =====
-  const monthlyMap: Record<string, Counters> = useMemo(() => {
-    const m: Record<string, Counters> = {};
-    Object.entries(stats.dailyStats).forEach(([date, c]) => {
-      const month = date.slice(0, 7);
-      if (!m[month]) m[month] = { users: 0, organizations: 0, workspaces: 0, orders: 0 };
-      m[month].users += c.users;
-      m[month].organizations += c.organizations;
-      m[month].workspaces += c.workspaces;
-      m[month].orders += c.orders;
+  /* ---- filtered dataset (Week/Month/Year) ---- */
+  const PRUNE_EMPTY = true;
+
+  const filtered = useMemo(() => {
+    const prune = (rows: Array<{ label: string } & Counters>) =>
+      PRUNE_EMPTY ? rows.filter(r => r.users || r.organizations || r.workspaces || r.orders) : rows;
+
+    if (dayLabelsAll.length === 0) {
+      return {
+        labelText: 'N/A',
+        barLabels: [] as string[],
+        barSeries: { Users: [] as number[], Organizations: [] as number[], Workspaces: [] as number[], Orders: [] as number[] },
+        share: { users: 0, organizations: 0, workspaces: 0, orders: 0 },
+        tableRows: [] as Array<{ label: string } & Counters>,
+        dailyTotals: [] as number[],
+      };
+    }
+
+    if (granularity === 'week') {
+      const start = anchorDate.startOf('isoWeek');
+      const end = anchorDate.endOf('isoWeek');
+      const range = buildDateRange(start, end);
+
+      const rawRows = range.map((d) => ({
+        label: dayjs(d).format('dddd'), // Sun..Sat
+        ...(stats.dailyStats[d] ?? { ...EMPTY })
+      }));
+      const rows = prune(rawRows);
+      const sums = rows.reduce((a, r) => ({
+        users: a.users + r.users, organizations: a.organizations + r.organizations,
+        workspaces: a.workspaces + r.workspaces, orders: a.orders + r.orders
+      }), { ...EMPTY });
+
+      return {
+        labelText: `ISO Week ${anchorDate.isoWeek()}, ${anchorDate.year()}`,
+        barLabels: rows.map(r => r.label),
+        barSeries: {
+          Users: rows.map(r => r.users),
+          Organizations: rows.map(r => r.organizations),
+          Workspaces: rows.map(r => r.workspaces),
+          Orders: rows.map(r => r.orders),
+        },
+        share: sums,
+        tableRows: rows,
+        dailyTotals: rows.map(r => r.users + r.organizations + r.workspaces + r.orders),
+      };
+    }
+
+    if (granularity === 'month') {
+      const start = anchorDate.startOf('month');
+      const end = anchorDate.endOf('month');
+      const range = buildDateRange(start, end);
+
+      const rawRows = range.map((d) => ({
+        label: dayjs(d).format('D'),
+        ...(stats.dailyStats[d] ?? { ...EMPTY })
+      }));
+      const rows = prune(rawRows);
+      const sums = rows.reduce((a, r) => ({
+        users: a.users + r.users, organizations: a.organizations + r.organizations,
+        workspaces: a.workspaces + r.workspaces, orders: a.orders + r.orders
+      }), { ...EMPTY });
+
+      return {
+        labelText: anchorDate.format('MMMM YYYY'),
+        barLabels: rows.map(r => r.label),
+        barSeries: {
+          Users: rows.map(r => r.users),
+          Organizations: rows.map(r => r.organizations),
+          Workspaces: rows.map(r => r.workspaces),
+          Orders: rows.map(r => r.orders),
+        },
+        share: sums,
+        tableRows: rows,
+        dailyTotals: rows.map(r => r.users + r.organizations + r.workspaces + r.orders),
+      };
+    }
+
+    // year
+    const year = anchorDate.year();
+    const months = monthsInYear(year);
+    const rawRows = months.map((m) => {
+      const acc = { ...EMPTY };
+      Object.entries(stats.dailyStats).forEach(([date, c]) => {
+        if (date.startsWith(m)) {
+          acc.users += c.users; acc.organizations += c.organizations; acc.workspaces += c.workspaces; acc.orders += c.orders;
+        }
+      });
+      return { label: m.slice(5), ...acc }; // "01".."12"
     });
-    return Object.fromEntries(Object.entries(m).sort(([a], [b]) => (a < b ? -1 : 1)));
-  }, [stats.dailyStats]);
+    const rows = PRUNE_EMPTY ? rawRows.filter(r => r.users || r.organizations || r.workspaces || r.orders) : rawRows;
 
-  const monthLabels = Object.keys(monthlyMap);
-  const monthlyUsers = monthLabels.map(m => monthlyMap[m].users);
-  const monthlyOrgs  = monthLabels.map(m => monthlyMap[m].organizations);
-  const monthlyWs    = monthLabels.map(m => monthlyMap[m].workspaces);
-  const monthlyOrd   = monthLabels.map(m => monthlyMap[m].orders);
+    const sums = rows.reduce((a, r) => ({
+      users: a.users + r.users, organizations: a.organizations + r.organizations,
+      workspaces: a.workspaces + r.workspaces, orders: a.orders + r.orders
+    }), { ...EMPTY });
 
-  // ===== CHARTS =====
-  // (2) BAR theo THÁNG — mỗi tháng là nhóm cột Users/Orgs/WS/Orders
-  const monthlyBarData = useMemo(() => ({
-    labels: monthLabels,
+    return {
+      labelText: `${year}`,
+      barLabels: rows.map(r => r.label),
+      barSeries: {
+        Users: rows.map(r => r.users),
+        Organizations: rows.map(r => r.organizations),
+        Workspaces: rows.map(r => r.workspaces),
+        Orders: rows.map(r => r.orders),
+      },
+      share: sums,
+      tableRows: rows,
+      dailyTotals: rows.map(r => r.users + r.organizations + r.workspaces + r.orders),
+    };
+  }, [stats.dailyStats, dayLabelsAll.length, granularity, anchorDate]);
+
+  /* ---- BAR (vuông, không bo góc) ---- */
+  const barData = useMemo(() => ({
+    labels: filtered.barLabels,
     datasets: [
-      { label: 'Users',         data: monthlyUsers, backgroundColor: '#60a5fa', borderRadius: 8, borderSkipped: false, maxBarThickness: 30 },
-      { label: 'Organizations', data: monthlyOrgs,  backgroundColor: '#f97316', borderRadius: 8, borderSkipped: false, maxBarThickness: 30 },
-      { label: 'Workspaces',    data: monthlyWs,    backgroundColor: '#f472b6', borderRadius: 8, borderSkipped: false, maxBarThickness: 30 },
-      { label: 'Orders',        data: monthlyOrd,   backgroundColor: '#34d399', borderRadius: 8, borderSkipped: false, maxBarThickness: 30 },
+      {
+        label: 'Users',
+        data: filtered.barSeries.Users,
+        backgroundColor: COLORS.teal,
+        borderWidth: 0,
+        borderSkipped: false,
+        borderRadius: 0,             // cột vuông
+        barThickness: 24,
+        maxBarThickness: 30,
+        categoryPercentage: 0.64,
+        barPercentage: 0.72,
+      },
+      {
+        label: 'Organizations',
+        data: filtered.barSeries.Organizations,
+        backgroundColor: COLORS.navy,
+        borderWidth: 0,
+        borderSkipped: false,
+        borderRadius: 0,
+        barThickness: 24,
+        maxBarThickness: 30,
+        categoryPercentage: 0.64,
+        barPercentage: 0.72,
+      },
+      {
+        label: 'Workspaces',
+        data: filtered.barSeries.Workspaces,
+        backgroundColor: COLORS.gray,
+        borderWidth: 0,
+        borderSkipped: false,
+        borderRadius: 0,
+        barThickness: 24,
+        maxBarThickness: 30,
+        categoryPercentage: 0.64,
+        barPercentage: 0.72,
+      },
+      {
+        label: 'Orders',
+        data: filtered.barSeries.Orders,
+        backgroundColor: COLORS.cyan,
+        borderWidth: 0,
+        borderSkipped: false,
+        borderRadius: 0,
+        barThickness: 24,
+        maxBarThickness: 30,
+        categoryPercentage: 0.64,
+        barPercentage: 0.72,
+      },
     ]
-  }), [monthLabels.join(','), monthlyUsers.join(','), monthlyOrgs.join(','), monthlyWs.join(','), monthlyOrd.join(',')]);
+  }), [filtered.barLabels.join(','), filtered.barSeries]);
 
-  const monthlyBarOpts: ChartOptions<'bar'> = {
+  const barOpts: ChartOptions<'bar'> = {
     responsive: true,
+    maintainAspectRatio: false,
+    layout: { padding: { left: 6, right: 6 } },
+    interaction: { mode: 'index', intersect: false },
     plugins: {
-      legend: { labels: { usePointStyle: true, boxWidth: 10 } },
+      legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 10 } },
       tooltip: {
         backgroundColor: 'rgba(15,23,42,0.92)', padding: 12, cornerRadius: 8,
-        callbacks: { label: (ctx) => ` ${ctx.dataset.label}: ${ctx.parsed.y}` }
+        callbacks: { label: (ctx) => ` ${ctx.dataset.label}: ${ctx.parsed.y?.toLocaleString()}` }
       }
     },
     scales: {
-      x: { stacked: false, grid: { display: false } },
-      y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: 'rgba(148,163,184,.25)' } }
+      x: {
+        offset: true,
+        grid: { display: false},
+        ticks: { maxRotation: 0, autoSkip: true, autoSkipPadding: 10, padding: 6 }
+      },
+      y: {
+        beginAtZero: true,
+        ticks: { precision: 0 },
+        grid: { color: 'rgba(148,163,184,.18)' }
+      }
     }
   };
 
-  // (3) DOUGHNUT % theo THÁNG MỚI NHẤT — tỉ trọng các thực thể
-  const lastMonthKey = monthLabels[monthLabels.length - 1];
-  const latest = lastMonthKey ? monthlyMap[lastMonthKey] : { users: 0, organizations: 0, workspaces: 0, orders: 0 };
-  const totalLatest = (latest.users + latest.organizations + latest.workspaces + latest.orders) || 1;
+  /* ---- DOUGHNUT ---- */
+  const totalShare =
+    (filtered.share.users + filtered.share.organizations + filtered.share.workspaces + filtered.share.orders) || 1;
 
   const shareData = useMemo(() => ({
     labels: ['Users', 'Organizations', 'Workspaces', 'Orders'],
     datasets: [{
       data: [
-        latest.users,
-        latest.organizations,
-        latest.workspaces,
-        latest.orders
+        filtered.share.users,
+        filtered.share.organizations,
+        filtered.share.workspaces,
+        filtered.share.orders
       ],
-      backgroundColor: ['#60a5fa', '#f97316', '#f472b6', '#34d399'],
+      backgroundColor: [COLORS.teal, COLORS.navy, COLORS.gray, COLORS.cyan],
       borderColor: '#ffffff',
       borderWidth: 3,
-      hoverOffset: 8,
-      cutout: '60%'
+      hoverOffset: 4,
+      cutout: '65%',
     }]
-  }), [latest.users, latest.organizations, latest.workspaces, latest.orders]);
+  }), [filtered.share]);
 
   const shareOpts: ChartOptions<'doughnut'> = {
     responsive: true,
+    maintainAspectRatio: false,
+    animation: { duration: 0 },
     plugins: {
       legend: { display: true, position: 'bottom' },
       tooltip: {
         callbacks: {
           label: (ctx) => {
             const val = ctx.parsed as number;
-            const percent = Math.round((val / totalLatest) * 100);
-            return ` ${ctx.label}: ${val} (${percent}%)`;
+            const percent = Math.round((val / totalShare) * 100);
+            return ` ${ctx.label}: ${val.toLocaleString()} (${percent}%)`;
           }
         }
       }
     }
   };
+
+  /* ---- Export CSV ---- */
+  const handleExportCSV = () => {
+    const header = ['label', 'users', 'organizations', 'workspaces', 'orders'];
+    const rows = filtered.tableRows.map(r =>
+      [r.label, r.users, r.organizations, r.workspaces, r.orders].join(',')
+    );
+    const csv = [header.join(','), ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const prefix = granularity === 'week' ? `week-${anchorDate.isoWeek()}-${anchorDate.year()}`
+      : granularity === 'month' ? anchorDate.format('YYYY-MM')
+      : `${anchorDate.year()}`;
+    a.href = url;
+    a.download = `dashboard-${granularity}-${prefix}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const resetToday = () => setAnchorDate(dayjs());
+
+  /* ---- Recent Orders table ---- */
+  const columns = [
+    {
+      title: '#',
+      dataIndex: 'orderCode',
+      key: 'orderCode',
+      render: (_: any, r: OrderRow) => r.orderCode ?? r.id?.slice(-6)?.toUpperCase() ?? '—',
+    },
+    {
+      title: 'Subscription Plan',
+      dataIndex: 'subscriptionPlanName',
+      key: 'plan',
+      render: (_: any, r: OrderRow) =>
+        r.subscriptionPlanName || (r.subscriptionPlanId ? planNameById[r.subscriptionPlanId] : '') || '—',
+    },
+    {
+      title: 'Price',
+      dataIndex: 'totalPrice',
+      key: 'price',
+      render: (_: any, r: OrderRow) =>
+        typeof r.totalPrice === 'number' ? `${r.totalPrice.toLocaleString('vi-VN')} ₫` : '—',
+    },
+    {
+      title: 'Status',
+      dataIndex: 'status',
+      key: 'status',
+      render: (s: OrderRow['status']) => {
+        const label = s === 1 ? 'PAID' : s === 2 ? 'CANCELLED' : 'PENDING';
+        const color = s === 1 ? 'green' : s === 2 ? 'red' : 'gold';
+        return <Tag color={color}>{label}</Tag>;
+      },
+    },
+    {
+      title: 'Created',
+      dataIndex: 'createdAt',
+      key: 'createdAt',
+      render: (_: any, r: OrderRow) => {
+        const t = r.createdAt ?? r.orderTime ?? null;
+        return t ? dayjs(t).format('YYYY-MM-DD HH:mm') : '—';
+      },
+    },
+  ];
 
   return (
     <Layout className="purple-root">
@@ -227,11 +554,48 @@ const AdminOverview: React.FC = () => {
         </div>
 
         <Spin spinning={loading}>
-          {/* === TOP TOTALS === */}
+          {/* FILTER BAR */}
+          <Row justify="space-between" align="middle" style={{ marginBottom: 12 }}>
+            <Col flex="auto">
+              <Space size="middle" wrap>
+                <Segmented
+                  value={granularity}
+                  onChange={(v) => setGranularity(v as Granularity)}
+                  options={[
+                    { label: 'Week', value: 'week' },
+                    { label: 'Month', value: 'month' },
+                    { label: 'Year', value: 'year' },
+                  ]}
+                />
+                {granularity === 'week' && (
+                  <DatePicker picker="week" value={anchorDate} onChange={(d) => d && setAnchorDate(d)} />
+                )}
+                {granularity === 'month' && (
+                  <DatePicker picker="month" value={anchorDate} onChange={(d) => d && setAnchorDate(d)} />
+                )}
+                {granularity === 'year' && (
+                  <DatePicker picker="year" value={anchorDate} onChange={(d) => d && setAnchorDate(d)} />
+                )}
+                <Button icon={<ReloadOutlined />} onClick={resetToday}>Today</Button>
+              </Space>
+            </Col>
+            <Col>
+              <Space>
+                <Button icon={<FilterOutlined />} disabled>
+                  {filtered.labelText}
+                </Button>
+                <Button icon={<DownloadOutlined />} type="primary" onClick={handleExportCSV}>
+                  Export CSV
+                </Button>
+              </Space>
+            </Col>
+          </Row>
+
+          {/* TOP METRICS */}
           <Row gutter={[16, 16]} className="metric-row equal-cards">
             {cards.map((c) => (
               <Col xs={24} sm={12} lg={6} key={c.key}>
-                <Card className={`metric-card ${c.className} metric-equal`} bordered={false}>
+                <Card className={`metric-card ${c.className} metric-equal`}>
                   <div className="metric-top">
                     <div className="metric-icon">{c.icon}</div>
                     <div className="metric-title">{c.title}</div>
@@ -247,23 +611,44 @@ const AdminOverview: React.FC = () => {
             ))}
           </Row>
 
-          {/* === CHARTS === */}
+          {/* CHARTS */}
           <Row gutter={[16, 16]} className="charts-row">
             <Col xs={24} lg={16}>
-              <Card className="panel-card" bordered={false}>
-                <div className="panel-title">Monthly Totals by Month</div>
-                <div className="panel-chart">
-                  <Bar data={monthlyBarData} options={monthlyBarOpts} />
+              <Card className="panel-card">
+                <div className="panel-title">
+                  {granularity === 'week' && 'WEEKLY SALES REPORT'}
+                  {granularity === 'month' && 'MONTHLY REPORT'}
+                  {granularity === 'year' && 'YEARLY REPORT'}
+                </div>
+                <div className="panel-chart" style={{ height: 420 }}>
+                  <Bar data={barData} options={barOpts} />
                 </div>
               </Card>
             </Col>
 
             <Col xs={24} lg={8}>
-              <Card className="panel-card" bordered={false}>
-                <div className="panel-title">Entity Share (%) — {lastMonthKey || 'N/A'}</div>
-                <div className="panel-chart donut">
+              <Card className="panel-card">
+                <div className="panel-title">Entity Share — {filtered.labelText}</div>
+                <div className="panel-chart donut" style={{ height: 360 }}>
                   <Doughnut data={shareData} options={shareOpts} />
                 </div>
+              </Card>
+            </Col>
+          </Row>
+
+          {/* RECENT ORDERS */}
+          <Row gutter={[16, 16]} style={{ marginTop: 8 }}>
+            <Col span={24}>
+              <Card className="panel-card">
+                <div className="panel-title">Recent Orders</div>
+                <Table
+                  size="middle"
+                  rowKey="id"
+                  loading={loadingOrders}
+                  columns={columns as any}
+                  dataSource={recentOrders}
+                  pagination={{ pageSize: 8, showSizeChanger: false }}
+                />
               </Card>
             </Col>
           </Row>

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   Layout, Card, Table, Button, Modal, Form, Input, Row, Col, Typography,
-  message, Select, Tag, Space
+  message, Select, Tag, Space, Alert
 } from 'antd';
 import UploadCloudinary from "../../UploadFile/UploadCloudinary";
 
@@ -15,17 +15,12 @@ import type { ColumnsType } from 'antd/es/table';
 
 import { AccountService } from '../../../services/account.service';
 import type { Account } from '../../../types/account';
-import { showErrorMessage } from '../../../utils/errorHandler';
 import './userOrganization.css';
 
 const { Content } = Layout;
 const { Title } = Typography;
 
-
-const roleNameMap: Record<number, string> = {
-  3: 'Instructor',
-  4: 'Student',
-};
+const roleNameMap: Record<number, string> = { 3: 'Instructor', 4: 'Student' };
 const genderNameMap: Record<number, string> = { 1: 'Male', 2: 'Female', 3: 'Other' };
 
 const roleOptions = [
@@ -89,19 +84,36 @@ const setEmailDuplicateError = (form: any, err: any) => {
 
     if ((msg && /email/i.test(msg)) || looksDup) {
       form.setFields([{ name: 'email', errors: [msg || 'Email already exists'] }]);
-      return true; 
+      return true;
     }
-  } catch {  }
+  } catch { }
   return false;
+};
+
+/** Lấy nguyên văn thông báo lỗi từ BE (string/body JSON/axios error) */
+const getBEMessage = (err: any, fallback?: string) => {
+  try {
+    const data = err?.response?.data;
+    const msg =
+      (typeof data === 'string' ? data : '') ||
+      data?.message ||
+      data?.title ||
+      err?.message ||
+      '';
+    return msg || fallback || 'Đã xảy ra lỗi không xác định.';
+  } catch {
+    return fallback || 'Đã xảy ra lỗi không xác định.';
+  }
 };
 
 const UserOrganization: React.FC = () => {
   const [users, setUsers] = useState<Account[]>([]);
-  const [loading, setLoading] = useState(false);           // load list
-  const [savingEdit, setSavingEdit] = useState(false);     // submit edit
-  const [creatingInstructor, setCreatingInstructor] = useState(false); // submit create instructor
-  const [creatingStudent, setCreatingStudent] = useState(false);       // submit create student
+  const [loading, setLoading] = useState(false);
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [creatingInstructor, setCreatingInstructor] = useState(false);
+  const [creatingStudent, setCreatingStudent] = useState(false);
 
+  // Modal & form states
   const [viewingUser, setViewingUser] = useState<Account | null>(null);
   const [isViewModal, setIsViewModal] = useState(false);
   const [editingUser, setEditingUser] = useState<Account | null>(null);
@@ -111,8 +123,11 @@ const UserOrganization: React.FC = () => {
   const [formInstr] = Form.useForm();
   const [formStud] = Form.useForm();
   const [formEdit] = Form.useForm();
-  const [, setImgUrlUpdate] = useState<string>("");
-  const [, setImgFileUpdate] = useState<File | null>(null);
+
+  // Inline error bars (hiện lỗi ngay trong UI)
+  const [instrError, setInstrError] = useState<string | null>(null);
+  const [studError, setStudError] = useState<string | null>(null);
+  const [editError, setEditError] = useState<string | null>(null);
 
   const [searchText, setSearchText] = useState('');
   const [debounced, setDebounced] = useState('');
@@ -135,7 +150,7 @@ const UserOrganization: React.FC = () => {
       const all = await AccountService.getAllByOrgId(orgId);
       setUsers(all);
     } catch (err) {
-      showErrorMessage(err, 'Failed to load users');
+      message.error(getBEMessage(err, 'Failed to load users'));
     } finally {
       setLoading(false);
     }
@@ -165,40 +180,34 @@ const UserOrganization: React.FC = () => {
     await load();
     switch (opts?.close) {
       case 'edit':
-        setIsEditModal(false);
-        setEditingUser(null);
-        formEdit.resetFields();
+        setIsEditModal(false); setEditingUser(null);
+        formEdit.resetFields(); setEditError(null);
         break;
       case 'instr':
-        setIsCreateInstructor(false);
-        formInstr.resetFields();
+        setIsCreateInstructor(false); formInstr.resetFields(); setInstrError(null);
         break;
       case 'stud':
-        setIsCreateStudent(false);
-        formStud.resetFields();
+        setIsCreateStudent(false); formStud.resetFields(); setStudError(null);
         break;
       case 'all':
-        setIsEditModal(false); setEditingUser(null); formEdit.resetFields();
-        setIsCreateInstructor(false); formInstr.resetFields();
-        setIsCreateStudent(false); formStud.resetFields();
+        setIsEditModal(false); setEditingUser(null); formEdit.resetFields(); setEditError(null);
+        setIsCreateInstructor(false); formInstr.resetFields(); setInstrError(null);
+        setIsCreateStudent(false); formStud.resetFields(); setStudError(null);
         break;
       default: break;
     }
   };
 
- 
   const onView = (u: Account) => { setViewingUser(u); setIsViewModal(true); };
 
   const onEdit = (u: Account) => {
     setEditingUser(u);
+    setEditError(null); // clear lỗi cũ
     formEdit.setFieldsValue({
       userName: u.userName,
       fullName: u.fullName,
-      organizationId: u.organizationId,
-      roleId: u.roleId,
       email: u.email,
       phone: u.phone,
-      password: undefined,
       gender: u.gender,
       address: (u as any).address,
       avtUrl: (u as any).avtUrl,
@@ -208,56 +217,45 @@ const UserOrganization: React.FC = () => {
   };
 
   const submitEdit = async () => {
-  if (savingEdit) return;
-  const v = await formEdit.validateFields();
-  if (!editingUser) return;
+    if (savingEdit) return;
+    const v = await formEdit.validateFields();
+    if (!editingUser) return;
 
-  setSavingEdit(true);
-  try {
-    let avtUrl: string | undefined = v.avtUrl;
+    setSavingEdit(true);
+    setEditError(null);
+    try {
+      const avtUrl = (v.avtUrl && String(v.avtUrl).trim())
+        ? String(v.avtUrl).trim()
+        : (editingUser.avtUrl || '');
 
-   
+      const body = {
+        userName: editingUser.userName,
+        email: editingUser.email,
+        roleId: Number(editingUser.roleId),
+        organizationId: editingUser.organizationId,
+        isActive: Boolean(editingUser.isActive),
 
-    
-    if (!avtUrl && editingUser.avtUrl) {
-      avtUrl = editingUser.avtUrl;
+        fullName: String(v.fullName).trim(),
+        phone: v.phone ? String(v.phone).trim() : undefined,
+        gender: v.gender !== undefined ? Number(v.gender) : undefined,
+        address: v.address ? String(v.address).trim() : undefined,
+        avtUrl,
+      };
+      const updated = await AccountService.updateAccount(editingUser.id, body);
+
+      setUsers(curr => curr.map(x => (x.id === updated.id ? { ...x, ...updated } : x)));
+      bc.postMessage({ type: 'account:updated', organizationId: orgId });
+      await loadUsser({ close: 'edit' });
+      message.success('User updated');
+    } catch (err: any) {
+      if (setEmailDuplicateError(formEdit, err)) return;
+      setEditError(getBEMessage(err, 'Cannot update user')); // ⬅️ hiện lỗi trong UI
+    } finally {
+      setSavingEdit(false);
     }
+  };
 
-    const payload: any = {
-      ...editingUser,
-      userName: v.userName,
-      fullName: v.fullName,
-      organizationId: v.organizationId || orgId,
-      roleId: Number(v.roleId),
-      email: v.email,
-      phone: v.phone,
-      gender: Number(v.gender),
-      address: v.address,
-      avtUrl, 
-    };
-
-    if (v.password && String(v.password).trim()) {
-      payload.password = v.password;
-    }
-
-    const updated = await AccountService.updateAccount(editingUser.id, payload);
-
-    setUsers(curr => curr.map(x => (x.id === updated.id ? { ...x, ...updated } : x)));
-    bc.postMessage({ type: 'account:updated', organizationId: orgId });
-    
-
-    await loadUsser({ close: 'edit' }); 
-    message.success('User updated');
-  } catch (err: any) {
-    if (setEmailDuplicateError(formEdit, err)) return;
-    showErrorMessage(err, 'Cannot update user');
-  } finally {
-    setSavingEdit(false);
-  }
-};
-
-
-  // ban / unban
+  // ban / unban (giữ toast cho action ngoài modal)
   const onBan = async (id: string) => {
     setLoading(true);
     try {
@@ -267,7 +265,7 @@ const UserOrganization: React.FC = () => {
       await loadUsser();
       message.success('User banned');
     } catch (err) {
-      showErrorMessage(err, 'Cannot ban user');
+      message.error(getBEMessage(err, 'Cannot ban user'));
     } finally { setLoading(false); }
   };
   const onUnban = async (id: string) => {
@@ -279,62 +277,63 @@ const UserOrganization: React.FC = () => {
       await loadUsser();
       message.success('User unbanned');
     } catch (err) {
-      showErrorMessage(err, 'Cannot unban user');
+      message.error(getBEMessage(err, 'Cannot unban user'));
     } finally { setLoading(false); }
   };
 
- 
   const submitCreateInstructor = async () => {
-  if (creatingInstructor) return;
-  const vals = await formInstr.validateFields();
-  setCreatingInstructor(true);
-  try {
-    const c = await AccountService.registerInstructor({
-      ...vals,
-      gender: Number(vals.gender),
-      isActive: true,
-      organizationId: orgId
-    });
-    setUsers(u => [c, ...u]);
-    bc.postMessage({ type: 'account:created', organizationId: orgId });
-    
-    setIsCreateInstructor(false);
-    formInstr.resetFields();
+    if (creatingInstructor) return;
+    const vals = await formInstr.validateFields();
+    setCreatingInstructor(true);
+    setInstrError(null);
+    try {
+      const c = await AccountService.registerInstructor({
+        ...vals,
+        gender: Number(vals.gender),
+        isActive: true,
+        organizationId: orgId
+      });
+      setUsers(u => [c, ...u]);
+      bc.postMessage({ type: 'account:created', organizationId: orgId });
 
-    message.success('Instructor created');
-  } catch (err: any) {
-    if (setEmailDuplicateError(formInstr, err)) return;
-    showErrorMessage(err, 'Cannot create instructor');
-  } finally {
-    setCreatingInstructor(false);
-  }
-};
+      setIsCreateInstructor(false);
+      formInstr.resetFields();
+      message.success('Instructor created');
+    } catch (err: any) {
+      if (setEmailDuplicateError(formInstr, err)) return;
+      // Hiện lỗi ngay trong modal (ví dụ: "Organization chưa được kích hoạt, vui lòng thanh toán.")
+      setInstrError(getBEMessage(err, 'Cannot create instructor'));
+      // KHÔNG đóng modal, để user thấy lỗi ngay trong UI
+    } finally {
+      setCreatingInstructor(false);
+    }
+  };
 
-const submitCreateStudent = async () => {
-  if (creatingStudent) return;
-  const vals = await formStud.validateFields();
-  setCreatingStudent(true);
-  try {
-    const c = await AccountService.registerStudent({
-      ...vals,
-      gender: Number(vals.gender),
-      isActive: true,
-      organizationId: orgId
-    });
-    setUsers(u => [c, ...u]);
-    bc.postMessage({ type: 'account:created', organizationId: orgId });
+  const submitCreateStudent = async () => {
+    if (creatingStudent) return;
+    const vals = await formStud.validateFields();
+    setCreatingStudent(true);
+    setStudError(null);
+    try {
+      const c = await AccountService.registerStudent({
+        ...vals,
+        gender: Number(vals.gender),
+        isActive: true,
+        organizationId: orgId
+      });
+      setUsers(u => [c, ...u]);
+      bc.postMessage({ type: 'account:created', organizationId: orgId });
 
-    setIsCreateStudent(false);
-    formStud.resetFields();
-
-    message.success('Student created');
-  } catch (err: any) {
-    if (setEmailDuplicateError(formStud, err)) return;
-    showErrorMessage(err, 'Cannot create student');
-  } finally {
-    setCreatingStudent(false);
-  }
-};
+      setIsCreateStudent(false);
+      formStud.resetFields();
+      message.success('Student created');
+    } catch (err: any) {
+      if (setEmailDuplicateError(formStud, err)) return;
+      setStudError(getBEMessage(err, 'Cannot create student')); // hiện lỗi trong modal
+    } finally {
+      setCreatingStudent(false);
+    }
+  };
 
   const dataView = useMemo(() => {
     const q = debounced.toLowerCase();
@@ -368,10 +367,9 @@ const submitCreateStudent = async () => {
     return list;
   }, [users, debounced, roleFilter, statusFilter, sortBy, sortDir]);
 
-  
   const columns: ColumnsType<Account> = [
     { title: 'ID', dataIndex: 'id', key: 'id', width: 220, ellipsis: true },
- {
+    {
       title: "Image",
       dataIndex: "avtUrl",
       key: "avtUrl",
@@ -436,10 +434,18 @@ const submitCreateStudent = async () => {
           <Col><Title level={3} style={{ margin: 0 }}>User Manager</Title></Col>
           <Col>
             <Space wrap>
-              <Button icon={<UserAddOutlined />} type="primary" onClick={() => setIsCreateInstructor(true)}>
+              <Button
+                icon={<UserAddOutlined />}
+                type="primary"
+                onClick={() => { setIsCreateInstructor(true); setInstrError(null); formInstr.resetFields(); }}
+              >
                 Create Instructor
               </Button>
-              <Button icon={<UserOutlined />} type="primary" onClick={() => setIsCreateStudent(true)}>
+              <Button
+                icon={<UserOutlined />}
+                type="primary"
+                onClick={() => { setIsCreateStudent(true); setStudError(null); formStud.resetFields(); }}
+              >
                 Create Student
               </Button>
             </Space>
@@ -459,37 +465,16 @@ const submitCreateStudent = async () => {
               />
             </Col>
             <Col xs={12} md={4} lg={4}>
-              <Select
-                style={{ width: '100%' }}
-                options={roleOptions as any}
-                value={roleFilter}
-                onChange={setRoleFilter as any}
-              />
+              <Select style={{ width: '100%' }} options={roleOptions as any} value={roleFilter} onChange={setRoleFilter as any} />
             </Col>
             <Col xs={12} md={4} lg={4}>
-              <Select
-                style={{ width: '100%' }}
-                options={statusOptions as any}
-                value={statusFilter}
-                onChange={setStatusFilter as any}
-              />
+              <Select style={{ width: '100%' }} options={statusOptions as any} value={statusFilter} onChange={setStatusFilter as any} />
             </Col>
             <Col xs={12} md={3}>
-              <Select
-                style={{ width: '100%' }}
-                options={sortByOptions as any}
-                value={sortBy}
-                onChange={setSortBy as any}
-                suffixIcon={<SortAscendingOutlined />}
-              />
+              <Select style={{ width: '100%' }} options={sortByOptions as any} value={sortBy} onChange={setSortBy as any} suffixIcon={<SortAscendingOutlined />} />
             </Col>
             <Col xs={12} md={3}>
-              <Select
-                style={{ width: '100%' }}
-                options={sortDirOptions as any}
-                value={sortDir}
-                onChange={setSortDir as any}
-              />
+              <Select style={{ width: '100%' }} options={sortDirOptions as any} value={sortDir} onChange={setSortDir as any} />
             </Col>
           </Row>
         </Card>
@@ -539,21 +524,25 @@ const submitCreateStudent = async () => {
           title="Edit User"
           open={isEditModal}
           onOk={submitEdit}
-          onCancel={() => { setIsEditModal(false); formEdit.resetFields(); setEditingUser(null); 
-            setImgUrlUpdate("");
-          setImgFileUpdate(null);
+          onCancel={() => {
+            setIsEditModal(false);
+            formEdit.resetFields();
+            setEditingUser(null);
+            setEditError(null);
           }}
           okButtonProps={{ loading: savingEdit, disabled: savingEdit }}
           destroyOnHidden
           width={680}
         >
-          <Form form={formEdit} layout="vertical">
+          {/* Error bar */}
+          {editError && <Alert style={{ marginBottom: 12 }} type="error" showIcon message={editError} />}
+
+          <Form
+            form={formEdit}
+            layout="vertical"
+            onValuesChange={() => { if (editError) setEditError(null); }}
+          >
             <Row gutter={16}>
-              <Col span={12}>
-                <Form.Item name="userName" label="Username" rules={[{ required: true }]}>
-                  <Input onPressEnter={(e) => { e.preventDefault(); submitEdit(); }} />
-                </Form.Item>
-              </Col>
               <Col span={12}>
                 <Form.Item name="fullName" label="Full Name" rules={[{ required: true }]}>
                   <Input onPressEnter={(e) => { e.preventDefault(); submitEdit(); }} />
@@ -563,18 +552,7 @@ const submitCreateStudent = async () => {
 
             <Row gutter={16}>
               <Col span={12}>
-                <Form.Item name="roleId" label="Role" rules={[{ required: true }]}>
-                  <Select
-                    options={[
-                      { label: 'Org Admin', value: 2 },
-                      { label: 'Instructor', value: 3 },
-                      { label: 'Student', value: 4 },
-                    ] as any}
-                  />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item name="gender" label="Gender" >
+                <Form.Item name="gender" label="Gender" rules={[{ required: true }]}>
                   <Select options={genderOptions as any} />
                 </Form.Item>
               </Col>
@@ -582,12 +560,7 @@ const submitCreateStudent = async () => {
 
             <Row gutter={16}>
               <Col span={12}>
-                <Form.Item name="email" label="Email" rules={[{ required: true }, { type: 'email' }]}>
-                  <Input onPressEnter={(e) => { e.preventDefault(); submitEdit(); }} />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item name="phone" label="Phone">
+                <Form.Item name="phone" label="Phone" rules={[{ required: true }]}>
                   <Input onPressEnter={(e) => { e.preventDefault(); submitEdit(); }} />
                 </Form.Item>
               </Col>
@@ -595,68 +568,134 @@ const submitCreateStudent = async () => {
 
             <Row gutter={16}>
               <Col span={12}>
-                <Form.Item name="address" label="Address" >
+                <Form.Item name="address" label="Address" rules={[{ required: true }]}>
                   <Input onPressEnter={(e) => { e.preventDefault(); submitEdit(); }} />
-                </Form.Item> 
-                </Col>
-                <Col span={12}>
+                </Form.Item>
+              </Col>
+              <Col span={12}>
                 <Form.Item
-                 name="avtUrl"
-                 label="Image (Cloudinary)"
-                 valuePropName="value"
-                rules={[{ required: true, message: 'Please upload an image' }]}
+                  name="avtUrl"
+                  label="Image (Cloudinary)"
+                  valuePropName="value"
+                  rules={[{ required: true, message: 'Please upload an image' }]}
                 >
-                <UploadCloudinary
-                value={formEdit.getFieldValue('avtUrl')}
-                onChange={(url) => formEdit.setFieldsValue({ avtUrl: url })}
-                />
-              </Form.Item>
+                  <UploadCloudinary
+                    value={formEdit.getFieldValue('avtUrl')}
+                    onChange={(url) => formEdit.setFieldsValue({ avtUrl: url })}
+                  />
+                </Form.Item>
               </Col>
             </Row>
           </Form>
         </Modal>
 
-        
+        {/* Create Instructor */}
         <Modal
           title="Create New Instructor"
           open={isCreateInstructor}
           onOk={submitCreateInstructor}
-          onCancel={() => { setIsCreateInstructor(false); formInstr.resetFields(); }}
+          onCancel={() => { setIsCreateInstructor(false); formInstr.resetFields(); setInstrError(null); }}
           okButtonProps={{ loading: creatingInstructor, disabled: creatingInstructor }}
           destroyOnHidden
           width={600}
         >
-          <Form form={formInstr} layout="vertical">
+          {/* Error bar */}
+          {instrError && <Alert style={{ marginBottom: 12 }} type="error" showIcon message={instrError} />}
+
+          <Form
+            form={formInstr}
+            layout="vertical"
+            onValuesChange={() => { if (instrError) setInstrError(null); }}
+          >
             <Row gutter={16}>
-              <Col span={12}><Form.Item name="userName" label="Username" rules={[{ required: true }]}><Input onPressEnter={(e) => { e.preventDefault(); submitCreateInstructor(); }} /></Form.Item></Col>
-              <Col span={12}><Form.Item name="fullName" label="Full Name" rules={[{ required: true }]}><Input onPressEnter={(e) => { e.preventDefault(); submitCreateInstructor(); }} /></Form.Item></Col>
+              <Col span={12}>
+                <Form.Item name="userName" label="Username" rules={[{ required: true }]}>
+                  <Input onPressEnter={(e) => { e.preventDefault(); submitCreateInstructor(); }} />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item name="fullName" label="Full Name" rules={[{ required: true }]}>
+                  <Input onPressEnter={(e) => { e.preventDefault(); submitCreateInstructor(); }} />
+                </Form.Item>
+              </Col>
             </Row>
             <Row gutter={16}>
-              <Col span={12}><Form.Item name="email" label="Email" rules={[{ required: true }, { type: 'email' }]}><Input onPressEnter={(e) => { e.preventDefault(); submitCreateInstructor(); }} /></Form.Item></Col>
+              <Col span={12}>
+                <Form.Item name="email" label="Email" rules={[{ required: true }, { type: 'email' }]}>
+                  <Input onPressEnter={(e) => { e.preventDefault(); submitCreateInstructor(); }} />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item name="gender" label="Gender" rules={[{ required: true }]}>
+                  <Select options={genderOptions as any} />
+                </Form.Item>
+              </Col>
             </Row>
-            <Form.Item name="password" label="Password" rules={[{ required: true }]}><Input.Password onPressEnter={(e) => { e.preventDefault(); submitCreateInstructor(); }} /></Form.Item>
+            <Form.Item
+              name="password"
+              label="Password"
+              rules={[
+                { required: true, message: 'Please enter password' },
+                { pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{6,}$/, message: 'Password must be at least 6 characters and include uppercase, lowercase, number, and special character' },
+              ]}
+            >
+              <Input.Password onPressEnter={(e) => { e.preventDefault(); submitCreateInstructor(); }} />
+            </Form.Item>
           </Form>
         </Modal>
 
-        
+        {/* Create Student */}
         <Modal
           title="Create New Student"
           open={isCreateStudent}
           onOk={submitCreateStudent}
-          onCancel={() => { setIsCreateStudent(false); formStud.resetFields(); }}
+          onCancel={() => { setIsCreateStudent(false); formStud.resetFields(); setStudError(null); }}
           okButtonProps={{ loading: creatingStudent, disabled: creatingStudent }}
           destroyOnHidden
           width={600}
         >
-          <Form form={formStud} layout="vertical">
+          {/* Error bar */}
+          {studError && <Alert style={{ marginBottom: 12 }} type="error" showIcon message={studError} />}
+
+          <Form
+            form={formStud}
+            layout="vertical"
+            onValuesChange={() => { if (studError) setStudError(null); }}
+          >
             <Row gutter={16}>
-              <Col span={12}><Form.Item name="userName" label="Username" rules={[{ required: true }]}><Input onPressEnter={(e) => { e.preventDefault(); submitCreateStudent(); }} /></Form.Item></Col>
-              <Col span={12}><Form.Item name="fullName" label="Full Name" rules={[{ required: true }]}><Input onPressEnter={(e) => { e.preventDefault(); submitCreateStudent(); }} /></Form.Item></Col>
+              <Col span={12}>
+                <Form.Item name="userName" label="Username" rules={[{ required: true }]}>
+                  <Input onPressEnter={(e) => { e.preventDefault(); submitCreateStudent(); }} />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item name="fullName" label="Full Name" rules={[{ required: true }]}>
+                  <Input onPressEnter={(e) => { e.preventDefault(); submitCreateStudent(); }} />
+                </Form.Item>
+              </Col>
             </Row>
             <Row gutter={16}>
-              <Col span={12}><Form.Item name="email" label="Email" rules={[{ required: true }, { type: 'email' }]}><Input onPressEnter={(e) => { e.preventDefault(); submitCreateStudent(); }} /></Form.Item></Col>
+              <Col span={12}>
+                <Form.Item name="email" label="Email" rules={[{ required: true }, { type: 'email' }]}>
+                  <Input onPressEnter={(e) => { e.preventDefault(); submitCreateStudent(); }} />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item name="gender" label="Gender" rules={[{ required: true }]}>
+                  <Select options={genderOptions as any} />
+                </Form.Item>
+              </Col>
             </Row>
-            <Form.Item name="password" label="Password" rules={[{ required: true }]}><Input.Password onPressEnter={(e) => { e.preventDefault(); submitCreateStudent(); }} /></Form.Item>
+            <Form.Item
+              name="password"
+              label="Password"
+              rules={[
+                { required: true, message: 'Please enter password' },
+                { pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{6,}$/, message: 'Password must be at least 6 characters and include uppercase, lowercase, number, and special character' },
+              ]}
+            >
+              <Input.Password onPressEnter={(e) => { e.preventDefault(); submitCreateStudent(); }} />
+            </Form.Item>
           </Form>
         </Modal>
       </Content>

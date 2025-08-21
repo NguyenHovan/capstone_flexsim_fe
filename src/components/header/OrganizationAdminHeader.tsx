@@ -1,36 +1,92 @@
-import { Avatar } from "antd";
-import "./organizationAdminHeader.css";
-
-const DEFAULT_AVATAR =
-  "https://static.vecteezy.com/system/resources/thumbnails/009/734/564/small_2x/default-avatar-profile-icon-of-social-media-user-vector.jpg";
-
-function getCurrentUser() {
-  try {
-    return JSON.parse(localStorage.getItem("currentUser") || "null");
-  } catch {
-    return null;
-  }
-}
+// AdminHeader.tsx
+import { Avatar, Dropdown } from "antd";
+import type { MenuProps } from "antd";
+import {
+ 
+  UserAddOutlined,
+  UserOutlined,
+  LogoutOutlined,
+} from "@ant-design/icons";
+import "./header.css";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../hooks/useAuth";
+import { AccountService } from "../../services/account.service";
+import { useEffect, useState, useCallback } from "react";
 
 const OrganizationAdminHeader = () => {
-  const currentUser = getCurrentUser();
+  const navigate = useNavigate();
+  const { user, isLoggedIn } = useAuth();
+  const [avatar, setAvatar] = useState<string | null>(null);
 
-  const userName =
-    currentUser?.fullName || currentUser?.userName || "Organization Admin";
+  const fetchUserCurrent = useCallback(async () => {
+    if (!user) return;
+    const response = await AccountService.getAccountById(user.id);
+    setAvatar(response?.avtUrl || null);
+  }, [user]);
 
-  const avatarUrl =
-    currentUser?.avtUrl?.trim() ? currentUser.avtUrl : DEFAULT_AVATAR;
+  const handleLogout = () => {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("currentUser");
+    localStorage.removeItem("roleId");
+    navigate("/login");
+  };
+
+  useEffect(() => {
+    fetchUserCurrent();
+  }, [fetchUserCurrent]);
+
+  useEffect(() => {
+    const refetch = () => fetchUserCurrent();
+    window.addEventListener("user:updated", refetch);
+    window.addEventListener("storage", refetch);
+    return () => {
+      window.removeEventListener("user:updated", refetch);
+      window.removeEventListener("storage", refetch);
+    };
+  }, [fetchUserCurrent]);
+
+  const items: MenuProps["items"] = [
+    {
+      key: "OrgAdmin-profile",
+      label: "Thông tin cá nhân",
+      icon: <UserOutlined />,
+    },
+    {
+      key: "logout",
+      label: "Đăng xuất",
+      icon: <LogoutOutlined />,
+    },
+  ];
+
+  const onMenuClick: MenuProps["onClick"] = ({ key }) => {
+    if (key === "logout") return handleLogout();
+    if (key === "OrgAdmin-profile") return navigate("/organizationAdmin/orgAdmin-profile");
+  };
 
   return (
     <header className="custom-header">
-      <div className="logo">
+      <div className="logo" onClick={() => navigate("/")}>
         <span className="logo-orange">LOGISIM</span>
         <span className="logo-teal">EDU</span>
       </div>
 
-      <div className="org-avatar-block">
-        <Avatar src={avatarUrl} size={36} />
-        <span className="org-name">{userName}</span>
+      <div className="avatar-section">
+        {isLoggedIn ? (
+          <Dropdown
+            menu={{ items, onClick: onMenuClick }}
+            placement="bottomRight"
+            arrow
+          >
+            <div style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
+              <Avatar src={avatar || undefined} style={{ backgroundColor: "#1890ff", marginRight: 8 }}>
+                {(!avatar && user?.fullName?.[0]?.toUpperCase()) || "U"}
+              </Avatar>
+              <span style={{ color: "#363636" }}>{user?.fullName}</span>
+            </div>
+          </Dropdown>
+        ) : (
+          <Avatar icon={<UserAddOutlined />} onClick={() => navigate("/login")} />
+        )}
       </div>
     </header>
   );

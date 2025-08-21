@@ -1,10 +1,11 @@
-// src/services/account.service.ts
 import axiosInstance from "./main.service";
 import { API } from "../api";
 import type { Account } from "../types/account";
 import type { OrganizationAdminForm } from "../types/organizationAdmin";
-import type { AccountForm, UpdateAccountPayload } from "../types/account";
+import type { AccountForm} from "../types/account";
 import { getErrorMessage } from "../utils/errorHandler";
+const unwrap = (d: any) => (d?.data ?? d) as any;
+
 
 export const AccountService = {
   getAllAccounts: async (): Promise<Account[]> => {
@@ -82,32 +83,65 @@ getAllByOrgId: async (orgId: string): Promise<Account[]> => {
     }
   },
 
-  uploadAvatar: async (file: File): Promise<string> => {
+async uploadAvatar(file: File): Promise<string> {
     try {
       const formData = new FormData();
       formData.append("file", file);
+
       const { data } = await axiosInstance.post(API.UPLOAD_FILE, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+        transformRequest: [(form, headers) => {
+          delete headers["Content-Type"];
+          delete (headers as any)["content-type"];
+          return form as any;
+        }],
       });
-      return (data?.url as string) ?? "";
+
+      const payload = unwrap(data);
+      return (payload?.url as string) ?? "";
     } catch (error: any) {
       const msg = getErrorMessage(error);
       console.error("Error uploading avatar:", msg);
-      throw error; 
+      throw new Error(msg);
     }
   },
 
-  updateAccount: async (id: string, payload: UpdateAccountPayload): Promise<Account> => {
-    try {
-      const { data } = await axiosInstance.put(`${API.UPDATE_ACCOUNT}/${id}`, payload);
-      return data as Account;
-    } catch (error: any) {
-      const msg = getErrorMessage(error);
-      console.error(`Error updating account ${id}:`, msg);
-      throw error; 
-      
+async updateAccount(
+  id: string,
+  body: {
+    userName: string;
+    email: string;
+    roleId: number;
+    organizationId: string;
+    isActive: boolean;
+    fullName: string;
+    phone?: string;
+    gender?: number;   
+    address?: string;
+    avtUrl?: string;
+    password?: string; 
+  }
+): Promise<Account> {
+  try {
+    if (typeof body.gender === 'number') {
+      const g = parseInt(String(body.gender), 10);
+      const map: Record<number, number> = { 1: 0, 2: 1, 3: 2 };
+      body.gender = (g in map) ? map[g] : g;
     }
-  },
+
+    const base = String(API.UPDATE_ACCOUNT || '').replace(/\/+$/,'');
+    const url  = `${base}/${encodeURIComponent(id)}`;
+
+    const { data } = await axiosInstance.put(url, body, {
+      headers: { 'Content-Type': 'application/json' },
+    });
+    return data as Account;
+  } catch (error: any) {
+    console.error('PUT /update_account error detail:', error?.response?.status, error?.response?.data);
+    const msg = getErrorMessage(error);
+    throw new Error(msg);
+  }
+},
+
 
   deleteAccount: async (id: string): Promise<void> => {
     try {

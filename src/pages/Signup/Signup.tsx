@@ -58,22 +58,7 @@ const SignUpPage = () => {
     if (password !== confirmPassword)
       return toast.error("Mật khẩu xác nhận không khớp.");
 
-    const payload = {
-      userName,
-      fullName: `${firstName} ${lastName}`,
-      email,
-      phone,
-      password,
-    };
-
-    try {
-      await AuthService.register(payload);
-      toast.success("Đăng ký thành công! Vui lòng nhập mã OTP.");
-      setIsOtpModalOpen(true);
-    } catch (error) {
-      toast.error("Đăng ký thất bại!");
-      console.error(error);
-    }
+  
   };
 
   const handleVerifyOtp = async () => {

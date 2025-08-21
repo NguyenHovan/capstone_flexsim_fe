@@ -1,10 +1,18 @@
-export const ORDER_CODE_KEY = "pay.orderCode";
+const KEY = "pay_order_code";
 
-export const saveOrderCode = (code: string | number) =>
-  localStorage.setItem(ORDER_CODE_KEY, String(code));
+export const saveOrderCode = (orderCode: string | number) => {
+  try { localStorage.setItem(KEY, String(orderCode)); } catch {}
+};
 
-export const loadOrderCode = () => localStorage.getItem(ORDER_CODE_KEY) || "";
+export const loadOrderCode = (): string | null => {
+  try { return localStorage.getItem(KEY); } catch { return null; }
+};
 
-export const getQueryParam = (key: string) =>
-  new URLSearchParams(window.location.search).get(key) || "";
+export const clearOrderCode = () => {
+  try { localStorage.removeItem(KEY); } catch {}
+};
 
+export const getQueryParam = (name: string): string | null => {
+  const params = new URLSearchParams(window.location.search);
+  return params.get(name);
+};

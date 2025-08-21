@@ -22,16 +22,13 @@
   color: teal;
 }
 
-.orgAdmin-avatar-block {
+.org-avatar-block {
   display: flex;
   align-items: center;
   gap: 8px;
   font-size: 17px;
 }
-/* .org-avatar-block .ant-avatar {
-  border: 1px solid #91908e;
-  background: #f5f5f5;
-} */
-.orgAdmin-name {
+
+.org-name {
 color: rgb(77, 76, 76);
 }

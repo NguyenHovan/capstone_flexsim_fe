@@ -2,13 +2,23 @@ import { NavLink, useNavigate } from "react-router-dom";
 import {
   HomeOutlined,
   LogoutOutlined,
-  UserOutlined,
-  SettingOutlined,
+  TeamOutlined,
+  AppstoreOutlined,
+  CrownOutlined,
+  ShoppingCartOutlined,
   QuestionCircleOutlined,
 } from "@ant-design/icons";
+import React from "react";
 import "./organizationAdminSidebar.css";
 
-const OrganizationAdminSidebar = () => {
+type MenuItem = {
+  label: string;
+  path: string;
+  icon: React.ReactNode;
+  onClick?: (e: React.MouseEvent<HTMLAnchorElement>) => void;
+};
+
+const OrganizationAdminSidebar: React.FC = () => {
   const navigate = useNavigate();
 
   const handleLogout = (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -20,64 +30,18 @@ const OrganizationAdminSidebar = () => {
     }
   };
 
-  const menuItems = [
-    {
-      label: "Overview",
-      icon: <HomeOutlined />,
-      path: "/organizationAdmin/",
-    },
-
-    {
-      label: "User Manager",
-      icon: <UserOutlined />,
-      path: "/organizationAdmin/user-manager",
-    },
-    {
-      label: "Workspace Manager",
-      icon: <SettingOutlined />,
-      path: "/organizationAdmin/workspace-manager",
-    },
-    // {
-    //   label: "Class Manager",
-    //   icon: <SettingOutlined />,
-    //   path: "/organizationAdmin/class-manager",
-    // },
-    // {
-    //   label: "Lesson Manager",
-    //   icon: <SettingOutlined />,
-    //   path: "/organizationAdmin/lesson-manager",
-    // },
-    // {
-    //   label: "Topic Manager",
-    //   icon: <SettingOutlined />,
-    //   path: "/organizationAdmin/topic-manager",
-    // },
-    // {
-    //   label: "Category Manager",
-    //   icon: <SettingOutlined />,
-    //   path: "/organizationAdmin/category-manager",
-    // },
-
-    {
-      label: "Order Manager",
-      icon: <SettingOutlined />,
-      path: "/organizationAdmin/order-manager",
-    },
-    {
-      label: "Support & Help",
-      icon: <QuestionCircleOutlined />,
-      path: "/organizationAdmin/support",
-    },
-    {
-      label: "Logout",
-      icon: <LogoutOutlined />,
-      path: "/organizationAdmin/logout",
-      onClick: handleLogout,
-    },
+  const menuItems: MenuItem[] = [
+    { label: "Overview",          icon: <HomeOutlined />,           path: "/organizationAdmin/" },
+    { label: "User Manager",      icon: <TeamOutlined />,           path: "/organizationAdmin/user-manager" },
+    { label: "Workspace Manager", icon: <AppstoreOutlined />,       path: "/organizationAdmin/workspace-manager" },
+    { label: "Subscription Plan", icon: <CrownOutlined />,          path: "/organizationAdmin/subscription" },
+    { label: "Order Manager",     icon: <ShoppingCartOutlined />,   path: "/organizationAdmin/order-manager" },
+    { label: "Support & Help",    icon: <QuestionCircleOutlined />, path: "/organizationAdmin/support" },
+    { label: "Logout",            icon: <LogoutOutlined />,         path: "/organizationAdmin/logout", onClick: handleLogout },
   ];
 
   return (
-    <div className="organizationAdmin-sidebar">
+    <div className="organizationAdmin-sidebar" role="navigation" aria-label="Organization admin sidebar">
       <div className="sidebar-section-title">ORGANIZATION ADMIN</div>
       <ul className="organizationAdmin-sidebar-menu">
         {menuItems.map((item) => (
@@ -87,13 +51,11 @@ const OrganizationAdminSidebar = () => {
               className={({ isActive }) =>
                 `organizationAdmin-sidebar-item ${isActive ? "active" : ""}`
               }
-              end
-              onClick={(e) => item.onClick && item.onClick(e)}
+              end={item.path === "/organizationAdmin/"} 
+              onClick={(e) => item.onClick?.(e)}
             >
               {item.icon}
-              <span className="organizationAdmin-sidebar-label">
-                {item.label}
-              </span>
+              <span className="organizationAdmin-sidebar-label">{item.label}</span>
             </NavLink>
           </li>
         ))}

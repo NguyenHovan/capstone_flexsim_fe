@@ -1,0 +1,78 @@
+.pricing-pro { padding: 8px 0; }
+.pricing-pro__heading { text-align: left; margin-bottom: 8px; }
+.pricing-pro__title { margin: 0 !important; }
+
+.pp-card {
+  position: relative;
+  border-radius: 14px;
+  box-shadow: 0 8px 26px rgba(15, 23, 42, .06);
+  border: 1px solid #eef2f7;
+  padding: 16px 18px 18px;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+/* màu chủ đạo theo variant */
+.pp-card.variant-basic    { --accent: #3b82f6; }
+.pp-card.variant-standard { --accent: #10b981; }
+.pp-card.variant-business { --accent: #6366f1; }
+.pp-card.variant-premium  { --accent: #ef4444; }
+
+.pp-head {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.pp-name {
+  font-size: 18px;
+  font-weight: 700;
+}
+.pp-state { margin: 0; }
+
+.pp-price {
+  margin: 4px 0 10px;
+  line-height: 1;
+}
+.pp-price-main {
+  font-size: 32px;
+  font-weight: 800;
+  color: #111827;
+}
+.pp-price-sub {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.pp-cta {
+  margin: 6px 0 14px;
+  background: #22c55e !important; /* xanh như hình */
+  border-color: #22c55e !important;
+  color: #fff !important;
+  font-weight: 600;
+}
+.pp-card:not(.variant-premium) .pp-cta:hover { filter: brightness(0.98); }
+.pp-card.variant-premium .pp-cta { background: #ef4444 !important; border-color: #ef4444 !important; }
+
+.pp-section { margin-top: 4px; }
+.pp-section-title {
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #0f172a;
+}
+
+.pp-benefits { list-style: none; padding: 0; margin: 0; }
+.pp-benefits li {
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  gap: 8px;
+  align-items: start;
+  padding: 6px 0;
+  border-bottom: 1px dashed #e5e7eb;
+}
+.pp-benefits li:last-child { border-bottom: none; }
+
+.pp-check { color: #22c55e; font-size: 16px; }

@@ -209,15 +209,7 @@ const OrderAdmin: React.FC = () => {
         dayjs(a.createdAt || 0).valueOf() - dayjs(b.createdAt || 0).valueOf(),
       render: (v?: string) => (v ? dayjs(v).format("YYYY-MM-DD HH:mm") : "—"),
     },
-    {
-      title: "Updated",
-      dataIndex: "updatedAt",
-      key: "updatedAt",
-      width: 180,
-      sorter: (a, b) =>
-        dayjs(a.updatedAt || 0).valueOf() - dayjs(b.updatedAt || 0).valueOf(),
-      render: (v?: string | null) => (v ? dayjs(v).format("YYYY-MM-DD HH:mm") : "—"),
-    },
+  
     {
       title: "Action",
       key: "action",

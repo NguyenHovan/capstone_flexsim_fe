@@ -52,34 +52,41 @@
 //   }, [orgId]);
 
 //   const init = async () => {
-//   setLoading(true);
-//   try {
-//     // ✅ by-org
-//     const orgWs: Workspace[] = await WorkspaceService.getAllByOrgId(orgId);
-//     setWorkspaces(orgWs);
-//     const orgWorkspaceIds = new Set(orgWs.map(w => w.id));
+//     setLoading(true);
+//     try {
+//       const allWs: Workspace[] = await WorkspaceService.getAll();
+//       const allCourses: Course[] = await CourseService.getAllCourses();
+//       const allTopics: Topic[] = await TopicService.getAllTopics();
+//       const allLessons: Lesson[] = await LessonService.getAll();
 
-//     // ✅ by-org
-//     const orgCourses: Course[] = await CourseService.getAllByOrgId(orgId);
-//     const filteredCourses = orgCourses.filter(c => orgWorkspaceIds.has((c as any).workSpaceId));
-//     setCourses(filteredCourses);
-//     const orgCourseIds = new Set(filteredCourses.map(c => c.id));
+//       // 1) workspace thuộc org
+//       const orgWs = allWs.filter((w: Workspace) => w.organizationId === orgId);
+//       const orgWorkspaceIds = new Set(orgWs.map((w: Workspace) => w.id));
+//       setWorkspaces(orgWs);
 
-//     // ⏳ Topic/Lesson chưa có by-org → lấy all rồi lọc theo courseIds
-//     const allTopics: Topic[]  = await TopicService.getAllTopics();
-//     const orgTopics = allTopics.filter(t => orgCourseIds.has(t.courseId));
-//     setTopics(orgTopics);
-//     const topicToCourse = new Map(orgTopics.map(t => [t.id, t.courseId]));
+//       // 2) course thuộc các workspace này
+//       const orgCourses = allCourses.filter((c: Course) => orgWorkspaceIds.has(c.workSpaceId));
+//       const orgCourseIds = new Set(orgCourses.map((c: Course) => c.id));
+//       setCourses(orgCourses);
 
-//     const allLessons: Lesson[] = await LessonService.getAll();
-//     const orgLessons = allLessons.filter(l => topicToCourse.has(l.topicId));
-//     setLessons(orgLessons);
-//   } catch (err) {
-//     showErrorMessage(err, 'Không thể tải dữ liệu bài học');
-//   } finally {
-//     setLoading(false);
-//   }
-// };
+//       // 3) topic của các course thuộc org
+//       const orgTopics = allTopics.filter((t: Topic) => orgCourseIds.has(t.courseId));
+//       setTopics(orgTopics);
+//       const topicToCourse = new Map(orgTopics.map((t: Topic) => [t.id, t.courseId]));
+
+//       // 4) lesson có topicId map tới course thuộc org
+//       const orgLessons = allLessons.filter((l: Lesson) => {
+//         const cid = topicToCourse.get(l.topicId);
+//         return !!cid;
+//       });
+//       setLessons(orgLessons);
+//     } catch (err) {
+//       showErrorMessage(err, 'Không thể tải dữ liệu bài học');
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
 //   // Map courseId -> courseName
 //   const courseNameById = useMemo(() => {
 //     const map = new Map<string, string>();

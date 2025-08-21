@@ -203,10 +203,12 @@ export const API = {
   DELETE_NOTIFICATION: "/api/notification/delete_notification",
 
   //PAYMENT
-
-  CREATE_PAYMENT_BY_ORDER_ID: (orderId: string) =>
+  
+ CREATE_PAYMENT_BY_ORDER_ID: (orderId: string) =>
     `/api/payment/create-payment/${orderId}`,
-  PAYMENT_UPDATE: `/api/payment/update`,
+   UPDATE_PAYMENT: "/api/payment/update",
+  GET_ALL_PAYMENT:"/api/payment/get_all_payment",
+  GET_PAYMENT_ID:"/api/payment/get_payment",
 
   //QUESTION
   GET_ALL_QUESTION: "/api/question/get_all_question",

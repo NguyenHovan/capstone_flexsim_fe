@@ -74,21 +74,26 @@ const OrderOrganization: React.FC = () => {
     [plans]
   );
 
-  // PAY FLOW
-  const onPay = async (orderId: string) => {
-    try {
-      const res = await PaymentService.createByOrderId(orderId);
-      if (res?.orderCode) saveOrderCode(res.orderCode); // lưu để fallback
-      const url = res.checkoutUrl || (res as any).payUrl;
-      if (url) {
-        window.location.href = url; // chuyển sang PayOS
-        return;
-      }
-      message.warning("Không nhận được liên kết thanh toán từ máy chủ.");
-    } catch (e: any) {
-      message.error(e?.message || "Tạo liên kết thanh toán thất bại");
+const onPay = async (orderId: string) => {
+  try {
+    if (!orderId) { message.error("Thiếu orderId"); return; }
+
+    // 1) Create payment để lấy link thanh toán + orderCode
+    const res = await PaymentService.createByOrderId(orderId);
+    if (res?.orderCode) saveOrderCode(res.orderCode); // lưu dự phòng
+
+    const url = res?.checkoutUrl ?? res?.payUrl; // payUrl là fallback nếu BE dùng tên khác
+    if (!url) {
+      message.warning("Không nhận được checkoutUrl từ máy chủ.");
+      return;
     }
-  };
+
+    // 2) Redirect sang PayOS để user thanh toán/hủy
+    window.location.href = url;
+  } catch (e: any) {
+    message.error(e?.message || "Tạo liên kết thanh toán thất bại");
+  }
+};
 
   const handleCreate = async () => {
     try {
@@ -207,7 +212,7 @@ const OrderOrganization: React.FC = () => {
         onCancel={() => setOpenCreate(false)}
         onOk={handleCreate}
         okText="Create"
-        destroyOnClose
+        destroyOnHidden
       >
         <Form form={form} layout="vertical">
           <Form.Item
