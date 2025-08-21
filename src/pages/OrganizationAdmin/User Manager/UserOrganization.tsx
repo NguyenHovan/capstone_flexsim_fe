@@ -23,6 +23,9 @@ const { Title } = Typography;
 const roleNameMap: Record<number, string> = { 3: 'Instructor', 4: 'Student' };
 const genderNameMap: Record<number, string> = { 1: 'Male', 2: 'Female', 3: 'Other' };
 
+// Chỉ cho phép hiển thị 2 role student và instructor
+const VISIBLE_ROLE_IDS = new Set<number>([3, 4]);
+
 const roleOptions = [
   { label: 'All roles', value: '' },
   { label: 'Instructor', value: 3 },
@@ -90,7 +93,6 @@ const setEmailDuplicateError = (form: any, err: any) => {
   return false;
 };
 
-/** Lấy nguyên văn thông báo lỗi từ BE (string/body JSON/axios error) */
 const getBEMessage = (err: any, fallback?: string) => {
   try {
     const data = err?.response?.data;
@@ -113,7 +115,6 @@ const UserOrganization: React.FC = () => {
   const [creatingInstructor, setCreatingInstructor] = useState(false);
   const [creatingStudent, setCreatingStudent] = useState(false);
 
-  // Modal & form states
   const [viewingUser, setViewingUser] = useState<Account | null>(null);
   const [isViewModal, setIsViewModal] = useState(false);
   const [editingUser, setEditingUser] = useState<Account | null>(null);
@@ -124,7 +125,6 @@ const UserOrganization: React.FC = () => {
   const [formStud] = Form.useForm();
   const [formEdit] = Form.useForm();
 
-  // Inline error bars (hiện lỗi ngay trong UI)
   const [instrError, setInstrError] = useState<string | null>(null);
   const [studError, setStudError] = useState<string | null>(null);
   const [editError, setEditError] = useState<string | null>(null);
@@ -148,7 +148,10 @@ const UserOrganization: React.FC = () => {
     setLoading(true);
     try {
       const all = await AccountService.getAllByOrgId(orgId);
-      setUsers(all);
+      const filtered = (all ?? []).filter((u: Account) =>
+        VISIBLE_ROLE_IDS.has(Number(u.roleId))
+      );
+      setUsers(filtered);
     } catch (err) {
       message.error(getBEMessage(err, 'Failed to load users'));
     } finally {
@@ -202,7 +205,7 @@ const UserOrganization: React.FC = () => {
 
   const onEdit = (u: Account) => {
     setEditingUser(u);
-    setEditError(null); // clear lỗi cũ
+    setEditError(null);
     formEdit.setFieldsValue({
       userName: u.userName,
       fullName: u.fullName,
@@ -249,13 +252,12 @@ const UserOrganization: React.FC = () => {
       message.success('User updated');
     } catch (err: any) {
       if (setEmailDuplicateError(formEdit, err)) return;
-      setEditError(getBEMessage(err, 'Cannot update user')); // ⬅️ hiện lỗi trong UI
+      setEditError(getBEMessage(err, 'Cannot update user'));
     } finally {
       setSavingEdit(false);
     }
   };
 
-  // ban / unban (giữ toast cho action ngoài modal)
   const onBan = async (id: string) => {
     setLoading(true);
     try {
@@ -301,9 +303,7 @@ const UserOrganization: React.FC = () => {
       message.success('Instructor created');
     } catch (err: any) {
       if (setEmailDuplicateError(formInstr, err)) return;
-      // Hiện lỗi ngay trong modal (ví dụ: "Organization chưa được kích hoạt, vui lòng thanh toán.")
       setInstrError(getBEMessage(err, 'Cannot create instructor'));
-      // KHÔNG đóng modal, để user thấy lỗi ngay trong UI
     } finally {
       setCreatingInstructor(false);
     }
@@ -329,7 +329,7 @@ const UserOrganization: React.FC = () => {
       message.success('Student created');
     } catch (err: any) {
       if (setEmailDuplicateError(formStud, err)) return;
-      setStudError(getBEMessage(err, 'Cannot create student')); // hiện lỗi trong modal
+      setStudError(getBEMessage(err, 'Cannot create student'));
     } finally {
       setCreatingStudent(false);
     }
@@ -338,13 +338,15 @@ const UserOrganization: React.FC = () => {
   const dataView = useMemo(() => {
     const q = debounced.toLowerCase();
 
-    let list = users.filter(u => {
+    let list = users.filter(u => VISIBLE_ROLE_IDS.has(Number(u.roleId)));
+
+    list = list.filter(u => {
       const hitQ =
         !q ||
         (u.userName && u.userName.toLowerCase().includes(q)) ||
         (u.fullName && u.fullName.toLowerCase().includes(q));
 
-      const hitRole = roleFilter === '' ? true : u.roleId === roleFilter;
+      const hitRole = roleFilter === '' ? true : Number(u.roleId) === roleFilter;
       const hitStatus = statusFilter === '' ? true : (statusFilter === 'active' ? u.isActive : !u.isActive);
 
       return hitQ && hitRole && hitStatus;
@@ -396,8 +398,14 @@ const UserOrganization: React.FC = () => {
     { title: 'Full Name', dataIndex: 'fullName', key: 'fullName', width: 180 },
     { title: 'Email', dataIndex: 'email', key: 'email', width: 220, ellipsis: true },
     { title: 'Phone', dataIndex: 'phone', key: 'phone', width: 140 },
-    { title: 'Role', dataIndex: 'roleId', key: 'roleId', width: 120, render: (r) => roleNameMap[r] || r },
-    { title: 'Gender', dataIndex: 'gender', key: 'gender', width: 110, render: (g) => genderNameMap[g] || g },
+    {
+      title: 'Role',
+      dataIndex: 'roleId',
+      key: 'roleId',
+      width: 120,
+      render: (r) => roleNameMap[Number(r)] || r
+    },
+    { title: 'Gender', dataIndex: 'gender', key: 'gender', width: 110, render: (g) => genderNameMap[Number(g)] || g },
     {
       title: 'Status', dataIndex: 'isActive', key: 'isActive', width: 120,
       render: (v: boolean) => (v ? <Tag color="green">Active</Tag> : <Tag color="red">Not active</Tag>)
@@ -429,7 +437,6 @@ const UserOrganization: React.FC = () => {
   return (
     <Layout>
       <Content style={{ padding: 24 }}>
-        {/* Header + create buttons */}
         <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
           <Col><Title level={3} style={{ margin: 0 }}>User Manager</Title></Col>
           <Col>
@@ -452,7 +459,6 @@ const UserOrganization: React.FC = () => {
           </Col>
         </Row>
 
-        {/* Toolbar: search + filters + sort */}
         <Card style={{ marginBottom: 12 }}>
           <Row gutter={[12, 12]} align="middle">
             <Col xs={24} md={10} lg={12}>
@@ -479,7 +485,6 @@ const UserOrganization: React.FC = () => {
           </Row>
         </Card>
 
-        {/* Table */}
         <Card>
           <Table
             columns={columns}
@@ -491,7 +496,6 @@ const UserOrganization: React.FC = () => {
           />
         </Card>
 
-        {/* View modal */}
         <Modal
           title="User Details"
           open={isViewModal}
@@ -511,15 +515,14 @@ const UserOrganization: React.FC = () => {
               </Col>
               <Col span={12}>
                 <p><b>Phone:</b> {viewingUser.phone}</p>
-                <p><b>Role:</b> {roleNameMap[viewingUser.roleId] || viewingUser.roleId}</p>
-                <p><b>Gender:</b> {genderNameMap[viewingUser.gender]}</p>
+                <p><b>Role:</b> {roleNameMap[Number(viewingUser.roleId)] || viewingUser.roleId}</p>
+                <p><b>Gender:</b> {genderNameMap[Number(viewingUser.gender)]}</p>
                 <p><b>Status:</b> {viewingUser.isActive ? 'Active' : 'Not active'}</p>
               </Col>
             </Row>
           )}
         </Modal>
 
-        {/* Edit modal */}
         <Modal
           title="Edit User"
           open={isEditModal}
@@ -534,7 +537,6 @@ const UserOrganization: React.FC = () => {
           destroyOnHidden
           width={680}
         >
-          {/* Error bar */}
           {editError && <Alert style={{ marginBottom: 12 }} type="error" showIcon message={editError} />}
 
           <Form
@@ -589,7 +591,6 @@ const UserOrganization: React.FC = () => {
           </Form>
         </Modal>
 
-        {/* Create Instructor */}
         <Modal
           title="Create New Instructor"
           open={isCreateInstructor}
@@ -599,7 +600,6 @@ const UserOrganization: React.FC = () => {
           destroyOnHidden
           width={600}
         >
-          {/* Error bar */}
           {instrError && <Alert style={{ marginBottom: 12 }} type="error" showIcon message={instrError} />}
 
           <Form
@@ -644,7 +644,6 @@ const UserOrganization: React.FC = () => {
           </Form>
         </Modal>
 
-        {/* Create Student */}
         <Modal
           title="Create New Student"
           open={isCreateStudent}
@@ -654,7 +653,6 @@ const UserOrganization: React.FC = () => {
           destroyOnHidden
           width={600}
         >
-          {/* Error bar */}
           {studError && <Alert style={{ marginBottom: 12 }} type="error" showIcon message={studError} />}
 
           <Form
