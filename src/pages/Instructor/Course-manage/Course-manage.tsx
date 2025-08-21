@@ -65,7 +65,7 @@ const CourseManagement = () => {
   const fetchCourses = async () => {
     try {
       setLoading(true);
-      const data = await CourseService.getAllCourses();
+      const data = await CourseService.getCourseByInstructorId();
       setDataSource(data);
     } catch (error) {
       toast.error("Failed to fetch courses");
@@ -209,7 +209,7 @@ const CourseManagement = () => {
             author="Nguyen van a"
             coverUrl={course.imgUrl}
             title={course.courseName}
-            tag={course.description}
+            rating={course.ratingAverage}
             onEdit={() => {}}
             onDelete={() => handleDelete(course.id)}
           />

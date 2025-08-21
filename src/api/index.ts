@@ -41,6 +41,7 @@ export const API = {
   //COURSE
   GET_ALL_COURSE: "/api/course/get_all",
   GET_ALL_COURSE_ORGID: "/api/course/get_all_by_org",
+  GET_COURSE_BY_INSTRUCTOR: "/api/course/my_course",
 
   GET_COURSE_ID: "/api/course/get_by_id",
   // GET_COURSE_SEARCH: "/api/course/searchCourse",
@@ -106,6 +107,7 @@ export const API = {
   CREATE_FULL_QUIZ: "/api/quiz/create_full_quiz",
   UPDATE_QUIZ: "/api/quiz/update_quiz",
   DELETE_QUIZ: "/api/quiz/delete_quiz",
+  GET_QUIZ_LESSON: "/api/quiz/by-lesson",
 
   //QUIZ SUBMISSION
   SUBMIT_QUIZ: "/api/quizSubmission/submit_quiz",

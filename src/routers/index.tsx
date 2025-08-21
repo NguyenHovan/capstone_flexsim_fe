@@ -44,6 +44,7 @@ import OrderAdmin from "../pages/Admin/Order Manager/OrderAdmin";
 import AddStudentPage from "../pages/Instructor/Add-student/Add-student";
 import MyCertificate from "../pages/MyCertificate/MyCertificate";
 import ContentCourse from "../pages/Instructor/Course-manage/ContentCourse";
+import QuizDetail from "../pages/Instructor/Quiz-manage/Quiz-Detail";
 
 const MainRoute = () => {
   return (
@@ -159,6 +160,7 @@ const MainRoute = () => {
           <Route path="/instructor-review" element={<ReviewManagement />} />
           <Route path="/instructor-lesson" element={<LessonManagement />} />
           <Route path="/instructor-enroll-request" element={<EnrollManage />} />
+          <Route path="/instructor-quiz-detail/:id" element={<QuizDetail />} />
         </Route>
       </Route>
     </Routes>

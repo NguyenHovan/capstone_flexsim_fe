@@ -15,6 +15,7 @@ import {
   Modal,
   Select,
   Spin,
+  Table,
   Typography,
   Upload,
 } from "antd";
@@ -36,11 +37,23 @@ const DetailCoures = () => {
   const [selectedTopic, setSelectedTopic] = useState(null);
   const [activeKeys, setActiveKeys] = useState<string[]>([]);
   const [editingLesson, setEditingLesson] = useState<any>(null);
+  const [courseDetail, setCourseDetail] = useState({
+    courseName: "",
+    instructorFullName: "",
+  });
   const [lessonsByTopic, setLessonsByTopic] = useState<{
     [key: string]: any[];
   }>({});
   const [scenes, setScenes] = useState<any[]>([]);
   const [form] = Form.useForm();
+  const fetchCourseDetail = async () => {
+    try {
+      const response = await CourseService.getCourseById(id || "");
+      setCourseDetail(response);
+    } catch (error) {
+      console.log({ error });
+    }
+  };
   const fetchDataTopic = async () => {
     try {
       if (!id) {
@@ -69,6 +82,7 @@ const DetailCoures = () => {
       console.log(error);
     }
   };
+
   const handleCollapseChange = (keys: string | string[]) => {
     const openKeys = Array.isArray(keys) ? keys : [keys];
     setActiveKeys(openKeys);
@@ -172,6 +186,7 @@ const DetailCoures = () => {
   useEffect(() => {
     fetchDataTopic();
     fetchCoursesAndScenes();
+    fetchCourseDetail();
   }, []);
 
   return (
@@ -179,7 +194,7 @@ const DetailCoures = () => {
       <Flex style={{ width: "100%" }} vertical>
         <Flex justify="space-between" style={{ marginBottom: "12px" }}>
           <Typography style={{ fontSize: "30px", fontWeight: "bold" }}>
-            ABC - Nguyen Van A
+            {courseDetail?.courseName} - {courseDetail?.instructorFullName}
           </Typography>
           <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
             Add new topic
@@ -238,128 +253,156 @@ const DetailCoures = () => {
               }}
             >
               {lessonsByTopic[tp.id]?.length ? (
-                lessonsByTopic[tp.id].map((lesson) => (
-                  <div
-                    key={lesson.id}
-                    style={{
-                      border: "1px solid #f0f0f0",
-                      borderRadius: "10px",
-                      padding: "14px 18px",
-                      marginBottom: "14px",
-                      background: "linear-gradient(135deg, #fdfbfb, #ebedee)",
-                      boxShadow: "0 3px 8px rgba(0,0,0,0.05)",
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      transition: "all 0.3s ease",
-                      cursor: "pointer",
-                    }}
-                    onMouseEnter={(e) => {
-                      (e.currentTarget as HTMLDivElement).style.transform =
-                        "translateY(-3px)";
-                      (e.currentTarget as HTMLDivElement).style.boxShadow =
-                        "0 6px 14px rgba(0,0,0,0.15)";
-                    }}
-                    onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLDivElement).style.transform =
-                        "translateY(0)";
-                      (e.currentTarget as HTMLDivElement).style.boxShadow =
-                        "0 3px 8px rgba(0,0,0,0.05)";
-                    }}
-                  >
-                    {/* Lesson Info */}
-                    <div>
-                      <Typography
-                        style={{
-                          fontWeight: 700,
-                          fontSize: "16px",
-                          color: "#1890ff",
-                          marginBottom: "6px",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "6px",
-                        }}
-                      >
-                        🎯 {lesson.lessonName}
-                      </Typography>
-                      <Typography
-                        style={{
-                          fontSize: "14px",
-                          color: "#555",
-                          maxWidth: "90%",
-                        }}
-                      >
-                        {lesson.description
-                          ? lesson.description
-                              .split("\n")
-                              .map((line: any, index: number) => (
-                                <p key={index}>{line}</p>
-                              ))
-                          : "No description"}
-                      </Typography>
-                    </div>
+                <>
+                  {lessonsByTopic[tp.id].map((lesson) => (
+                    <div
+                      key={lesson.id}
+                      style={{
+                        border: "1px solid #f0f0f0",
+                        borderRadius: "10px",
+                        padding: "16px",
+                        marginBottom: "16px",
+                        background: "linear-gradient(135deg, #fdfbfb, #ebedee)",
+                        boxShadow: "0 3px 8px rgba(0,0,0,0.05)",
+                        transition: "all 0.3s ease",
+                        cursor: "pointer",
+                      }}
+                      onMouseEnter={(e) => {
+                        (e.currentTarget as HTMLDivElement).style.transform =
+                          "translateY(-3px)";
+                        (e.currentTarget as HTMLDivElement).style.boxShadow =
+                          "0 6px 14px rgba(0,0,0,0.15)";
+                      }}
+                      onMouseLeave={(e) => {
+                        (e.currentTarget as HTMLDivElement).style.transform =
+                          "translateY(0)";
+                        (e.currentTarget as HTMLDivElement).style.boxShadow =
+                          "0 3px 8px rgba(0,0,0,0.05)";
+                      }}
+                    >
+                      {/* Header: lesson info + actions */}
+                      <Flex justify="space-between" align="start">
+                        {/* Lesson info */}
+                        <div style={{ maxWidth: "75%" }}>
+                          <Typography
+                            style={{
+                              fontWeight: 700,
+                              fontSize: "16px",
+                              color: "#1890ff",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "6px",
+                              marginBottom: "6px",
+                            }}
+                          >
+                            🎯 {lesson.lessonName}
+                          </Typography>
+                          <Typography
+                            style={{
+                              fontSize: "14px",
+                              color: "#555",
+                              lineHeight: 1.5,
+                            }}
+                          >
+                            {lesson.description
+                              ? lesson.description
+                                  .split("\n")
+                                  .map((line: any, index: number) => (
+                                    <p key={index} style={{ margin: 0 }}>
+                                      {line}
+                                    </p>
+                                  ))
+                              : "No description"}
+                          </Typography>
+                        </div>
 
-                    {/* Action Buttons */}
-                    <div style={{ display: "flex", gap: "14px" }}>
-                      <QuestionCircleOutlined
-                        style={{
-                          color: "#52c41a",
-                          fontSize: "20px",
-                          cursor: "pointer",
-                          transition: "0.2s",
-                        }}
-                        onMouseEnter={(e) =>
-                          ((e.target as HTMLElement).style.color = "#73d13d")
-                        }
-                        onMouseLeave={(e) =>
-                          ((e.target as HTMLElement).style.color = "#52c41a")
-                        }
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(`/instructor-quiz/${lesson.id}`);
-                        }}
-                      />
-                      <EditOutlined
-                        style={{
-                          color: "#1890ff",
-                          fontSize: "20px",
-                          cursor: "pointer",
-                          transition: "0.2s",
-                        }}
-                        onMouseEnter={(e) =>
-                          ((e.target as HTMLElement).style.color = "#40a9ff")
-                        }
-                        onMouseLeave={(e) =>
-                          ((e.target as HTMLElement).style.color = "#1890ff")
-                        }
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedTopic(tp.id);
-                          setEditingLesson(lesson);
-                          setIsModalVisibleLesson(true);
-                        }}
-                      />
-                      <DeleteOutlined
-                        style={{
-                          color: "red",
-                          fontSize: "20px",
-                          cursor: "pointer",
-                          transition: "0.2s",
-                        }}
-                        onMouseEnter={(e) =>
-                          ((e.target as HTMLElement).style.color = "#ff4d4f")
-                        }
-                        onMouseLeave={(e) =>
-                          ((e.target as HTMLElement).style.color = "red")
-                        }
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteLesson(lesson.id, tp.id);
-                        }}
-                      />
+                        {/* Action icons */}
+                        <div style={{ display: "flex", gap: "12px" }}>
+                          <QuestionCircleOutlined
+                            style={{
+                              color: "#52c41a",
+                              fontSize: "20px",
+                              cursor: "pointer",
+                            }}
+                            onMouseEnter={(e) =>
+                              ((e.target as HTMLElement).style.color =
+                                "#73d13d")
+                            }
+                            onMouseLeave={(e) =>
+                              ((e.target as HTMLElement).style.color =
+                                "#52c41a")
+                            }
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/instructor-quiz/${lesson.id}`);
+                            }}
+                          />
+                          <EditOutlined
+                            style={{
+                              color: "#1890ff",
+                              fontSize: "20px",
+                              cursor: "pointer",
+                            }}
+                            onMouseEnter={(e) =>
+                              ((e.target as HTMLElement).style.color =
+                                "#40a9ff")
+                            }
+                            onMouseLeave={(e) =>
+                              ((e.target as HTMLElement).style.color =
+                                "#1890ff")
+                            }
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedTopic(tp.id);
+                              setEditingLesson(lesson);
+                              setIsModalVisibleLesson(true);
+                            }}
+                          />
+                          <DeleteOutlined
+                            style={{
+                              color: "red",
+                              fontSize: "20px",
+                              cursor: "pointer",
+                            }}
+                            onMouseEnter={(e) =>
+                              ((e.target as HTMLElement).style.color =
+                                "#ff4d4f")
+                            }
+                            onMouseLeave={(e) =>
+                              ((e.target as HTMLElement).style.color = "red")
+                            }
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteLesson(lesson.id, tp.id);
+                            }}
+                          />
+                        </div>
+                      </Flex>
+
+                      {lesson?.quizzes?.length > 0 && (
+                        <Table
+                          dataSource={lesson.quizzes}
+                          columns={[
+                            {
+                              title: "Câu hỏi",
+                              dataIndex: "quizName",
+                              key: "quizName",
+                            },
+                          ]}
+                          pagination={false}
+                          rowKey="id"
+                          style={{ marginTop: "12px" }}
+                          onRow={(record) => ({
+                            onClick: () => {
+                              navigate(`/instructor-quiz-detail/${record.id}`);
+                            },
+                          })}
+                          bordered
+                        />
+                      )}
                     </div>
-                  </div>
-                ))
+                  ))}
+                </>
               ) : (
                 <p
                   style={{
