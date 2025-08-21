@@ -1,5 +1,5 @@
 import React from "react";
-import { Card, Rate, Tag } from "antd";
+import { Card, Rate } from "antd";
 import { DeleteFilled, EditOutlined } from "@ant-design/icons";
 
 interface CardCourseProps {

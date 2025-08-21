@@ -55,4 +55,10 @@ export const CourseService = {
     );
     return response.data;
   },
+  getCourseByCategoryId: async (categoryId: string) => {
+    const response = await axiosInstance.get(
+      `${API.GET_COURSE_BY_CATEGORY_ID}/${categoryId}`
+    );
+    return response.data;
+  },
 };

@@ -10,7 +10,7 @@ const QuizDetail = () => {
   const fetchQuizDetail = async () => {
     try {
       setIsLoading(true);
-      const response = await QuizService.getQuizById(id);
+      const response = await QuizService.getQuizById(id ?? "");
       setData(response);
     } finally {
       setIsLoading(false);

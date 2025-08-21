@@ -1,6 +1,5 @@
 import {
   HomeOutlined,
-  AppstoreOutlined,
   BookOutlined,
   DollarOutlined,
   InfoCircleOutlined,

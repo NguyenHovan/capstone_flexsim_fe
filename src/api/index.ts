@@ -42,6 +42,7 @@ export const API = {
   GET_ALL_COURSE: "/api/course/get_all",
   GET_ALL_COURSE_ORGID: "/api/course/get_all_by_org",
   GET_COURSE_BY_INSTRUCTOR: "/api/course/my_course",
+  GET_COURSE_BY_CATEGORY_ID: "/api/course/get_all_course_by_category",
 
   GET_COURSE_ID: "/api/course/get_by_id",
   // GET_COURSE_SEARCH: "/api/course/searchCourse",
@@ -203,12 +204,12 @@ export const API = {
   DELETE_NOTIFICATION: "/api/notification/delete_notification",
 
   //PAYMENT
-  
- CREATE_PAYMENT_BY_ORDER_ID: (orderId: string) =>
+
+  CREATE_PAYMENT_BY_ORDER_ID: (orderId: string) =>
     `/api/payment/create-payment/${orderId}`,
-   UPDATE_PAYMENT: "/api/payment/update",
-  GET_ALL_PAYMENT:"/api/payment/get_all_payment",
-  GET_PAYMENT_ID:"/api/payment/get_payment",
+  UPDATE_PAYMENT: "/api/payment/update",
+  GET_ALL_PAYMENT: "/api/payment/get_all_payment",
+  GET_PAYMENT_ID: "/api/payment/get_payment",
 
   //QUESTION
   GET_ALL_QUESTION: "/api/question/get_all_question",

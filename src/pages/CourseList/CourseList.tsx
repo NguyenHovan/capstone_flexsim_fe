@@ -33,10 +33,29 @@ const CourseList = () => {
       console.log(error);
     }
   };
+  const fetchCourseByCategory = async (categoryId: string) => {
+    try {
+      setLoading(true);
+      const data = await CourseService.getCourseByCategoryId(categoryId);
+      setDataSource(data);
+    } catch (error) {
+      toast.error("Failed to fetch courses for category");
+    } finally {
+      setLoading(false);
+    }
+  };
   useEffect(() => {
     fetchCourses();
     fetchCategories();
   }, []);
+
+  const handleTabChange = (key: string) => {
+    if (key === "all") {
+      fetchCourses();
+    } else {
+      fetchCourseByCategory(key);
+    }
+  };
   return (
     <Spin spinning={loading}>
       <div className="container">
@@ -54,7 +73,11 @@ const CourseList = () => {
             style={{ maxWidth: 300, background: "#f5eaea", borderRadius: 20 }}
           />
 
-          <Tabs defaultActiveKey="all" style={{ flex: 1 }}>
+          <Tabs
+            defaultActiveKey="all"
+            style={{ flex: 1 }}
+            onChange={handleTabChange}
+          >
             <TabPane tab="All" key="all" />
             {categories?.map((cate) => (
               <TabPane tab={cate.categoryName} key={cate.id} />
