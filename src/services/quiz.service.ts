@@ -31,4 +31,8 @@ export const QuizService = {
     const res = await axiosInstance.get(`${API.GET_QUIZ_LESSON}/${id}`);
     return res.data;
   },
+  getFullQuizById: async (id: string) => {
+    const res = await axiosInstance.get(`${API.GET_FULL_QUIZ_ID}/${id}`);
+    return res.data;
+  },
 };

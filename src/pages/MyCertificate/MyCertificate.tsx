@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Card, Col, Row, Tag, Typography, Empty, Button } from "antd";
+import { CertificateService } from "../../services/certificate.service";
 
 const { Title, Text } = Typography;
 
@@ -11,32 +12,20 @@ interface Certificate {
   status: "COMPLETED" | "IN_PROGRESS";
 }
 
-const mockCertificates: Certificate[] = [
-  {
-    id: "1",
-    name: "Certificate of English Beginner",
-    courseName: "English Basics",
-    issuedDate: "2025-07-20",
-    status: "COMPLETED",
-  },
-  {
-    id: "2",
-    name: "Certificate of React Developer",
-    courseName: "ReactJS Advanced",
-    issuedDate: "2025-08-01",
-    status: "IN_PROGRESS",
-  },
-  {
-    id: "3",
-    name: "Certificate of Data Science",
-    courseName: "Python for Data Science",
-    issuedDate: "2025-06-15",
-    status: "COMPLETED",
-  },
-];
-
 const MyCertificate: React.FC = () => {
-  if (!mockCertificates || mockCertificates.length === 0) {
+  const [myCertificates, setMyCertificates] = useState<Certificate[]>([]);
+  const fetchMyCertificates = async () => {
+    try {
+      const response = await CertificateService.getMyCertificate();
+      setMyCertificates(response);
+    } catch (error) {
+      console.log({ error });
+    }
+  };
+  useEffect(() => {
+    fetchMyCertificates();
+  }, []);
+  if (!myCertificates || myCertificates.length === 0) {
     return (
       <div style={{ padding: 24 }}>
         <Empty description="Bạn chưa có chứng chỉ nào" />
@@ -48,7 +37,7 @@ const MyCertificate: React.FC = () => {
     <div style={{ padding: 24 }}>
       <Title level={2}>My Certificates</Title>
       <Row gutter={[16, 16]}>
-        {mockCertificates.map((cert) => (
+        {myCertificates?.map((cert) => (
           <Col xs={24} sm={12} md={8} key={cert.id}>
             <Card
               title={cert.name}

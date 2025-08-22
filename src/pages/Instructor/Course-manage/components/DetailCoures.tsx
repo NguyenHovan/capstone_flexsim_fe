@@ -3,7 +3,6 @@ import {
   EditOutlined,
   PlusOutlined,
   QuestionCircleOutlined,
-  UploadOutlined,
 } from "@ant-design/icons";
 import {
   Button,
@@ -17,7 +16,6 @@ import {
   Spin,
   Table,
   Typography,
-  Upload,
 } from "antd";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -182,7 +180,7 @@ const DetailCoures = () => {
     }
   };
 
-  const normFile = (e: any) => (Array.isArray(e) ? e : e?.fileList || []);
+  // const normFile = (e: any) => (Array.isArray(e) ? e : e?.fileList || []);
   useEffect(() => {
     fetchDataTopic();
     fetchCoursesAndScenes();
@@ -392,7 +390,7 @@ const DetailCoures = () => {
                           pagination={false}
                           rowKey="id"
                           style={{ marginTop: "12px" }}
-                          onRow={(record) => ({
+                          onRow={(record: { id: string }) => ({
                             onClick: () => {
                               navigate(`/instructor-quiz-detail/${record.id}`);
                             },
@@ -455,7 +453,7 @@ const DetailCoures = () => {
             </Select>
           </Form.Item>
 
-          <Form.Item
+          {/* <Form.Item
             label="Ảnh đại diện"
             name="imgUrl"
             valuePropName="fileList"
@@ -464,7 +462,7 @@ const DetailCoures = () => {
             <Upload listType="picture" maxCount={1} beforeUpload={() => false}>
               <Button icon={<UploadOutlined />}>Chọn ảnh</Button>
             </Upload>
-          </Form.Item>
+          </Form.Item> */}
         </Form>
       </Modal>
 

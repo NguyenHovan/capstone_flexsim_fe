@@ -21,6 +21,7 @@ import { CourseProgressService } from "../../services/course-progress.service";
 import CourseProgress from "./CourseProgress";
 import type { Course } from "../../types/course";
 import { TopicService } from "../../services/topic.service";
+import { CertificateService } from "../../services/certificate.service";
 
 const CourseDetail = () => {
   const { id } = useParams();
@@ -104,7 +105,6 @@ const CourseDetail = () => {
       toast.error("Học viên đã gửi yêu cầu hoặc đang theo học khóa học này");
     }
   };
-
   return (
     <div style={{ padding: "24px", maxWidth: 1200, margin: "0 auto" }}>
       {/* Course Info + My Certificate */}
@@ -158,12 +158,18 @@ const CourseDetail = () => {
             {myProgress?.status === 3 && (
               <Button
                 type="default"
-                onClick={() =>
-                  window.open(
-                    "https://res.cloudinary.com/dsfrqevvg/raw/upload/v1755755739/LogiSimEdu_Certificates/certificate_d648765e-aea2-4241-8f04-a1ff25bc423e_edd533fd-2a81-46e7-a32b-22c598e07397.pdf",
-                    "_blank"
-                  )
-                }
+                onClick={async () => {
+                  try {
+                    const res =
+                      await CertificateService.certificateByCourseAndAccount(
+                        id ?? ""
+                      );
+                    window.open(res.fileUrl, "_blank");
+                  } catch (error) {
+                    console.error(error);
+                    toast.error("Your Certificate not found.");
+                  }
+                }}
                 style={{
                   borderRadius: "8px",
                   background: "linear-gradient(90deg, #36d1dc, #5b86e5)",
@@ -298,7 +304,6 @@ const CourseDetail = () => {
                           type="primary"
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleComplete(lesson.id);
                           }}
                         >
                           Learning

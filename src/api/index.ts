@@ -106,12 +106,14 @@ export const API = {
   GET_ALL_QUESTION_QUIZ: "/api/quiz/questions",
   CREATE_NEW_QUIZ: "/api/quiz/create_quiz",
   CREATE_FULL_QUIZ: "/api/quiz/create_full_quiz",
-  UPDATE_QUIZ: "/api/quiz/update_quiz",
+  UPDATE_QUIZ: "/api/quiz/update-full_quiz",
   DELETE_QUIZ: "/api/quiz/delete_quiz",
   GET_QUIZ_LESSON: "/api/quiz/by-lesson",
+  GET_FULL_QUIZ_ID: "/api/quiz/get_full_quiz",
 
   //QUIZ SUBMISSION
   SUBMIT_QUIZ: "/api/quizSubmission/submit_quiz",
+  GET_QUIZ_SUBMIT_LESSON_BY_QUIZ_ID: "/api/quizSubmission/lesson/",
 
   //REVIEW
   GET_ALL_REVIEW: "/api/review/get_all_review",
@@ -228,4 +230,8 @@ export const API = {
 
   //Lesson progress
   UPDATE_LESSON_PROGRESS: "/api/lessonProgress/update-lesson-progress",
+
+  //certificate
+  GET_MY_CERTIFICATE: "/api/certificate/my_certificates",
+  GET_CERTIFICATE_BY_COURSE_AND_ACCOUNT: "/api/certificate/my_certificate",
 };

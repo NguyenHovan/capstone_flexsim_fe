@@ -1,16 +1,17 @@
 import { useEffect, useState } from "react";
 import { List, Button, Typography, Divider } from "antd";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { LessonService } from "../../services/lesson.service";
 import { LessonProgressService } from "../../services/lessonProgress.service";
 import { toast } from "sonner";
 
 const TopicDetail = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const userString = localStorage.getItem("currentUser");
   const currentUser = userString ? JSON.parse(userString) : null;
   const currentAccountId = currentUser?.id || "";
-  const [data, setData] = useState();
+  const [data, setData] = useState<any[]>([]);
   const [selectedLesson, setSelectedLesson] = useState<any>();
   const fetchTopicDetail = async () => {
     try {
@@ -139,75 +140,107 @@ const TopicDetail = () => {
                 <List
                   itemLayout="horizontal"
                   dataSource={selectedLesson.quizzes}
-                  renderItem={(quiz: any) => (
-                    <List.Item
-                      style={{
-                        padding: "8px 12px",
-                        border: "1px solid #f0f0f0",
-                        borderRadius: "8px",
-                        marginBottom: "8px",
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        transition: "all 0.2s ease",
-                      }}
-                      onMouseEnter={(e) =>
-                        ((e.currentTarget as HTMLDivElement).style.background =
-                          "#fafafa")
-                      }
-                      onMouseLeave={(e) =>
-                        ((e.currentTarget as HTMLDivElement).style.background =
-                          "white")
-                      }
-                    >
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "8px",
-                        }}
-                      >
-                        <span
-                          role="img"
-                          aria-label="quiz"
-                          style={{ fontSize: "18px" }}
-                        >
-                          📝
-                        </span>
-                        <span>{quiz.quizName}</span>
-                      </div>
+                  renderItem={(quiz: any) => {
+                    const latestSubmission = quiz.quizSubmissions?.length
+                      ? [...quiz.quizSubmissions].sort(
+                          (a, b) =>
+                            new Date(b.submitTime).getTime() -
+                            new Date(a.submitTime).getTime()
+                        )[0]
+                      : null;
 
-                      <Button
-                        type="primary"
-                        size="small"
-                        onClick={() =>
-                          alert(`Go to quiz detail: ${quiz.quizName}`)
-                        }
+                    return (
+                      <List.Item
                         style={{
+                          padding: "8px 12px",
+                          border: "1px solid #f0f0f0",
                           borderRadius: "8px",
-                          background:
-                            "linear-gradient(90deg, #ff7e5f, #feb47b)",
-                          border: "none",
-                          color: "white",
-                          fontWeight: 600,
-                          boxShadow: "0 3px 6px rgba(0,0,0,0.1)",
+                          marginBottom: "8px",
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
                           transition: "all 0.2s ease",
                         }}
                         onMouseEnter={(e) =>
                           ((
-                            e.currentTarget as HTMLButtonElement
-                          ).style.boxShadow = "0 6px 12px rgba(0,0,0,0.15)")
+                            e.currentTarget as HTMLDivElement
+                          ).style.background = "#fafafa")
                         }
                         onMouseLeave={(e) =>
                           ((
-                            e.currentTarget as HTMLButtonElement
-                          ).style.boxShadow = "0 3px 6px rgba(0,0,0,0.1)")
+                            e.currentTarget as HTMLDivElement
+                          ).style.background = "white")
                         }
                       >
-                        Làm bài
-                      </Button>
-                    </List.Item>
-                  )}
+                        <div
+                          style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: "4px",
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "8px",
+                            }}
+                          >
+                            <span
+                              role="img"
+                              aria-label="quiz"
+                              style={{ fontSize: "18px" }}
+                            >
+                              📝
+                            </span>
+                            <span>{quiz.quizName}</span>
+                          </div>
+
+                          {latestSubmission && (
+                            <div style={{ fontSize: "12px", color: "#555" }}>
+                              <div>
+                                <b>Điểm:</b> {latestSubmission.totalScore}
+                              </div>
+                              <div>
+                                <b>Nộp:</b>{" "}
+                                {new Date(
+                                  latestSubmission.submitTime
+                                ).toLocaleString("vi-VN")}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        <Button
+                          type="primary"
+                          size="small"
+                          onClick={() => navigate(`/quiz-test/${quiz.id}`)}
+                          style={{
+                            borderRadius: "8px",
+                            background:
+                              "linear-gradient(90deg, #ff7e5f, #feb47b)",
+                            border: "none",
+                            color: "white",
+                            fontWeight: 600,
+                            boxShadow: "0 3px 6px rgba(0,0,0,0.1)",
+                            transition: "all 0.2s ease",
+                          }}
+                          onMouseEnter={(e) =>
+                            ((
+                              e.currentTarget as HTMLButtonElement
+                            ).style.boxShadow = "0 6px 12px rgba(0,0,0,0.15)")
+                          }
+                          onMouseLeave={(e) =>
+                            ((
+                              e.currentTarget as HTMLButtonElement
+                            ).style.boxShadow = "0 3px 6px rgba(0,0,0,0.1)")
+                          }
+                        >
+                          Làm bài
+                        </Button>
+                      </List.Item>
+                    );
+                  }}
                 />
               </>
             )}

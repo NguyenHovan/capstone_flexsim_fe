@@ -33,7 +33,6 @@ import WorkspaceOrganization from "../pages/OrganizationAdmin/Workspace Manager/
 import UserOrganization from "../pages/OrganizationAdmin/User Manager/UserOrganization";
 import PrivateRoute from "./PrivateRoute";
 // import ClassManagerOrgAdmin from "../pages/OrganizationAdmin/Class Manager/ClassOrganization";
-import QuizApp from "../pages/Quiz/QuizApp";
 import LessonManagement from "../pages/Instructor/Manage-Lesson/LessonManagement";
 import EnrollManage from "../pages/Instructor/Manage-Enrollment-Request/EnrollManage";
 import SubscriptionPlanAdmin from "../pages/Admin/Subcription Plan/SubcriptionPlan";
@@ -49,6 +48,7 @@ import OrgAdminProfile from "../pages/OrganizationAdmin/Profile/OrgAdminProfile"
 import OrgAdminSubscriptionPlans from "../pages/OrganizationAdmin/Subcription/Subcription";
 import QuizDetail from "../pages/Instructor/Quiz-manage/Quiz-Detail";
 import TopicDetail from "../pages/TopicDetail/TopicDetail";
+import QuizPage from "../pages/QuizPage";
 
 const MainRoute = () => {
   return (
@@ -68,7 +68,7 @@ const MainRoute = () => {
         <Route path="/new-password" element={<NewPasswordPage />} />
         <Route path="/course-list" element={<CourseList />} />
         <Route path="/course-detail/:id" element={<CourseDetail />} />
-        <Route path="/quiz-test/:id" element={<QuizApp />} />
+        <Route path="/quiz-test/:id" element={<QuizPage />} />
         <Route path="/topic-detail/:id" element={<TopicDetail />} />
         <Route
           path="/profile"
