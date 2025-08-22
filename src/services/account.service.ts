@@ -176,4 +176,85 @@ async updateAccount(
       throw error; 
     }
   },
+
+  importInstructors: async (organizationId: string, file: File): Promise<any> => {
+    try {
+      const form = new FormData();
+      form.append("file", file);
+
+      const { data } = await axiosInstance.post(
+        `${API.IMPORT_INSTRUCTOR}/${encodeURIComponent(organizationId)}`,
+        form,
+        {
+          // để axios tự set boundary
+          transformRequest: [(f, h) => {
+            delete h["Content-Type"];
+            delete (h as any)["content-type"];
+            return f as any;
+          }],
+        }
+      );
+      return unwrap(data);
+    } catch (err: any) {
+      const msg = getErrorMessage(err);
+      console.error("Error importing instructors:", msg, err?.response?.data);
+      throw new Error(msg);
+    }
+  },
+
+  /** Import STUDENTS từ file Excel (multipart/form-data) */
+  importStudents: async (organizationId: string, file: File): Promise<any> => {
+    try {
+      const form = new FormData();
+      form.append("file", file);
+
+      const { data } = await axiosInstance.post(
+        `${API.IMPORT_STUDENT}/${encodeURIComponent(organizationId)}`,
+        form,
+        {
+          transformRequest: [(f, h) => {
+            delete h["Content-Type"];
+            delete (h as any)["content-type"];
+            return f as any;
+          }],
+        }
+      );
+      return unwrap(data);
+    } catch (err: any) {
+      const msg = getErrorMessage(err);
+      console.error("Error importing students:", msg, err?.response?.data);
+      throw new Error(msg);
+    }
+  },
+
+  /** Export/Download danh sách hoặc template INSTRUCTORS (trả Blob) */
+  exportInstructors: async (organizationId: string): Promise<Blob> => {
+    try {
+      const { data } = await axiosInstance.get(
+        `${API.EXPORT_INSTRUCTOR}/${encodeURIComponent(organizationId)}`,
+        { responseType: "blob" }
+      );
+      return data as Blob;
+    } catch (err: any) {
+      const msg = getErrorMessage(err);
+      console.error("Error exporting instructors:", msg, err?.response?.data);
+      throw new Error(msg);
+    }
+  },
+
+  /** Export/Download danh sách hoặc template STUDENTS (trả Blob) */
+  exportStudents: async (organizationId: string): Promise<Blob> => {
+    try {
+      const { data } = await axiosInstance.get(
+        `${API.EXPORT_STUDENT}/${encodeURIComponent(organizationId)}`,
+        { responseType: "blob" }
+      );
+      return data as Blob;
+    } catch (err: any) {
+      const msg = getErrorMessage(err);
+      console.error("Error exporting students:", msg, err?.response?.data);
+      throw new Error(msg);
+    }
+  },
+
 };

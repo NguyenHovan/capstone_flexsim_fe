@@ -110,7 +110,7 @@ const onPay = async (orderId: string) => {
       message.success("Create order successful");
       setOpenCreate(false);
       form.resetFields();
-      await loadOrders(); // auto load lại danh sách
+      await loadOrders(); 
     } catch (e: any) {
       if (e?.errorFields) return;
       message.error(e?.message || "Create order failure");

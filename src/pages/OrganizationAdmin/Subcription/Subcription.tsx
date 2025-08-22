@@ -118,7 +118,7 @@ const OrgAdminSubscriptionPlans: React.FC = () => {
         <Row gutter={[16, 16]}>
           {items.map((p) => (
             <Col key={p.id} xs={24} sm={12} lg={8}>
-              <Card className={`pp-card variant-${p._variant}`} bordered={false} hoverable>
+              <Card className={`pp-card variant-${p._variant}`}  hoverable>
                 <div className="pp-head">
                   <div className="pp-name">{p.name}</div>
                   <Tag color={p.isActive ? "green" : "red"} className="pp-state">

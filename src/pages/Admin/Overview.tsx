@@ -43,10 +43,9 @@ interface DashboardStats {
   totalUsers: number;
   totalWorkspaces: number;
   totalOrders: number;
-  dailyStats: DailyStats; // keyed by YYYY-MM-DD
+  dailyStats: DailyStats; 
 }
 
-/** View model cho bảng Recent Orders */
 type OrderRow = {
   id: string;
   orderCode?: number | null;
@@ -55,13 +54,12 @@ type OrderRow = {
   orderTime?: string;
   price?: number;
   totalPrice?: number;
-  subscriptionPlanId?: string;   // chuẩn hoá: subscriptionId | subscriptionPlanId | subcriptionPlanId
-  subscriptionPlanName?: string; // tên gói map từ /subscription-plan/get_all
+  subscriptionPlanId?: string;   
+  subscriptionPlanName?: string; 
 };
 
 const EMPTY: Counters = { users: 0, organizations: 0, workspaces: 0, orders: 0 };
 
-/* ================= helpers ================= */
 const getCreatedDate = (it: AnyItem): string | null => {
   const raw =
     it?.createdAt ?? it?.created_at ?? it?.createdDate ?? it?.created_date ??
@@ -69,7 +67,6 @@ const getCreatedDate = (it: AnyItem): string | null => {
   if (!raw) return null;
   const d = new Date(raw);
   if (Number.isNaN(+d)) return null;
-  // ổn định timezone
   return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
 };
 const safeList = (d: any): AnyItem[] =>
@@ -102,7 +99,6 @@ const buildDateRange = (start: Dayjs, end: Dayjs) => {
 };
 const monthsInYear = (y: number) =>
   Array.from({ length: 12 }, (_, i) => dayjs().year(y).month(i).format('YYYY-MM'));
-/* palette giống mẫu weekly sales */
 const COLORS = {
   teal: '#2ED3C6',   // Users
   navy: '#223A54',   // Organizations
@@ -110,7 +106,6 @@ const COLORS = {
   cyan: '#7AD6E0',   // Orders
 };
 
-/* ================= component ================= */
 const AdminOverview: React.FC = () => {
   const [stats, setStats] = useState<DashboardStats>({
     totalOrganizations: 0, totalUsers: 0, totalWorkspaces: 0, totalOrders: 0, dailyStats: {}
@@ -171,7 +166,6 @@ const AdminOverview: React.FC = () => {
       }
     })();
 
-    // tải recent orders + map tên subscription theo subscriptionId
     (async () => {
       setLoadingOrders(true);
       try {
@@ -180,7 +174,6 @@ const AdminOverview: React.FC = () => {
           OrderService.getAll(),
         ]);
 
-        // map id -> name từ API subscription-plan/get_all
         const plans = Array.isArray(plansRes.data?.data)
           ? plansRes.data.data
           : Array.isArray(plansRes.data)
@@ -194,7 +187,6 @@ const AdminOverview: React.FC = () => {
         });
         if (mounted) setPlanNameById(planMap);
 
-        // chuẩn hoá Order -> OrderRow và gắn tên plan (ưu tiên subscriptionId)
         const rows: OrderRow[] = (orders ?? []).map((o: any) => {
           const pid =
             o?.subscriptionId ?? o?.subscriptionPlanId ?? o?.subcriptionPlanId ?? null;
@@ -228,7 +220,6 @@ const AdminOverview: React.FC = () => {
     return () => { mounted = false; };
   }, []);
 
-  /* ---- cards (WoW 7d) ---- */
   const dayLabelsAll = useMemo(() => Object.keys(stats.dailyStats), [stats.dailyStats]);
   const last7IdxStart = Math.max(0, dayLabelsAll.length - 7);
   const prev7IdxStart = Math.max(0, dayLabelsAll.length - 14);
@@ -241,7 +232,6 @@ const AdminOverview: React.FC = () => {
     orders: pct(sum(last7.map(x => x.orders)), sum(prev7.map(x => x.orders))),
   };
 
-  // Ô Total dùng màu phẳng trùng màu cột (teal/navy/gray/cyan)
   const cards = [
     { key: 'users',          title: 'Total Users',         icon: <TeamOutlined />,         value: stats.totalUsers,         percent: wow.users,         className: 'metric--tealSolid' },
     { key: 'organizations',  title: 'Total Organizations', icon: <AppstoreOutlined />,    value: stats.totalOrganizations, percent: wow.organizations, className: 'metric--navySolid' },
@@ -249,7 +239,6 @@ const AdminOverview: React.FC = () => {
     { key: 'orders',         title: 'Total Orders',        icon: <ShoppingCartOutlined />,value: stats.totalOrders,        percent: wow.orders,        className: 'metric--cyanSolid' },
   ] as const;
 
-  /* ---- filtered dataset (Week/Month/Year) ---- */
   const PRUNE_EMPTY = true;
 
   const filtered = useMemo(() => {
@@ -273,7 +262,7 @@ const AdminOverview: React.FC = () => {
       const range = buildDateRange(start, end);
 
       const rawRows = range.map((d) => ({
-        label: dayjs(d).format('dddd'), // Sun..Sat
+        label: dayjs(d).format('dddd'), 
         ...(stats.dailyStats[d] ?? { ...EMPTY })
       }));
       const rows = prune(rawRows);
@@ -361,7 +350,6 @@ const AdminOverview: React.FC = () => {
     };
   }, [stats.dailyStats, dayLabelsAll.length, granularity, anchorDate]);
 
-  /* ---- BAR (vuông, không bo góc) ---- */
   const barData = useMemo(() => ({
     labels: filtered.barLabels,
     datasets: [
@@ -371,7 +359,7 @@ const AdminOverview: React.FC = () => {
         backgroundColor: COLORS.teal,
         borderWidth: 0,
         borderSkipped: false,
-        borderRadius: 0,             // cột vuông
+        borderRadius: 0,            
         barThickness: 24,
         maxBarThickness: 30,
         categoryPercentage: 0.64,
@@ -442,7 +430,6 @@ const AdminOverview: React.FC = () => {
     }
   };
 
-  /* ---- DOUGHNUT ---- */
   const totalShare =
     (filtered.share.users + filtered.share.organizations + filtered.share.workspaces + filtered.share.orders) || 1;
 
@@ -481,7 +468,6 @@ const AdminOverview: React.FC = () => {
     }
   };
 
-  /* ---- Export CSV ---- */
   const handleExportCSV = () => {
     const header = ['label', 'users', 'organizations', 'workspaces', 'orders'];
     const rows = filtered.tableRows.map(r =>
@@ -502,7 +488,6 @@ const AdminOverview: React.FC = () => {
 
   const resetToday = () => setAnchorDate(dayjs());
 
-  /* ---- Recent Orders table ---- */
   const columns = [
     {
       title: '#',
