@@ -3,6 +3,7 @@ import {
   EditOutlined,
   PlusOutlined,
   QuestionCircleOutlined,
+  UploadOutlined,
 } from "@ant-design/icons";
 import {
   Button,
@@ -16,6 +17,7 @@ import {
   Spin,
   Table,
   Typography,
+  Upload,
 } from "antd";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -24,6 +26,7 @@ import { CourseService } from "../../../../services/course.service";
 import { SceneService } from "../../../../services/scene.service";
 import { toast } from "sonner";
 import { LessonService } from "../../../../services/lesson.service";
+import { ScenarioService } from "../../../../services/scenario.service";
 const { Panel } = Collapse;
 const DetailCoures = () => {
   const navigate = useNavigate();
@@ -43,6 +46,7 @@ const DetailCoures = () => {
     [key: string]: any[];
   }>({});
   const [scenes, setScenes] = useState<any[]>([]);
+  const [scenarios, setScenarios] = useState<any[]>([]);
   const [form] = Form.useForm();
   const fetchCourseDetail = async () => {
     try {
@@ -76,6 +80,14 @@ const DetailCoures = () => {
     try {
       const res = await LessonService.getLessonByTopic(topicId);
       setLessonsByTopic((prev) => ({ ...prev, [topicId]: res || [] }));
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const fetchScenairios = async () => {
+    try {
+      const res = await ScenarioService.getScenarios();
+      setScenarios(res);
     } catch (error) {
       console.log(error);
     }
@@ -185,6 +197,7 @@ const DetailCoures = () => {
     fetchDataTopic();
     fetchCoursesAndScenes();
     fetchCourseDetail();
+    fetchScenairios();
   }, []);
 
   return (
@@ -312,6 +325,48 @@ const DetailCoures = () => {
                                   ))
                               : "No description"}
                           </Typography>
+                          {lesson.scenario && (
+                            <div
+                              style={{
+                                marginTop: "8px",
+                                padding: "10px",
+                                border: "1px dashed #d9d9d9",
+                                borderRadius: "8px",
+                                background: "#fafafa",
+                              }}
+                            >
+                              <Typography
+                                style={{
+                                  fontSize: "14px",
+                                  fontWeight: 600,
+                                  color: "#722ed1",
+                                  marginBottom: "4px",
+                                }}
+                              >
+                                📌 Scenario: {lesson.scenario.scenarioName}
+                              </Typography>
+                              <Typography
+                                style={{
+                                  fontSize: "13px",
+                                  color: "#555",
+                                  marginBottom: "4px",
+                                }}
+                              >
+                                {lesson.scenario.description ||
+                                  "No description"}
+                              </Typography>
+                              {lesson.scenario.fileUrl && (
+                                <a
+                                  href={lesson.scenario.fileUrl}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  style={{ fontSize: "13px", color: "#1890ff" }}
+                                >
+                                  📂 Xem file Scenario
+                                </a>
+                              )}
+                            </div>
+                          )}
                         </div>
 
                         {/* Action icons */}
@@ -452,17 +507,6 @@ const DetailCoures = () => {
               ))}
             </Select>
           </Form.Item>
-
-          {/* <Form.Item
-            label="Ảnh đại diện"
-            name="imgUrl"
-            valuePropName="fileList"
-            getValueFromEvent={normFile}
-          >
-            <Upload listType="picture" maxCount={1} beforeUpload={() => false}>
-              <Button icon={<UploadOutlined />}>Chọn ảnh</Button>
-            </Upload>
-          </Form.Item> */}
         </Form>
       </Modal>
 
@@ -497,7 +541,29 @@ const DetailCoures = () => {
           >
             <Input placeholder="VD: Giới thiệu bài học" />
           </Form.Item>
-
+          <Form.Item
+            label="Scenario"
+            name="scenarioId"
+            rules={[{ required: true, message: "Chọn scenario!" }]}
+          >
+            <Select placeholder="Chọn scenarioId">
+              {scenarios.map((scene) => (
+                <Select.Option key={scene.id} value={scene.id}>
+                  {scene.scenarioName}
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+          <Form.Item
+            label="File"
+            name="fileUrl"
+            valuePropName="fileList"
+            getValueFromEvent={(e) => e.fileList}
+          >
+            <Upload beforeUpload={() => false}>
+              <Button icon={<UploadOutlined />}>Chọn file</Button>
+            </Upload>
+          </Form.Item>
           <Form.Item
             label="Mô tả"
             name="description"

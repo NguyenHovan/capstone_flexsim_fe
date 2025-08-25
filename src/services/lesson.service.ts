@@ -12,7 +12,9 @@ export const LessonService = {
   },
 
   createLesson: async (payload: any) => {
-    const res = await axiosInstance.post(`${API.CREATE_LESSON}`, payload);
+    const res = await axiosInstance.post(`${API.CREATE_LESSON}`, payload, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
     return res.data;
   },
   getLessonByTopic: async (topicId: string) => {
@@ -34,7 +36,10 @@ export const LessonService = {
   updateLesson: async (lessonId: string, payload: any) => {
     const res = await axiosInstance.put(
       `${API.UPDATE_LESSON_QUIZZ}/${lessonId}`,
-      payload
+      payload,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      }
     );
     return res.data;
   },

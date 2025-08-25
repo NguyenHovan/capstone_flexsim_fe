@@ -51,7 +51,7 @@ const sidebarItems = [
     key: "Scenarios",
     icon: <DollarOutlined />,
     label: "Scenarios",
-    url: "/instructor",
+    url: "/instructor-scenario",
   },
   {
     key: "Scene",

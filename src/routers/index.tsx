@@ -49,6 +49,7 @@ import OrgAdminSubscriptionPlans from "../pages/OrganizationAdmin/Subcription/Su
 import QuizDetail from "../pages/Instructor/Quiz-manage/Quiz-Detail";
 import TopicDetail from "../pages/TopicDetail/TopicDetail";
 import QuizPage from "../pages/QuizPage";
+import ScenarioManager from "../pages/Instructor/Manage-Scenario";
 
 const MainRoute = () => {
   return (
@@ -161,6 +162,7 @@ const MainRoute = () => {
           />
           <Route path="/instructor-topic" element={<TopicManagement />} />
           <Route path="/instructor-scene" element={<SceneManagement />} />
+          <Route path="/instructor-scenario" element={<ScenarioManager />} />
           <Route
             path="/instructor-quiz/:lessonId"
             element={<QuizManagement />}
