@@ -79,4 +79,11 @@ export const ClassService = {
     );
     return response?.data;
   },
+  getClassByStudent: async () => {
+    const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
+    const response = await axiosInstance.get(
+      `${API.GET_CLASS_BY_STUDENT}/${currentUser.id}`
+    );
+    return response.data;
+  },
 };

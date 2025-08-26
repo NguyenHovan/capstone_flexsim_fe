@@ -1,61 +1,126 @@
-import { Row, Col, Card, Button } from "antd";
+import { Row, Col, Card, Button, Tag, Modal, List, Avatar } from "antd";
+import { useEffect, useState } from "react";
+import { ClassService } from "../../services/class.service";
+import { EnrollmentRequestService } from "../../services/enrollment-request.service";
 
 const MyClass = () => {
-  const classes = [
-    {
-      id: 1,
-      title: "Class 1",
-      description: "Class description 1",
-      image: "https://source.unsplash.com/random/400x200?react",
-    },
-    {
-      id: 2,
-      title: "Class 2",
-      description: "Class description 2",
-      image: "https://source.unsplash.com/random/400x200?javascript",
-    },
-    {
-      id: 3,
-      title: "Class 3",
-      description: "Class description 3",
-      image: "https://source.unsplash.com/random/400x200?design",
-    },
-    {
-      id: 4,
-      title: "Class 4",
-      description: "Class description 4",
-      image: "https://source.unsplash.com/random/400x200?code",
-    },
-  ];
+  const [classes, setClasses] = useState<any[]>([]);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [students, setStudents] = useState<any[]>([]);
+  const [currentClass, setCurrentClass] = useState<any>(null);
+
+  const fetchData = async () => {
+    try {
+      const response = await ClassService.getClassByStudent();
+      setClasses(response);
+    } catch (error) {
+      console.log({ error });
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const handleViewClass = async (cls: any) => {
+    try {
+      setCurrentClass(cls);
+      const res = await EnrollmentRequestService.getStudentsEnrollClass(cls.id);
+      setStudents(res);
+      setModalVisible(true);
+    } catch (error) {
+      console.log({ error });
+    }
+  };
+
   return (
     <div>
-      <h2 style={{ fontSize: 24, fontWeight: 600, marginBottom: 24 }}>
+      <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24 }}>
         My Classes
       </h2>
       <Row gutter={[24, 24]}>
-        {classes.map((course) => (
-          <Col xs={24} sm={12} md={8} lg={6} key={course.id}>
+        {classes.map((cls) => (
+          <Col xs={24} sm={12} md={8} lg={6} key={cls.id}>
             <Card
               hoverable
+              style={{
+                borderRadius: 12,
+                overflow: "hidden",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+                transition: "transform 0.2s",
+              }}
               cover={
                 <img
-                  alt={course.title}
-                  src={course.image}
-                  style={{ height: 160, objectFit: "cover" }}
+                  alt={cls.course?.courseName}
+                  src={cls.course?.imgUrl}
+                  style={{ height: 180, objectFit: "cover" }}
                 />
+              }
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.transform = "scale(1.03)")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.transform = "scale(1)")
               }
             >
               <Card.Meta
-                title={course.title}
-                description={course.description}
+                title={
+                  <div style={{ fontWeight: 600 }}>
+                    {cls.className} - {cls.course?.courseName}
+                  </div>
+                }
+                description={
+                  <div style={{ marginTop: 8 }}>
+                    <p style={{ fontSize: 14, color: "#555", minHeight: 40 }}>
+                      {cls.course?.description || "No description"}
+                    </p>
+                    <Tag color="blue">{cls.numberOfStudent} students</Tag>
+                  </div>
+                }
               />
-              <div style={{ marginTop: 12, textAlign: "right" }}>
-                <Button type="primary">View</Button>
+              <div style={{ marginTop: 16, textAlign: "center" }}>
+                <Button
+                  style={{
+                    background: "linear-gradient(90deg, #ff7e5f, #feb47b)",
+                    border: "none",
+                    color: "white",
+                    fontWeight: 600,
+                    borderRadius: 6,
+                    padding: "6px 20px",
+                  }}
+                  onClick={() => handleViewClass(cls)}
+                >
+                  View Class
+                </Button>
               </div>
             </Card>
           </Col>
         ))}
       </Row>
+
+      <Modal
+        title={
+          currentClass ? `${currentClass.className} - Students` : "Students"
+        }
+        visible={modalVisible}
+        onCancel={() => setModalVisible(false)}
+        footer={null}
+        width={600}
+      >
+        <List
+          itemLayout="horizontal"
+          dataSource={students}
+          renderItem={(student) => (
+            <List.Item>
+              <List.Item.Meta
+                avatar={<Avatar src={student.avtUrl || undefined} />}
+                title={student.fullName}
+                description={student.email}
+              />
+            </List.Item>
+          )}
+        />
+      </Modal>
     </div>
   );
 };

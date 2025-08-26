@@ -72,6 +72,7 @@ export const API = {
   UPDATE_CLASS: "/api/class/update_class",
   DELETE_CLASS: "/api/class/delete_class",
   GET_CLASS_BY_COURSE: "/api/class/get_classes_by_course",
+  GET_CLASS_BY_STUDENT: "/api/class/get_classes_by_student",
 
   //TOPIC
   GET_ALL_TOPIC: "/api/topic/get_all_topic",
@@ -202,6 +203,9 @@ export const API = {
   UPDATE_LESSONPROGRESS: "/api/LessonProgress/update_lessonProgress",
   UPDATE_LESSONPROGRESS_LESSON: "/api/LessonProgress/update_lesson",
   DELETE_LESSONPROGRESS: "/api/LessonProgress/delete_lessonProgress",
+
+  //Lesson Submission
+  SUBMIT_LESSON_SUBMISSION: "/api/lessonSubmission/submit-lesson",
 
   //NOTIFICATION
   GET_ALL_NOTIFICATION: "/api/notification/get_all_notification",
