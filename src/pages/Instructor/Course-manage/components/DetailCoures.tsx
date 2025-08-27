@@ -42,10 +42,12 @@ const DetailCoures = () => {
     courseName: "",
     instructorFullName: "",
   });
+
   const [lessonsByTopic, setLessonsByTopic] = useState<{
     [key: string]: any[];
   }>({});
   const [scenes, setScenes] = useState<any[]>([]);
+  console.log({ scenes, selectedTopic });
   const [scenarios, setScenarios] = useState<any[]>([]);
   const [form] = Form.useForm();
   const fetchCourseDetail = async () => {
@@ -155,35 +157,12 @@ const DetailCoures = () => {
   };
 
   const onFinish = async (values: any) => {
-    if (!selectedTopic) return;
-
-    // xử lý fileUrl
-    let fileUrl = values.fileUrl;
-
-    // Nếu user vừa upload file mới
-    if (Array.isArray(fileUrl) && fileUrl.length > 0) {
-      const fileObj = fileUrl[0].originFileObj;
-      if (fileObj) {
-        // 👉 gọi API upload file (ví dụ Cloudinary hoặc backend)
-        const formData = new FormData();
-        formData.append("file", fileObj);
-
-        const uploadRes = await LessonService.uploadFile(formData);
-        // uploadFile bạn tự viết call API, trả về URL
-        fileUrl = uploadRes.url;
-      } else {
-        // nếu edit mà không đổi file thì giữ nguyên string cũ
-        fileUrl = fileUrl[0].url || fileUrl;
-      }
-    }
-
     const payload = {
       ...values,
-      fileUrl, // gán URL thay vì array
       topicId: selectedTopic,
       status: 1,
     };
-
+    if (!selectedTopic) return;
     try {
       if (editingLesson) {
         await LessonService.updateLesson(editingLesson.id, payload);

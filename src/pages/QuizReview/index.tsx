@@ -24,7 +24,7 @@ const QuizReview = () => {
     <div style={{ maxWidth: 1000, margin: "0 auto", marginTop: 50 }}>
       {data.map((q, index) => {
         const userAnswer = q.answers.find(
-          (a) => a.answerId === q.selectedAnswerId
+          (a: any) => a.answerId === q.selectedAnswerId
         );
         const isCorrect = userAnswer?.isCorrect;
 
@@ -37,15 +37,15 @@ const QuizReview = () => {
           >
             <List
               dataSource={q.answers}
-              renderItem={(answer) => {
+              renderItem={(answer: any) => {
                 const isSelected = answer.answerId === q.selectedAnswerId;
                 const correct = answer.isCorrect;
 
-                let color: "default" | "success" | "error" | "processing" =
-                  "default";
-                if (isSelected && correct) color = "success"; // chọn đúng
-                else if (isSelected && !correct) color = "error"; // chọn sai
-                else if (!isSelected && correct) color = "processing"; // đáp án đúng nhưng chưa chọn
+                // let color: "default" | "success" | "error" | "processing" =
+                //   "default";
+                // if (isSelected && correct) color = "success";
+                // else if (isSelected && !correct) color = "error";
+                // else if (!isSelected && correct) color = "processing";
 
                 return (
                   <List.Item>
