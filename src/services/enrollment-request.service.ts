@@ -61,4 +61,10 @@ export const EnrollmentRequestService = {
     );
     return response.data;
   },
+  getEnrolmentRequestByCourseId: async (courseId: string) => {
+    const response = await axiosInstance.get(
+      `${API.ENROLLMENT_REQUEST_COURSE}/${courseId}`
+    );
+    return response.data;
+  },
 };

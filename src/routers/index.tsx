@@ -50,6 +50,7 @@ import QuizDetail from "../pages/Instructor/Quiz-manage/Quiz-Detail";
 import TopicDetail from "../pages/TopicDetail/TopicDetail";
 import QuizPage from "../pages/QuizPage";
 import ScenarioManager from "../pages/Instructor/Manage-Scenario";
+import QuizReview from "../pages/QuizReview";
 
 const MainRoute = () => {
   return (
@@ -71,6 +72,7 @@ const MainRoute = () => {
         <Route path="/course-detail/:id" element={<CourseDetail />} />
         <Route path="/quiz-test/:id" element={<QuizPage />} />
         <Route path="/topic-detail/:id" element={<TopicDetail />} />
+        <Route path="/quiz-review/:id" element={<QuizReview />} />
         <Route
           path="/profile"
           element={

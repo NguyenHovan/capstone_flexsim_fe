@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { List, Button, Typography, Divider, Row, Col } from "antd";
+import { useEffect, useRef, useState } from "react";
+import { List, Button, Typography, Divider, Row, Col, Flex } from "antd";
 import { useNavigate, useParams } from "react-router-dom";
 import { LessonService } from "../../services/lesson.service";
 import { LessonProgressService } from "../../services/lessonProgress.service";
@@ -16,6 +16,9 @@ const TopicDetail = () => {
   const [note, setNote] = useState<string>("");
   const [data, setData] = useState<any[]>([]);
   const [selectedLesson, setSelectedLesson] = useState<any>();
+  const [isCompleted, setIsCompleted] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [maxWatchTime, setMaxWatchTime] = useState(0);
   const fetchTopicDetail = async () => {
     try {
       const response = await LessonService.getLessonByTopic(id ?? "");
@@ -23,6 +26,26 @@ const TopicDetail = () => {
       setSelectedLesson(response[0]);
     } catch (error: any) {
       console.log({ error });
+    }
+  };
+  const handleVideoEnded = () => {
+    setIsCompleted(true);
+  };
+  const handleTimeUpdate = () => {
+    if (videoRef.current) {
+      const current = videoRef.current.currentTime;
+      if (current > maxWatchTime) {
+        setMaxWatchTime(current);
+      }
+    }
+  };
+
+  const handleSeeking = () => {
+    if (videoRef.current) {
+      if (videoRef.current.currentTime > maxWatchTime + 2) {
+        // người dùng tua vượt quá chỗ đã xem + 2s → chặn
+        videoRef.current.currentTime = maxWatchTime;
+      }
     }
   };
   const handleComplete = async () => {
@@ -148,6 +171,22 @@ const TopicDetail = () => {
       <div style={{ flex: 1, paddingLeft: "16px" }}>
         {selectedLesson ? (
           <>
+            {selectedLesson.fileUrl && (
+              <video
+                style={{
+                  width: "80%",
+                  maxWidth: "720px",
+                  borderRadius: "8px",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                }}
+                controls
+                src={selectedLesson.fileUrl}
+                onTimeUpdate={handleTimeUpdate}
+                onSeeking={handleSeeking}
+                onEnded={handleVideoEnded}
+              />
+            )}
+
             <Typography.Title level={4}>
               {selectedLesson.lessonName}
             </Typography.Title>
@@ -444,34 +483,70 @@ const TopicDetail = () => {
                             </div>
                           )}
                         </div>
+                        <Flex gap={24}>
+                          {quiz.quizSubmissions?.length ? (
+                            <Button
+                              type="primary"
+                              size="small"
+                              onClick={() =>
+                                navigate(`/quiz-review/${quiz.id}`)
+                              }
+                              style={{
+                                borderRadius: "8px",
+                                background:
+                                  "linear-gradient(90deg, #5fb7ffffrgba(123, 195, 254, 1)7b)",
+                                border: "none",
+                                color: "white",
+                                fontWeight: 600,
+                                boxShadow: "0 3px 6px rgba(0,0,0,0.1)",
+                                transition: "all 0.2s ease",
+                              }}
+                              onMouseEnter={(e) =>
+                                ((
+                                  e.currentTarget as HTMLButtonElement
+                                ).style.boxShadow =
+                                  "0 6px 12px rgba(0,0,0,0.15)")
+                              }
+                              onMouseLeave={(e) =>
+                                ((
+                                  e.currentTarget as HTMLButtonElement
+                                ).style.boxShadow = "0 3px 6px rgba(0,0,0,0.1)")
+                              }
+                            >
+                              Review Quiz
+                            </Button>
+                          ) : (
+                            <></>
+                          )}
 
-                        <Button
-                          type="primary"
-                          size="small"
-                          onClick={() => navigate(`/quiz-test/${quiz.id}`)}
-                          style={{
-                            borderRadius: "8px",
-                            background:
-                              "linear-gradient(90deg, #ff7e5f, #feb47b)",
-                            border: "none",
-                            color: "white",
-                            fontWeight: 600,
-                            boxShadow: "0 3px 6px rgba(0,0,0,0.1)",
-                            transition: "all 0.2s ease",
-                          }}
-                          onMouseEnter={(e) =>
-                            ((
-                              e.currentTarget as HTMLButtonElement
-                            ).style.boxShadow = "0 6px 12px rgba(0,0,0,0.15)")
-                          }
-                          onMouseLeave={(e) =>
-                            ((
-                              e.currentTarget as HTMLButtonElement
-                            ).style.boxShadow = "0 3px 6px rgba(0,0,0,0.1)")
-                          }
-                        >
-                          Làm bài
-                        </Button>
+                          <Button
+                            type="primary"
+                            size="small"
+                            onClick={() => navigate(`/quiz-test/${quiz.id}`)}
+                            style={{
+                              borderRadius: "8px",
+                              background:
+                                "linear-gradient(90deg, #ff7e5f, #feb47b)",
+                              border: "none",
+                              color: "white",
+                              fontWeight: 600,
+                              boxShadow: "0 3px 6px rgba(0,0,0,0.1)",
+                              transition: "all 0.2s ease",
+                            }}
+                            onMouseEnter={(e) =>
+                              ((
+                                e.currentTarget as HTMLButtonElement
+                              ).style.boxShadow = "0 6px 12px rgba(0,0,0,0.15)")
+                            }
+                            onMouseLeave={(e) =>
+                              ((
+                                e.currentTarget as HTMLButtonElement
+                              ).style.boxShadow = "0 3px 6px rgba(0,0,0,0.1)")
+                            }
+                          >
+                            Làm bài
+                          </Button>
+                        </Flex>
                       </List.Item>
                     );
                   }}
@@ -483,6 +558,7 @@ const TopicDetail = () => {
               type="primary"
               style={{ marginTop: "16px", borderRadius: "6px" }}
               onClick={() => handleComplete()}
+              disabled={selectedLesson?.fileUrl ? !isCompleted : false}
             >
               Completed
             </Button>

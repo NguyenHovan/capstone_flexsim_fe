@@ -116,6 +116,8 @@ export const API = {
   DELETE_QUIZ: "/api/quiz/delete_quiz",
   GET_QUIZ_LESSON: "/api/quiz/by-lesson",
   GET_FULL_QUIZ_ID: "/api/quiz/get_full_quiz",
+  CREATE_QUESTIONS: "/api/quiz/questions",
+  REVIEW_QUIZ: "/api/quiz/review_quiz",
 
   //QUIZ SUBMISSION
   SUBMIT_QUIZ: "/api/quizSubmission/submit_quiz",
@@ -187,6 +189,7 @@ export const API = {
   GET_STUDENT_ENROLLMENT: "/api/enrollmentRequest/class",
   GET_STUDENT_ENROLLMENT_CLASS_COURSE: "/api/enrollmentRequest/class-course",
   ASSIGN_STUDENT_CLASS: "/api/enrollmentRequest/assign-student-to-class",
+  ENROLLMENT_REQUEST_COURSE: "/api/enrollmentRequest/enrolled_requests_pending",
 
   //LESSON
   GET_ALL_LESSON: "/api/Lesson/get_all_lesson",

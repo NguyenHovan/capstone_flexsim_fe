@@ -155,12 +155,35 @@ const DetailCoures = () => {
   };
 
   const onFinish = async (values: any) => {
+    if (!selectedTopic) return;
+
+    // xử lý fileUrl
+    let fileUrl = values.fileUrl;
+
+    // Nếu user vừa upload file mới
+    if (Array.isArray(fileUrl) && fileUrl.length > 0) {
+      const fileObj = fileUrl[0].originFileObj;
+      if (fileObj) {
+        // 👉 gọi API upload file (ví dụ Cloudinary hoặc backend)
+        const formData = new FormData();
+        formData.append("file", fileObj);
+
+        const uploadRes = await LessonService.uploadFile(formData);
+        // uploadFile bạn tự viết call API, trả về URL
+        fileUrl = uploadRes.url;
+      } else {
+        // nếu edit mà không đổi file thì giữ nguyên string cũ
+        fileUrl = fileUrl[0].url || fileUrl;
+      }
+    }
+
     const payload = {
       ...values,
+      fileUrl, // gán URL thay vì array
       topicId: selectedTopic,
       status: 1,
     };
-    if (!selectedTopic) return;
+
     try {
       if (editingLesson) {
         await LessonService.updateLesson(editingLesson.id, payload);
@@ -325,47 +348,67 @@ const DetailCoures = () => {
                                   ))
                               : "No description"}
                           </Typography>
+                          {lesson.fileUrl && (
+                            <video
+                              style={{
+                                width: "80%",
+                                maxWidth: "720px",
+                                borderRadius: "8px",
+                                boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                              }}
+                              controls
+                              src={lesson.fileUrl}
+                            />
+                          )}
                           {lesson.scenario && (
-                            <div
+                            <Flex
+                              justify="space-between"
                               style={{
                                 marginTop: "8px",
                                 padding: "10px",
-                                border: "1px dashed #d9d9d9",
+                                border: "2px dashed #b6b6b6ff",
                                 borderRadius: "8px",
                                 background: "#fafafa",
+                                width: 400,
                               }}
                             >
-                              <Typography
-                                style={{
-                                  fontSize: "14px",
-                                  fontWeight: 600,
-                                  color: "#722ed1",
-                                  marginBottom: "4px",
-                                }}
-                              >
-                                📌 Scenario: {lesson.scenario.scenarioName}
-                              </Typography>
-                              <Typography
-                                style={{
-                                  fontSize: "13px",
-                                  color: "#555",
-                                  marginBottom: "4px",
-                                }}
-                              >
-                                {lesson.scenario.description ||
-                                  "No description"}
-                              </Typography>
-                              {lesson.scenario.fileUrl && (
-                                <a
-                                  href={lesson.scenario.fileUrl}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  style={{ fontSize: "13px", color: "#1890ff" }}
+                              <Flex vertical>
+                                <Typography
+                                  style={{
+                                    fontSize: "14px",
+                                    fontWeight: 600,
+                                    color: "#722ed1",
+                                    marginBottom: "4px",
+                                  }}
                                 >
-                                  📂 Xem file Scenario
-                                </a>
-                              )}
-                            </div>
+                                  📌 Scenario: {lesson.scenario.scenarioName}
+                                </Typography>
+                                <Typography
+                                  style={{
+                                    fontSize: "13px",
+                                    color: "#555",
+                                    marginBottom: "4px",
+                                  }}
+                                >
+                                  {lesson.scenario.description ||
+                                    "No description"}
+                                </Typography>
+                                {lesson.scenario.fileUrl && (
+                                  <a
+                                    href={lesson.scenario.fileUrl}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    style={{
+                                      fontSize: "13px",
+                                      color: "#1890ff",
+                                    }}
+                                  >
+                                    📂 Xem file Scenario
+                                  </a>
+                                )}
+                              </Flex>
+                              <Button>View submit</Button>
+                            </Flex>
                           )}
                         </div>
 
@@ -494,7 +537,7 @@ const DetailCoures = () => {
             <Input.TextArea rows={3} />
           </Form.Item>
 
-          <Form.Item
+          {/* <Form.Item
             label="Scene"
             name="sceneId"
             rules={[{ required: true, message: "Bắt buộc" }]}
@@ -506,7 +549,7 @@ const DetailCoures = () => {
                 </Select.Option>
               ))}
             </Select>
-          </Form.Item>
+          </Form.Item> */}
         </Form>
       </Modal>
 
@@ -541,11 +584,7 @@ const DetailCoures = () => {
           >
             <Input placeholder="VD: Giới thiệu bài học" />
           </Form.Item>
-          <Form.Item
-            label="Scenario"
-            name="scenarioId"
-            rules={[{ required: true, message: "Chọn scenario!" }]}
-          >
+          <Form.Item label="Scenario" name="scenarioId">
             <Select placeholder="Chọn scenarioId">
               {scenarios.map((scene) => (
                 <Select.Option key={scene.id} value={scene.id}>
@@ -554,16 +593,12 @@ const DetailCoures = () => {
               ))}
             </Select>
           </Form.Item>
-          <Form.Item
-            label="File"
-            name="fileUrl"
-            valuePropName="fileList"
-            getValueFromEvent={(e) => e.fileList}
-          >
-            <Upload beforeUpload={() => false}>
-              <Button icon={<UploadOutlined />}>Chọn file</Button>
+          <Form.Item label="Video bài học" name="fileUrl">
+            <Upload accept="video/*" maxCount={1} beforeUpload={() => false}>
+              <Button icon={<UploadOutlined />}>Chọn video</Button>
             </Upload>
           </Form.Item>
+
           <Form.Item
             label="Mô tả"
             name="description"

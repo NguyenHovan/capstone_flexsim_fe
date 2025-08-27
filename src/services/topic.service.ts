@@ -8,9 +8,7 @@ export const TopicService = {
   },
 
   createTopic: async (payload: FormData) => {
-    const res = await axiosInstance.post(API.CREATE_TOPIC, payload, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+    const res = await axiosInstance.post(API.CREATE_TOPIC, payload);
     return res.data;
   },
 

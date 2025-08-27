@@ -2,13 +2,14 @@ import { useState, useEffect } from "react";
 import { Table, Button, Space, Modal, Form, Select, message, Tag } from "antd";
 import { EnrollmentRequestService } from "../../../services/enrollment-request.service";
 import { toast } from "sonner";
+import { useParams } from "react-router-dom";
 type StatusKey = 0 | 1 | 2;
 const EnrollManage = () => {
   const [form] = Form.useForm();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [enrolls, setEnrolls] = useState([]);
-
+  const { id } = useParams();
   const statusMap: Record<StatusKey, { text: string; color: string }> = {
     0: { text: "Pending", color: "orange" },
     1: { text: "Accepted", color: "green" },
@@ -18,7 +19,9 @@ const EnrollManage = () => {
   const fetchEnrolls = async () => {
     setLoading(true);
     try {
-      const data = await EnrollmentRequestService.getEnrolmentRequest();
+      const data = await EnrollmentRequestService.getEnrolmentRequestByCourseId(
+        id ?? ""
+      );
       setEnrolls(data || []);
     } catch (error) {
       message.error("Không thể tải danh sách enroll");
@@ -73,10 +76,7 @@ const EnrollManage = () => {
       title: "Phone",
       dataIndex: ["account", "phone"],
     },
-    {
-      title: "Course",
-      dataIndex: ["course", "courseName"],
-    },
+
     {
       title: "Status",
       dataIndex: "status",

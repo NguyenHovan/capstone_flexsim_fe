@@ -35,4 +35,21 @@ export const QuizService = {
     const res = await axiosInstance.get(`${API.GET_FULL_QUIZ_ID}/${id}`);
     return res.data;
   },
+  createNewQuestions: async (quizId: string, payload: any) => {
+    const res = await axiosInstance.post(
+      `${API.CREATE_QUESTIONS}/${quizId}/bulk`,
+      payload
+    );
+    return res.data;
+  },
+  reviewQuiz: async (quizId: string) => {
+    const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
+    const res = await axiosInstance.get(`${API.REVIEW_QUIZ}`, {
+      params: {
+        quizId,
+        accountId: currentUser?.id,
+      },
+    });
+    return res.data;
+  },
 };
