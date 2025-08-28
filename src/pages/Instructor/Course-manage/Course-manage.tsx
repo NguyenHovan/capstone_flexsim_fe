@@ -4,7 +4,6 @@ import {
   Button,
   Modal,
   Form,
-  InputNumber,
   Select,
   Upload,
   type UploadFile,
@@ -166,7 +165,7 @@ const CourseManagement = () => {
       formData.append("description", values.description);
       formData.append("categoryId", String(values.categoryId));
       formData.append("workSpaceId", String(values.workSpaceId));
-      formData.append("ratingAverage", String(values.ratingAverage || 0));
+      formData.append("ratingAverage", String(0));
       if (imgToSend) {
         formData.append("imgUrl", imgToSend);
       }
@@ -206,7 +205,7 @@ const CourseManagement = () => {
           onClick={() => navigate(`/instructor-course/detail/${course.id}`)}
         >
           <CardCourse
-            author="Nguyen van a"
+            author=""
             coverUrl={course.imgUrl}
             title={course.courseName}
             rating={course.ratingAverage}
@@ -265,9 +264,9 @@ const CourseManagement = () => {
               ))}
             </Select>
           </Form.Item>
-          <Form.Item label="Rating" name="ratingAverage">
+          {/* <Form.Item label="Rating" name="ratingAverage">
             <InputNumber min={0} max={5} step={0.1} style={{ width: "100%" }} />
-          </Form.Item>
+          </Form.Item> */}
           <Form.Item
             label="Image"
             name="imgUrl"

@@ -26,4 +26,27 @@ export const ReviewService = {
     const res = await axiosInstance.delete(`${API.DELETE_REVIEW}/${id}`);
     return res.data;
   },
+  getReviewByCourse: async (id: string) => {
+    const res = await axiosInstance.get(`${API.GET_REVIEW_BY_COURSE}/${id}`);
+    return res.data;
+  },
+  submitReviewCourse: async (
+    courseId: string,
+    payload: { description: string; rating: number }
+  ) => {
+    const userString = localStorage.getItem("currentUser");
+    const currentUser = userString ? JSON.parse(userString) : null;
+
+    if (!currentUser) throw new Error("User chưa đăng nhập");
+
+    const res = await axiosInstance.post(
+      `${API.SUBMIT_REVIEW_BY_COURSE}/${courseId}/review`,
+      payload,
+      {
+        params: { accountId: currentUser.id, courseId: courseId },
+      }
+    );
+
+    return res.data;
+  },
 };

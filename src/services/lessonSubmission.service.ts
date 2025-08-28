@@ -12,4 +12,15 @@ export const LessonSubmission = {
     );
     return res.data;
   },
+  getLessonSubmissions: async (id: string) => {
+    const res = await axiosInstance.get(`${API.GET_LESSON_SUBMISSION}/${id}`);
+    return res.data;
+  },
+  gradeSubmission: async (id: string, totalScore: number) => {
+    const res = await axiosInstance.put(
+      `${API.GRADE_LESSON_SUBMISSION}/${id}`,
+      { totalScore }
+    );
+    return res.data;
+  },
 };

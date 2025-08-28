@@ -129,6 +129,8 @@ export const API = {
   CREATE_REVIEW: "/api/review/create_review",
   UPDATE_REVIEW: "/api/review/update_review",
   DELETE_REVIEW: "/api/review/delete_review",
+  GET_REVIEW_BY_COURSE: "/api/review/course",
+  SUBMIT_REVIEW_BY_COURSE: "/api/review",
 
   //WORKSPACE
   GET_ALL_WORKSPACE: "/api/workspace/get_all_workSpace",
@@ -209,6 +211,8 @@ export const API = {
 
   //Lesson Submission
   SUBMIT_LESSON_SUBMISSION: "/api/lessonSubmission/submit-lesson",
+  GET_LESSON_SUBMISSION: "/api/lessonSubmission/lesson",
+  GRADE_LESSON_SUBMISSION: "/api/lessonSubmission/grade-submission",
 
   //NOTIFICATION
   GET_ALL_NOTIFICATION: "/api/notification/get_all_notification",

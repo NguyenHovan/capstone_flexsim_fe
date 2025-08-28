@@ -3,6 +3,7 @@ import type { TabsProps } from "antd";
 import DetailCoures from "./DetailCoures";
 import ClassManagement from "../../Class-manage/Class-manage";
 import EnrollManage from "../../Manage-Enrollment-Request/EnrollManage";
+import ReviewCardList from "../../../CourseDetail/ReviewCardList";
 
 const MenuCourse = () => {
   const onChange = (key: string) => {
@@ -24,6 +25,11 @@ const MenuCourse = () => {
       key: "3",
       label: "Enrollment Request",
       children: <EnrollManage />,
+    },
+    {
+      key: "4",
+      label: "Review",
+      children: <ReviewCardList />,
     },
   ];
   return <Tabs defaultActiveKey="1" items={items} onChange={onChange} />;

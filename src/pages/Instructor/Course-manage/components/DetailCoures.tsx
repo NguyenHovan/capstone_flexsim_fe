@@ -386,7 +386,15 @@ const DetailCoures = () => {
                                   </a>
                                 )}
                               </Flex>
-                              <Button>View submit</Button>
+                              <Button
+                                onClick={() =>
+                                  navigate(
+                                    `/instructor-lesson-submission/${lesson.id}`
+                                  )
+                                }
+                              >
+                                View submit
+                              </Button>
                             </Flex>
                           )}
                         </div>

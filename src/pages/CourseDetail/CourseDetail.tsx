@@ -22,6 +22,8 @@ import CourseProgress from "./CourseProgress";
 import type { Course } from "../../types/course";
 import { TopicService } from "../../services/topic.service";
 import { CertificateService } from "../../services/certificate.service";
+import ReviewCardList from "./ReviewCardList";
+import CourseReviewForm from "./CourseReviewForm";
 
 const CourseDetail = () => {
   const { id } = useParams();
@@ -216,6 +218,8 @@ const CourseDetail = () => {
           <p style={{ lineHeight: 1.6, color: "#333" }}>
             {courseDetail?.description || "No description available."}
           </p>
+          <CourseReviewForm />
+          <ReviewCardList />
         </Col>
 
         <Col xs={24} md={10}>
