@@ -1,0 +1,94 @@
+.profile-page {
+  display: grid;
+  gap: 16px;
+}
+
+/* HERO với gradient dịu + center */
+.profile-hero {
+  position: relative;
+  padding: 28px 16px 84px;
+  text-align: center;
+  background: linear-gradient(135deg, #f6f8ff 0%, #eef2ff 60%, #fdfdfd 100%);
+  border-radius: 12px;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.02) inset;
+}
+
+.profile-hero__title {
+  margin: 0;
+  color: #1f2937;
+}
+
+.profile-hero__subtitle {
+  display: block;
+  margin-top: 4px;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+/* AVATAR block */
+.avatar-block {
+  display: grid;
+  place-items: center;
+  margin-top: 14px;
+  gap: 10px;
+}
+
+.avatar-block__outer {
+  position: relative;
+  width: 112px;
+  height: 112px;
+}
+
+.avatar-block__img {
+  box-shadow: 0 8px 24px rgba(35, 52, 132, 0.18);
+  border: 3px solid #fff;
+}
+
+.avatar-block__uploader {
+  position: absolute;
+  right: -8px;
+  bottom: -6px;
+  display: flex;
+  align-items: center;
+}
+
+.avatar-block__camera {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  color: #374151;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  cursor: default; /* chỉ là icon minh họa */
+  margin-right: 8px;
+}
+
+/* BTN Save avatar */
+.avatar-block__savebtn {
+  min-width: 120px;
+}
+
+/* MAIN CARD */
+.profile-card {
+  border-radius: 12px;
+  border: 1px solid #f0f0f0;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
+}
+
+.profile-card__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.profile-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 24px;
+}

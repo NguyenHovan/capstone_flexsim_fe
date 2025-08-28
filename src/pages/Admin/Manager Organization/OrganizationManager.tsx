@@ -257,9 +257,7 @@ const OrganizationManager: React.FC = () => {
               <Form.Item name="address" label="Address" rules={[{ required: true }]}>
                 <Input />
               </Form.Item>
-              <Form.Item name="isActive" label="Active" valuePropName="checked" initialValue={true}>
-                <Switch />
-              </Form.Item>
+              
               <div style={{ textAlign: 'right' }}>
                 <Button onClick={handleModalClose} style={{ marginRight: 8 }}>Cancel</Button>
                 <Button type="primary" htmlType="submit">{editingOrganization ? 'Update' : 'Create'}</Button>

@@ -490,7 +490,7 @@ const AdminOverview: React.FC = () => {
 
   const columns = [
     {
-      title: '#',
+      title: 'Order Code',
       dataIndex: 'orderCode',
       key: 'orderCode',
       render: (_: any, r: OrderRow) => r.orderCode ?? r.id?.slice(-6)?.toUpperCase() ?? '—',

@@ -1,9 +1,10 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Layout, Card, Table, Button, Modal, Form, Input, Row, Col, Typography,
   message, Select, Tag, Space, Alert, Upload, Tabs, Switch
 } from 'antd';
 import UploadCloudinary from "../../UploadFile/UploadCloudinary";
+import type { UpdateAccountPayload } from '../../../types/account';
 
 import {
   EyeOutlined, EditOutlined,
@@ -176,12 +177,9 @@ const TemplateBox: React.FC<{ kind: 'student' | 'instructor'; onDownload: () => 
 const UserOrganization: React.FC = () => {
   const [users, setUsers] = useState<Account[]>([]);
   const [loading, setLoading] = useState(false);
-
-  // edit/create states
   const [savingEdit, setSavingEdit] = useState(false);
   const [creatingInstructor, setCreatingInstructor] = useState(false);
   const [creatingStudent, setCreatingStudent] = useState(false);
-
   const [viewingUser, setViewingUser] = useState<Account | null>(null);
   const [isViewModal, setIsViewModal] = useState(false);
   const [editingUser, setEditingUser] = useState<Account | null>(null);
@@ -191,6 +189,11 @@ const UserOrganization: React.FC = () => {
   const [formInstr] = Form.useForm();
   const [formStud] = Form.useForm();
   const [formEdit] = Form.useForm();
+
+  // toast flags
+  const [, setShowUpdatedToast] = useState(false);
+  const toastFlagRef = useRef(false);     // chống double-fire
+  const prevOpenRef = useRef(false);      // theo dõi chuyển trạng thái open→close
 
   // inline errors
   const [instrError, setInstrError] = useState<string | null>(null);
@@ -213,9 +216,8 @@ const UserOrganization: React.FC = () => {
   const [importingInstr, setImportingInstr] = useState(false);
   const [importingStud,  setImportingStud]  = useState(false);
 
-  // per-row loading
-  const [togglingId, setTogglingId] = useState<string | null>(null);  // for switch
-  const [actionId, setActionId] = useState<string | null>(null);      // for ban/unban buttons
+  const [togglingId, setTogglingId] = useState<string | null>(null);  
+  const [actionId, setActionId] = useState<string | null>(null);      
 
   useEffect(() => {
     const t = setTimeout(() => setDebounced(searchText.trim()), 300);
@@ -243,7 +245,6 @@ const UserOrganization: React.FC = () => {
     load();
   }, [orgId]);
 
-  // broadcast refresh
   const bc = useMemo(() => new BroadcastChannel('org-accounts'), []);
   useEffect(() => {
     const onMsg = (e: MessageEvent) => {
@@ -253,6 +254,15 @@ const UserOrganization: React.FC = () => {
     bc.addEventListener('message', onMsg);
     return () => bc.close();
   }, [orgId]);
+
+  useEffect(() => {
+    if (prevOpenRef.current && !isEditModal && toastFlagRef.current) {
+      message.success('Cập nhật tài khoản thành công!');
+      toastFlagRef.current = false;
+      setShowUpdatedToast(false);
+    }
+    prevOpenRef.current = isEditModal;
+  }, [isEditModal]);
 
   const loadUsser = async (opts?: { close?: 'edit' | 'instr' | 'stud' | 'all' }) => {
     await load();
@@ -284,12 +294,14 @@ const UserOrganization: React.FC = () => {
   const onEdit = (u: Account) => {
     setEditingUser(u);
     setEditError(null);
+    const beToUi = (g?: number) => (g === 0 ? 1 : g === 1 ? 2 : g === 2 ? 3 : undefined);
+
     formEdit.setFieldsValue({
       userName: u.userName,
       fullName: u.fullName,
       email: u.email,
       phone: u.phone,
-      gender: u.gender,
+      gender: beToUi(u.gender),
       address: (u as any).address,
       avtUrl: (u as any).avtUrl,
       isActive: u.isActive
@@ -304,34 +316,52 @@ const UserOrganization: React.FC = () => {
 
     setSavingEdit(true);
     setEditError(null);
+
     try {
-      const avtUrl = (v.avtUrl && String(v.avtUrl).trim()) ? String(v.avtUrl).trim() : (editingUser.avtUrl || '');
-      const body = {
-        userName: editingUser.userName,
-        email: editingUser.email,
-        roleId: Number(editingUser.roleId),
-        organizationId: editingUser.organizationId,
-        isActive: Boolean(editingUser.isActive),
-        fullName: String(v.fullName).trim(),
-        phone: v.phone ? String(v.phone).trim() : undefined,
-        gender: v.gender !== undefined ? Number(v.gender) : undefined,
-        address: v.address ? String(v.address).trim() : undefined,
-        avtUrl,
-      };
-      const updated = await AccountService.updateAccount(editingUser.id, body);
-      setUsers(curr => curr.map(x => (x.id === updated.id ? { ...x, ...updated } : x)));
-      bc.postMessage({ type: 'account:updated', organizationId: orgId });
-      await loadUsser({ close: 'edit' });
-      message.success('Cập nhật người dùng thành công');
+      const diff: UpdateAccountPayload = {};
+      const trim = (x?: string) => (typeof x === 'string' ? x.trim() : x);
+
+      if (trim(v.fullName) && trim(v.fullName) !== (editingUser.fullName ?? '')) {
+        diff.fullName = trim(v.fullName) as string;
+      }
+      if (v.gender !== undefined) {
+        const uiToBe: Record<number, number> = { 1: 0, 2: 1, 3: 2 };
+        const normalized = uiToBe[Number(v.gender)] ?? Number(v.gender);
+        if (normalized !== Number(editingUser.gender)) diff.gender = normalized;
+      }
+      if (trim(v.phone) !== (editingUser.phone ?? '')) diff.phone = trim(v.phone) as string | undefined;
+      if (trim(v.address) !== (editingUser.address ?? '')) diff.address = trim(v.address) as string | undefined;
+      const newAvt = (trim(v.avtUrl) as string) || '';
+      if (newAvt !== (editingUser.avtUrl || '')) diff.avtUrl = newAvt;
+
+      if (Object.keys(diff).length === 0) {
+        setSavingEdit(false);
+        message.info('Không có thay đổi nào để cập nhật');
+        return;
+      }
+
+      await AccountService.updateAccount(editingUser.id, diff);
+      await load();                    
+      setShowUpdatedToast(true);
+      toastFlagRef.current = true;      
+
+      // đóng form + reset
+      setIsEditModal(false);
+      formEdit.resetFields();
+      setEditingUser(null);
+      setEditError(null);
+
     } catch (err: any) {
-      if (setEmailDuplicateError(formEdit, err)) return;
-      setEditError(getBEMessage(err, 'Cannot update user'));
-    } finally { setSavingEdit(false); }
+      const status = err?.response?.status ?? err?.status;
+      if (status === 400) setEditError(getBEMessage(err, 'Yêu cầu không hợp lệ (400).'));
+    } finally {
+      setSavingEdit(false);
+    }
   };
 
   /* ====== Toggle via Switch ====== */
   const onToggleActive = async (rec: Account, checked: boolean) => {
-    if (togglingId || actionId) return; // tránh đè trạng thái khi đang bấm nút
+    if (togglingId || actionId) return;
     setTogglingId(rec.id);
     try {
       let updated: Account;
@@ -451,8 +481,6 @@ const UserOrganization: React.FC = () => {
     } finally { setImportingStud(false); setStudFile(null); }
   };
 
-
-
   /* ====== View data (search/filter/sort) ====== */
   const dataView = useMemo(() => {
     const q = debounced.toLowerCase();
@@ -494,7 +522,11 @@ const UserOrganization: React.FC = () => {
     { title: 'Email', dataIndex: 'email', key: 'email', width: 220, ellipsis: true },
     { title: 'Phone', dataIndex: 'phone', key: 'phone', width: 140 },
     { title: 'Role', dataIndex: 'roleId', key: 'roleId', width: 120, render: (r) => roleNameMap[Number(r)] || r },
-    { title: 'Gender', dataIndex: 'gender', key: 'gender', width: 110, render: (g) => genderNameMap[Number(g)] || g },
+    {
+      title: 'Gender', dataIndex: 'gender', key: 'gender', width: 110,
+      // BE trả 0/1/2 -> hiển thị chuẩn; nếu lỡ khác, fallback map 1/2/3
+      render: (g) => (g === 0 ? 'Male' : g === 1 ? 'Female' : g === 2 ? 'Other' : (genderNameMap[Number(g)] || g))
+    },
     {
       title: 'Active', dataIndex: 'isActive', key: 'isActive', width: 130,
       render: (_: boolean, rec) => (
@@ -630,7 +662,7 @@ const UserOrganization: React.FC = () => {
               <Col span={12}>
                 <p><b>Phone:</b> {viewingUser.phone}</p>
                 <p><b>Role:</b> {roleNameMap[Number(viewingUser.roleId)] || viewingUser.roleId}</p>
-                <p><b>Gender:</b> {genderNameMap[Number(viewingUser.gender)]}</p>
+                <p><b>Gender:</b> {viewingUser.gender === 0 ? 'Male' : viewingUser.gender === 1 ? 'Female' : viewingUser.gender === 2 ? 'Other' : genderNameMap[Number(viewingUser.gender)]}</p>
                 <p><b>Status:</b> {viewingUser.isActive ? 'Active' : 'Not active'}</p>
               </Col>
             </Row>
@@ -649,15 +681,22 @@ const UserOrganization: React.FC = () => {
             setEditError(null);
           }}
           okButtonProps={{ loading: savingEdit, disabled: savingEdit }}
-          destroyOnHidden
+          destroyOnHidden        
           width={680}
+          afterOpenChange={(opened) => {
+            if (!opened && toastFlagRef.current) {
+              message.success('Cập nhật tài khoản thành công!');
+              toastFlagRef.current = false;
+              setShowUpdatedToast(false);
+            }
+          }}
         >
           {editError && <Alert style={{ marginBottom: 12 }} type="error" showIcon message={editError} />}
 
           <Form form={formEdit} layout="vertical" onValuesChange={() => { if (editError) setEditError(null); }}>
             <Row gutter={16}>
               <Col span={12}>
-                <Form.Item name="fullName" label="Full Name" rules={[{ required: true }]}>
+                <Form.Item name="fullName" label="Full Name">
                   <Input onPressEnter={(e) => { e.preventDefault(); submitEdit(); }} />
                 </Form.Item>
               </Col>
@@ -665,7 +704,7 @@ const UserOrganization: React.FC = () => {
 
             <Row gutter={16}>
               <Col span={12}>
-                <Form.Item name="gender" label="Gender" rules={[{ required: true }]}>
+                <Form.Item name="gender" label="Gender">
                   <Select options={genderOptions as any} />
                 </Form.Item>
               </Col>
@@ -673,7 +712,7 @@ const UserOrganization: React.FC = () => {
 
             <Row gutter={16}>
               <Col span={12}>
-                <Form.Item name="phone" label="Phone" rules={[{ required: true }]}>
+                <Form.Item name="phone" label="Phone">
                   <Input onPressEnter={(e) => { e.preventDefault(); submitEdit(); }} />
                 </Form.Item>
               </Col>
@@ -681,7 +720,7 @@ const UserOrganization: React.FC = () => {
 
             <Row gutter={16}>
               <Col span={12}>
-                <Form.Item name="address" label="Address" rules={[{ required: true }]}>
+                <Form.Item name="address" label="Address">
                   <Input onPressEnter={(e) => { e.preventDefault(); submitEdit(); }} />
                 </Form.Item>
               </Col>
@@ -690,7 +729,6 @@ const UserOrganization: React.FC = () => {
                   name="avtUrl"
                   label="Image (Cloudinary)"
                   valuePropName="value"
-                  rules={[{ required: true, message: 'Please upload an image' }]}
                 >
                   <UploadCloudinary
                     value={formEdit.getFieldValue('avtUrl')}
