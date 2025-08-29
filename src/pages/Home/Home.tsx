@@ -16,7 +16,7 @@ export default function HomePage() {
       <Row gutter={[16, 16]}>
         <Col xs={24} md={12}>
           <Typography style={{ fontSize: "32px" }}>
-            Effortless Practice with FlexSim and AI
+            Effortless Practice with FlexSim
           </Typography>
           <p className="description">
             Welcome to the most advanced logistics learning platform, combining
@@ -46,7 +46,7 @@ export default function HomePage() {
       <Row gutter={[16, 16]} className="section-spacing">
         <Col xs={24} md={12}>
           <Typography style={{ fontSize: "32px" }}>
-            Easily create and customize practice scenarios supported by AI
+            Easily create and customize practice scenarios supported by Flexsim
           </Typography>
           <p className="description">
             Easily create realistic, customizable logistics practice scenarios

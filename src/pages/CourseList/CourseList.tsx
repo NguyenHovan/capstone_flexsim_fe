@@ -1,4 +1,4 @@
-import { Input, Tabs, Row, Col, Empty, Spin } from "antd";
+import { Input, Tabs, Row, Col, Empty, Spin, Pagination } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import CourseCard from "../../components/courseCard/CourseCard";
 import { CourseService } from "../../services/course.service";
@@ -11,13 +11,20 @@ const { TabPane } = Tabs;
 
 const CourseList = () => {
   const navigate = useNavigate();
+  const [allCourses, setAllCourses] = useState<any[]>([]);
   const [dataSource, setDataSource] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [searchKeyword, setSearchKeyword] = useState("");
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(8);
+
   const fetchCourses = async () => {
     try {
       setLoading(true);
       const data = await CourseService.getAllCourses();
+      setAllCourses(data);
       setDataSource(data);
     } catch (error) {
       toast.error("Failed to fetch courses");
@@ -25,6 +32,7 @@ const CourseList = () => {
       setLoading(false);
     }
   };
+
   const fetchCategories = async () => {
     try {
       const response = await CategoryService.getCategories();
@@ -33,10 +41,12 @@ const CourseList = () => {
       console.log(error);
     }
   };
+
   const fetchCourseByCategory = async (categoryId: string) => {
     try {
       setLoading(true);
       const data = await CourseService.getCourseByCategoryId(categoryId);
+      setAllCourses(data);
       setDataSource(data);
     } catch (error) {
       toast.error("Failed to fetch courses for category");
@@ -44,18 +54,41 @@ const CourseList = () => {
       setLoading(false);
     }
   };
+
   useEffect(() => {
     fetchCourses();
     fetchCategories();
   }, []);
 
+  const handleSearch = (value: string) => {
+    setSearchKeyword(value);
+    setCurrentPage(1); // reset về trang 1 khi search
+    if (!value.trim()) {
+      setDataSource(allCourses);
+    } else {
+      const filtered = allCourses.filter((course) =>
+        course.courseName.toLowerCase().includes(value.toLowerCase())
+      );
+      setDataSource(filtered);
+    }
+  };
+
   const handleTabChange = (key: string) => {
+    setSearchKeyword("");
+    setCurrentPage(1);
     if (key === "all") {
       fetchCourses();
     } else {
       fetchCourseByCategory(key);
     }
   };
+
+  // data hiển thị theo trang
+  const paginatedData = dataSource.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+
   return (
     <Spin spinning={loading}>
       <div className="container">
@@ -70,6 +103,8 @@ const CourseList = () => {
           <Input
             prefix={<SearchOutlined />}
             placeholder="Search Course"
+            value={searchKeyword}
+            onChange={(e) => handleSearch(e.target.value)}
             style={{ maxWidth: 300, background: "#f5eaea", borderRadius: 20 }}
           />
 
@@ -85,9 +120,9 @@ const CourseList = () => {
           </Tabs>
         </div>
 
-        <Row gutter={[24, 24]}>
-          {dataSource && dataSource.length > 0 ? (
-            dataSource.map((course) => (
+        <Row gutter={[48, 48]}>
+          {paginatedData && paginatedData.length > 0 ? (
+            paginatedData.map((course) => (
               <Col
                 xs={24}
                 sm={12}
@@ -105,6 +140,25 @@ const CourseList = () => {
             </Col>
           )}
         </Row>
+
+        {dataSource.length > pageSize && (
+          <div
+            style={{
+              display: "flex",
+              textAlign: "center",
+              marginTop: 24,
+              justifyContent: "center",
+            }}
+          >
+            <Pagination
+              current={currentPage}
+              pageSize={pageSize}
+              total={dataSource.length}
+              onChange={(page) => setCurrentPage(page)}
+              showSizeChanger={false}
+            />
+          </div>
+        )}
       </div>
     </Spin>
   );

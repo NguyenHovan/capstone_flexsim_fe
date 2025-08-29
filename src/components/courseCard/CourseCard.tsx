@@ -1,4 +1,4 @@
-import { Card, Button, Tooltip } from "antd";
+import { Card, Button, Tooltip, Rate } from "antd";
 import { UsergroupAddOutlined, PlayCircleOutlined } from "@ant-design/icons";
 
 type Props = {
@@ -8,6 +8,7 @@ type Props = {
   students: number;
   lessons: number;
   onEnroll?: () => void;
+  ratingAverage: number;
 };
 
 const CourseCard = ({
@@ -17,6 +18,7 @@ const CourseCard = ({
   students,
   lessons,
   onEnroll,
+  ratingAverage,
 }: Props) => {
   return (
     <Card
@@ -60,6 +62,7 @@ const CourseCard = ({
           </Tooltip>
         )}
       </div>
+      <Rate value={ratingAverage} style={{ marginTop: 12 }} />
     </Card>
   );
 };
