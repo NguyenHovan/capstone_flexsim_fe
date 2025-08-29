@@ -23,4 +23,25 @@ export const LessonSubmission = {
     );
     return res.data;
   },
+  getMyLessonSubmitssion: async (lessonId: string) => {
+    const userString = localStorage.getItem("currentUser");
+    const currentUser = userString ? JSON.parse(userString) : null;
+    const res = await axiosInstance.get(
+      `/api/lessonSubmission/my_lesson_submission/${currentUser.id}`,
+      {
+        params: { accountId: currentUser.id, lessonId: lessonId },
+      }
+    );
+    return res.data;
+  },
+  updateLessonSubmitssion: async (id: string, payload: any) => {
+    const res = await axiosInstance.put(
+      `/api/lessonSubmission/update-submission/${id}`,
+      payload,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      }
+    );
+    return res.data;
+  },
 };

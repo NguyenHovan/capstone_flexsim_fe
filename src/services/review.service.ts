@@ -30,6 +30,17 @@ export const ReviewService = {
     const res = await axiosInstance.get(`${API.GET_REVIEW_BY_COURSE}/${id}`);
     return res.data;
   },
+  getReviewByUserAndCourse: async (courseId: string) => {
+    const userString = localStorage.getItem("currentUser");
+    const currentUser = userString ? JSON.parse(userString) : null;
+    const res = await axiosInstance.get(
+      `/api/review/my_review/${currentUser.id}/course/${courseId}`,
+      {
+        params: { accountId: currentUser.id, courseId: courseId },
+      }
+    );
+    return res.data;
+  },
   submitReviewCourse: async (
     courseId: string,
     payload: { description: string; rating: number }

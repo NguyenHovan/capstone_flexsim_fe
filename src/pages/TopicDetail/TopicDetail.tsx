@@ -1,11 +1,21 @@
 import { useEffect, useRef, useState } from "react";
-import { List, Button, Typography, Divider, Row, Col, Flex } from "antd";
+import {
+  List,
+  Button,
+  Typography,
+  Divider,
+  Row,
+  Col,
+  Flex,
+  Modal,
+  Input,
+} from "antd";
 import { useNavigate, useParams } from "react-router-dom";
 import { LessonService } from "../../services/lesson.service";
 import { LessonProgressService } from "../../services/lessonProgress.service";
 import { toast } from "sonner";
 import { LessonSubmission } from "../../services/lessonSubmission.service";
-
+const { TextArea } = Input;
 const TopicDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -18,25 +28,41 @@ const TopicDetail = () => {
   const [selectedLesson, setSelectedLesson] = useState<any>();
   const [isCompleted, setIsCompleted] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [maxWatchTime, setMaxWatchTime] = useState(0);
+  const [maxWatchTime] = useState(0);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingSubmission, setEditingSubmission] = useState<any>(null);
+  const [editNote, setEditNote] = useState("");
+  const [editFile, setEditFile] = useState<File | null>(null);
+  const [myLessonSubmit, setMyLessonSubmit] = useState();
+  const [editLoading, setEditLoading] = useState(false);
   const fetchTopicDetail = async () => {
     try {
       const response = await LessonService.getLessonByTopic(id ?? "");
       setData(response);
       setSelectedLesson(response[0]);
+      fetchMyLessonSubmit(response[0].id);
     } catch (error: any) {
       console.log({ error });
     }
   };
+  const handleTimeUpdate = (e: React.SyntheticEvent<HTMLVideoElement>) => {
+    const video = e.currentTarget;
+    const progress = video.currentTime / video.duration;
+
+    if (progress >= 0.75 && !isCompleted) {
+      setIsCompleted(true);
+    }
+  };
+
   const handleVideoEnded = () => {
     setIsCompleted(true);
   };
-  const handleTimeUpdate = () => {
-    if (videoRef.current) {
-      const current = videoRef.current.currentTime;
-      if (current > maxWatchTime) {
-        setMaxWatchTime(current);
-      }
+  const fetchMyLessonSubmit = async (lessonId: string) => {
+    try {
+      const response = await LessonSubmission.getMyLessonSubmitssion(lessonId);
+      setMyLessonSubmit(response);
+    } catch (error) {
+      console.log({ error });
     }
   };
 
@@ -82,10 +108,47 @@ const TopicDetail = () => {
       toast.error(error.response?.data?.message || "Upload thất bại!");
     }
   };
+
+  const handleEditSubmit = async () => {
+    if (!editingSubmission) return;
+    try {
+      setEditLoading(true);
+
+      const formData = new FormData();
+      formData.append("lessonId", selectedLesson.id);
+      formData.append("accountId", currentAccountId);
+      if (editFile) {
+        formData.append("fileUrl", editFile);
+      } else {
+        formData.append("fileUrl", editingSubmission.fileUrl);
+      }
+      formData.append("note", editNote);
+
+      await LessonSubmission.updateLessonSubmitssion(
+        editingSubmission.id,
+        formData
+      );
+
+      toast.success("Cập nhật bài nộp thành công!");
+      fetchTopicDetail();
+      setIsModalOpen(false);
+      setEditingSubmission(null);
+      setEditFile(null);
+      setEditNote("");
+    } catch (err: any) {
+      console.log(err);
+      toast.error(
+        err.response?.data?.message || "Có lỗi xảy ra khi cập nhật bài nộp"
+      );
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchTopicDetail();
   }, []);
-
+  console.log({ myLessonSubmit, selectedLesson });
   return (
     <div
       style={{
@@ -175,7 +238,7 @@ const TopicDetail = () => {
               <video
                 style={{
                   width: "80%",
-                  maxWidth: "720px",
+                  maxWidth: "1000px",
                   borderRadius: "8px",
                   boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
                 }}
@@ -327,7 +390,6 @@ const TopicDetail = () => {
                       }}
                     />
 
-                    {/* Nút nộp file */}
                     <Button
                       type="primary"
                       style={{
@@ -340,9 +402,12 @@ const TopicDetail = () => {
                         width: "100%",
                       }}
                       onClick={handleSubmit}
+                      disabled={myLessonSubmit}
                     >
                       Nộp file
                     </Button>
+
+                    {/* Danh sách đã nộp */}
                     {selectedLesson.lessonSubmissions &&
                       selectedLesson.lessonSubmissions.length > 0 && (
                         <div style={{ width: "100%", marginTop: "24px" }}>
@@ -364,6 +429,28 @@ const TopicDetail = () => {
                                   justifyContent: "space-between",
                                   alignItems: "center",
                                 }}
+                                actions={[
+                                  <a
+                                    href={item.fileUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                  >
+                                    Download
+                                  </a>,
+                                  myLessonSubmit && (
+                                    <Button
+                                      type="link"
+                                      onClick={() => {
+                                        setEditingSubmission(item);
+                                        setEditNote(item.note || "");
+                                        setEditFile(null);
+                                        setIsModalOpen(true);
+                                      }}
+                                    >
+                                      Sửa
+                                    </Button>
+                                  ),
+                                ]}
                               >
                                 <div>
                                   <Typography.Text strong>
@@ -389,18 +476,56 @@ const TopicDetail = () => {
                                     </Typography.Paragraph>
                                   )}
                                 </div>
-                                <a
-                                  href={item.fileUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                >
-                                  Download
-                                </a>
                               </List.Item>
                             )}
                           />
                         </div>
                       )}
+                    <Modal
+                      title="Chỉnh sửa bài nộp"
+                      open={isModalOpen}
+                      onCancel={() => setIsModalOpen(false)}
+                      onOk={handleEditSubmit}
+                      okText="Cập nhật"
+                      cancelText="Hủy"
+                      confirmLoading={editLoading}
+                    >
+                      {editingSubmission?.fileUrl && (
+                        <div style={{ marginBottom: 12 }}>
+                          <span>File hiện tại: </span>
+                          <a
+                            href={editingSubmission.fileUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ color: "#1677ff" }}
+                          >
+                            Xem / Tải xuống
+                          </a>
+                        </div>
+                      )}
+
+                      <input
+                        type="file"
+                        required
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) setEditFile(file);
+                        }}
+                      />
+
+                      <TextArea
+                        value={editNote}
+                        onChange={(e) => setEditNote(e.target.value)}
+                        placeholder="Chỉnh sửa ghi chú..."
+                        style={{ marginTop: 12 }}
+                      />
+                      {!editFile && (
+                        <p style={{ marginTop: 8, color: "red", fontSize: 13 }}>
+                          ⚠️ Bạn cần nộp lại file nếu muốn thay đổi. Nếu không
+                          chọn file mới, hệ thống sẽ giữ nguyên file cũ.
+                        </p>
+                      )}
+                    </Modal>
                   </Col>
                 </Row>
               </>
