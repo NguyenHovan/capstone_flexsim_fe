@@ -2,7 +2,7 @@ export const API = {
   REGISTER: "/api/account/register-admin-account",
   //ACCOUNT
   GET_ALL_ACCOUNT: "/api/account/get_all",
-  GET_ALL_ACCOUNT_ORGID: "api/account/get_all_by_org",
+  GET_ALL_ACCOUNT_ORGID: "/api/account/get_all_by_org",
   LOGIN: "/api/account/login",
   FORGOT_PASSWORD: "/api/account/forgot_password",
   RESET_PASSWORD: "/api/account/resest_password",

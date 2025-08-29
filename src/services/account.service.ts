@@ -2,6 +2,7 @@ import axiosInstance from "./main.service";
 import { API } from "../api";
 import type { Account } from "../types/account";
 import type { OrganizationAdminForm } from "../types/organizationAdmin";
+import type { UpdateAccountPayload } from "../types/account";
 import type { AccountForm} from "../types/account";
 import { getErrorMessage } from "../utils/errorHandler";
 const unwrap = (d: any) => (d?.data ?? d) as any;
@@ -105,43 +106,33 @@ async uploadAvatar(file: File): Promise<string> {
     }
   },
 
-async updateAccount(
-  id: string,
-  body: {
-    userName: string;
-    email: string;
-    roleId: number;
-    organizationId: string;
-    isActive: boolean;
-    fullName: string;
-    phone?: string;
-    gender?: number;   
-    address?: string;
-    avtUrl?: string;
-    password?: string; 
-  }
-): Promise<Account> {
-  try {
-    if (typeof body.gender === 'number') {
-      const g = parseInt(String(body.gender), 10);
-      const map: Record<number, number> = { 1: 0, 2: 1, 3: 2 };
-      body.gender = (g in map) ? map[g] : g;
+async updateAccount(id: string, body: UpdateAccountPayload): Promise<Account> {
+    try {
+      const norm: UpdateAccountPayload = { ...body };
+
+      if (typeof norm.gender === "number") {
+        const uiToBe: Record<number, number> = { 1: 0, 2: 1, 3: 2 };
+        if (norm.gender in uiToBe) norm.gender = uiToBe[norm.gender];
+      }
+
+      const clean = Object.fromEntries(
+        Object.entries(norm).filter(
+          ([, v]) => v !== undefined && v !== null && !(typeof v === "string" && v.trim() === "")
+        )
+      ) as UpdateAccountPayload;
+
+      const base = String(API.UPDATE_ACCOUNT || '').replace(/\/+$/, '');
+      const url  = `${base}/${encodeURIComponent(id)}`;
+
+      const { data } = await axiosInstance.put(url, clean, {
+        headers: { 'Content-Type': 'application/json' },
+      });
+      return data as Account;
+    } catch (error: any) {
+      console.error('PUT /update_account error:', error?.response?.status, error?.response?.data);
+      throw error;
     }
-
-    const base = String(API.UPDATE_ACCOUNT || '').replace(/\/+$/,'');
-    const url  = `${base}/${encodeURIComponent(id)}`;
-
-    const { data } = await axiosInstance.put(url, body, {
-      headers: { 'Content-Type': 'application/json' },
-    });
-    return data as Account;
-  } catch (error: any) {
-    console.error('PUT /update_account error detail:', error?.response?.status, error?.response?.data);
-    const msg = getErrorMessage(error);
-    throw new Error(msg);
-  }
-},
-
+  },
 
   deleteAccount: async (id: string): Promise<void> => {
     try {
@@ -186,7 +177,6 @@ async updateAccount(
         `${API.IMPORT_INSTRUCTOR}/${encodeURIComponent(organizationId)}`,
         form,
         {
-          // để axios tự set boundary
           transformRequest: [(f, h) => {
             delete h["Content-Type"];
             delete (h as any)["content-type"];
