@@ -1,11 +1,18 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Button, message, Tag, Tooltip, Typography } from "antd";
-import { CopyOutlined, ReloadOutlined } from "@ant-design/icons";
+import { CopyOutlined} from "@ant-design/icons";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { PaymentService } from "../../services/payment.service";
 import { OrderService } from "../../services/order.service";
 import { getOrderStatusLabel, type OrderStatusCode } from "../../types/order";
-import { getQueryParam, saveOrderCode, loadOrderCode } from "../../utils/payParams";
+import {
+  getQueryParam,
+  saveOrderCode,
+  loadOrderCode,
+  saveOrderId,
+  loadOrderId,
+  saveAccountId,
+} from "../../utils/payParams";
 import "./paymentResulf.css";
 
 const { Text } = Typography;
@@ -30,6 +37,20 @@ const getCurrentUserId = () => {
   }
 };
 
+const extractFromUpdate = (res: any) => {
+  const p = Array.isArray(res) ? res[0] : res;
+  return {
+    status: (p?.status ?? p?.data?.status) as OrderStatusCode | undefined,
+    orderId:
+      (p?.id ??
+        p?.orderId ??
+        p?.order?.id ??
+        p?.data?.id ??
+        p?.data?.orderId) as string | undefined,
+    accountId: (p?.accountId ?? p?.order?.accountId ?? p?.data?.accountId) as string | undefined,
+  };
+};
+
 const PaymentSuccess: React.FC = () => {
   const navigate = useNavigate();
   const [sp] = useSearchParams();
@@ -43,12 +64,14 @@ const PaymentSuccess: React.FC = () => {
   const orderCodeFromUrl = useMemo(() => sp.get("orderCode") || getQueryParam("orderCode"), [sp]);
   const orderCode = useMemo(() => orderCodeFromUrl || loadOrderCode(), [orderCodeFromUrl]);
 
-  useEffect(() => { if (orderCodeFromUrl) saveOrderCode(orderCodeFromUrl); }, [orderCodeFromUrl]);
+  useEffect(() => {
+    if (orderCodeFromUrl) saveOrderCode(orderCodeFromUrl);
+  }, [orderCodeFromUrl]);
 
   const findOrderByCode = async (ocNum: number) => {
     try {
       const all = await OrderService.getAll();
-      return all.find(o => (o as any).orderCode === ocNum);
+      return all.find((o: any) => Number(o?.orderCode) === ocNum || String(o?.orderCode) === String(ocNum));
     } catch {
       return undefined;
     }
@@ -62,31 +85,38 @@ const PaymentSuccess: React.FC = () => {
     try {
       setSyncing(true);
       const res = await PaymentService.update({ orderCode: ocNum });
-      const s = res?.status as OrderStatusCode | undefined;
-      setStatus(s);
 
-      // Lấy orderId
-      let oid = res?.orderId;
+      const { status: s0, orderId: oid0, accountId: aid0 } = extractFromUpdate(res);
+      setStatus(s0);
+
+      let oid: string | undefined = oid0 ?? (loadOrderId() ?? undefined);
+      let aid: string | undefined = aid0 ?? undefined;
+
       if (!oid) {
         const found = await findOrderByCode(ocNum);
-        if (found) oid = found.id;
+        if (found) {
+          oid = (found as any).id as string | undefined;
+          aid = aid || ((found as any).accountId as string | undefined);
+        }
       }
-      setOrderId(oid);
 
-      // Lấy accountId
-      if (oid) {
+      setOrderId(oid);
+      if (oid) saveOrderId(oid);
+
+      if (!aid && oid) {
         try {
           const o = await OrderService.getById(oid);
-          setAccountId(o?.accountId || getCurrentUserId());
+          aid = (o as any)?.accountId as string | undefined;
         } catch {
-          setAccountId(getCurrentUserId());
+          // ignore
         }
-      } else {
-        setAccountId(getCurrentUserId());
       }
+      if (!aid) aid = getCurrentUserId();
 
-      // Nếu bị hủy mà đang ở success -> chuyển fail
-      if (s === 2) {
+      setAccountId(aid);
+      if (aid) saveAccountId(aid);
+
+      if (s0 === 2) {
         navigate(`/payment/fail?orderCode=${orderCode}`, { replace: true });
         return;
       }
@@ -98,14 +128,18 @@ const PaymentSuccess: React.FC = () => {
     }
   };
 
-  useEffect(() => { refreshStatus(); /* eslint-disable-next-line */ }, []);
+  useEffect(() => {
+    refreshStatus();
+  }, []);
 
   const copy = async (text?: string) => {
     if (!text) return;
     try {
       await navigator.clipboard.writeText(String(text));
       message.success("Đã sao chép");
-    } catch { message.warning("Không thể sao chép"); }
+    } catch {
+      message.warning("Không thể sao chép");
+    }
   };
 
   const goToOrder = () => {
@@ -119,12 +153,7 @@ const PaymentSuccess: React.FC = () => {
       <div className={`payres-card success ${syncing ? "is-loading" : ""}`}>
         <div className="payres-head">
           <div className="payres-logo" aria-hidden>LS</div>
-          <div className="payres-headtext">
-            <h4>LogiSimEdu</h4><span>Payment result</span>
-          </div>
-          <Button size="small" icon={<ReloadOutlined />} onClick={refreshStatus} loading={syncing} className="payres-refresh">
-            Refresh
-          </Button>
+          <div className="payres-headtext"><h4>LogiSimEdu</h4><span>Payment result</span></div>
         </div>
 
         <div className="payres-badge">
@@ -140,9 +169,7 @@ const PaymentSuccess: React.FC = () => {
         </p>
 
         <div className="payres-divider" />
-
         <div className="payres-rows">
-    
           <div className="row">
             <span>Order ID</span>
             <div className="row-end">
@@ -165,7 +192,6 @@ const PaymentSuccess: React.FC = () => {
 
         <div className="payres-actions">
           <Button onClick={goToOrder}>Trở về trang đơn hàng</Button>
-          <Button type="primary" onClick={() => navigate("/", { replace: true })}>Về trang chủ</Button>
         </div>
       </div>
     </div>
