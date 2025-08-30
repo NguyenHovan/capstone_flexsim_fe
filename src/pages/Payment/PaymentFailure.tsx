@@ -1,46 +1,94 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Button, message, Tag, Tooltip } from "antd";
+import { Button, message, Tag, Tooltip, Typography } from "antd";
 import { CopyOutlined, ReloadOutlined } from "@ant-design/icons";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { PaymentService } from "../../services/payment.service";
+import { OrderService } from "../../services/order.service";
 import { getOrderStatusLabel, type OrderStatusCode } from "../../types/order";
 import { getQueryParam, saveOrderCode, loadOrderCode } from "../../utils/payParams";
 import "./paymentResulf.css";
 
-const ORDER_MANAGER_URL =
-  window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
-    ? "http://localhost:5173/organizationAdmin/order-manager"
-    : "https://capstone-flexsim-fe.vercel.app/organizationAdmin/order-manager";
+const { Text } = Typography;
 
-const tagColor = (s?: OrderStatusCode) => (s === 2 ? "volcano" : s === 1 ? "green" : "gold");
+const ORDER_MANAGER_URL = (() => {
+  const { protocol, hostname, port } = window.location;
+  const isLocal = hostname === "localhost" || hostname === "127.0.0.1";
+  return isLocal
+    ? `${protocol}//${hostname}${port ? `:${port}` : ""}/organizationAdmin/order-manager`
+    : "https://capstone-flexsim-fe.vercel.app/organizationAdmin/order-manager";
+})();
+
+const tagColor = (s?: OrderStatusCode) => (s === 1 ? "green" : s === 2 ? "volcano" : "gold");
+
+const getCurrentUserId = () => {
+  try {
+    const raw = localStorage.getItem("currentUser");
+    const me = raw ? JSON.parse(raw) : null;
+    return me?.id || "";
+  } catch {
+    return "";
+  }
+};
 
 const PaymentFail: React.FC = () => {
   const navigate = useNavigate();
   const [sp] = useSearchParams();
+
   const [status, setStatus] = useState<OrderStatusCode | undefined>(undefined);
   const [syncing, setSyncing] = useState(false);
+
+  const [orderId, setOrderId] = useState<string | undefined>(undefined);
+  const [accountId, setAccountId] = useState<string | undefined>(undefined);
 
   const orderCodeFromUrl = useMemo(() => sp.get("orderCode") || getQueryParam("orderCode"), [sp]);
   const orderCode = useMemo(() => orderCodeFromUrl || loadOrderCode(), [orderCodeFromUrl]);
 
-  useEffect(() => {
-    if (orderCodeFromUrl) saveOrderCode(orderCodeFromUrl);
-  }, [orderCodeFromUrl]);
+  useEffect(() => { if (orderCodeFromUrl) saveOrderCode(orderCodeFromUrl); }, [orderCodeFromUrl]);
+
+  const findOrderByCode = async (ocNum: number) => {
+    try {
+      const all = await OrderService.getAll();
+      return all.find(o => (o as any).orderCode === ocNum);
+    } catch {
+      return undefined;
+    }
+  };
 
   const refreshStatus = async () => {
-    if (!orderCode) return message.warning("Thiếu orderCode");
+    if (!orderCode) return message.warning("Thiếu Payment ID (orderCode)");
     const ocNum = Number(orderCode);
     if (!Number.isFinite(ocNum)) return message.error("orderCode không hợp lệ");
+
     try {
       setSyncing(true);
       const res = await PaymentService.update({ orderCode: ocNum });
       const s = res?.status as OrderStatusCode | undefined;
-      if (typeof s === "number") {
-        setStatus(s);
-        if (s === 1) {
-          navigate(`/payment/success?orderCode=${orderCode}`, { replace: true });
-          return;
+      setStatus(s);
+
+      // Lấy orderId
+      let oid = res?.orderId;
+      if (!oid) {
+        const found = await findOrderByCode(ocNum);
+        if (found) oid = found.id;
+      }
+      setOrderId(oid);
+
+      // Lấy accountId
+      if (oid) {
+        try {
+          const o = await OrderService.getById(oid);
+          setAccountId(o?.accountId || getCurrentUserId());
+        } catch {
+          setAccountId(getCurrentUserId());
         }
+      } else {
+        setAccountId(getCurrentUserId());
+      }
+
+      // Nếu đã thanh toán thành công nhưng đang ở trang fail -> chuyển qua success
+      if (s === 1) {
+        navigate(`/payment/success?orderCode=${orderCode}`, { replace: true });
+        return;
       }
     } catch (e: any) {
       const msg = e?.response?.data?.message || e?.message || "Không thể cập nhật trạng thái";
@@ -50,27 +98,20 @@ const PaymentFail: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    refreshStatus();
-  }, []);
+  useEffect(() => { refreshStatus(); /* eslint-disable-next-line */ }, []);
 
-  const copyCode = async () => {
-    if (!orderCode) return;
+  const copy = async (text?: string) => {
+    if (!text) return;
     try {
-      await navigator.clipboard.writeText(String(orderCode));
-      message.success("Đã sao chép Payment ID");
-    } catch {
-      message.warning("Không thể sao chép, vui lòng copy thủ công");
-    }
+      await navigator.clipboard.writeText(String(text));
+      message.success("Đã sao chép");
+    } catch { message.warning("Không thể sao chép"); }
   };
 
   const goToOrder = () => {
     const sameOrigin = window.location.origin === new URL(ORDER_MANAGER_URL).origin;
-    if (sameOrigin) {
-      navigate("/organizationAdmin/order-manager", { replace: true });
-    } else {
-      window.location.assign(ORDER_MANAGER_URL);
-    }
+    if (sameOrigin) navigate("/organizationAdmin/order-manager", { replace: true });
+    else window.location.assign(ORDER_MANAGER_URL);
   };
 
   return (
@@ -79,16 +120,9 @@ const PaymentFail: React.FC = () => {
         <div className="payres-head">
           <div className="payres-logo" aria-hidden>LS</div>
           <div className="payres-headtext">
-            <h4>LogiSimEdu</h4>
-            <span>Payment result</span>
+            <h4>LogiSimEdu</h4><span>Payment result</span>
           </div>
-          <Button
-            size="small"
-            icon={<ReloadOutlined />}
-            onClick={refreshStatus}
-            loading={syncing}
-            className="payres-refresh"
-          >
+          <Button size="small" icon={<ReloadOutlined />} onClick={refreshStatus} loading={syncing} className="payres-refresh">
             Refresh
           </Button>
         </div>
@@ -108,31 +142,31 @@ const PaymentFail: React.FC = () => {
         <div className="payres-divider" />
 
         <div className="payres-rows">
+         
           <div className="row">
-            <span>Payment ID</span>
+            <span>Order ID</span>
             <div className="row-end">
-              <strong className="mono">{orderCode || "-"}</strong>
-              <Tooltip title="Copy">
-                <Button type="text" size="small" icon={<CopyOutlined />} onClick={copyCode} />
-              </Tooltip>
+              <Text className="mono">{orderId || "-"}</Text>
+              <Tooltip title="Copy"><Button type="text" size="small" icon={<CopyOutlined />} onClick={() => copy(orderId)} /></Tooltip>
+            </div>
+          </div>
+          <div className="row">
+            <span>Account ID</span>
+            <div className="row-end">
+              <Text className="mono">{accountId || "-"}</Text>
+              <Tooltip title="Copy"><Button type="text" size="small" icon={<CopyOutlined />} onClick={() => copy(accountId)} /></Tooltip>
             </div>
           </div>
           <div className="row">
             <span>Status</span>
-            <strong>
-              {status !== undefined ? (
-                <Tag color={tagColor(status)}>{getOrderStatusLabel(status)}</Tag>
-              ) : "—"}
-            </strong>
+            <strong>{status !== undefined ? <Tag color={tagColor(status)}>{getOrderStatusLabel(status)}</Tag> : "—"}</strong>
           </div>
         </div>
 
         <div className="payres-actions">
           <Button onClick={() => navigate(-1)}>Thử lại</Button>
-          <Button onClick={goToOrder}>Xem đơn hàng</Button>
-          <Button type="primary" onClick={() => navigate("/", { replace: true })}>
-            Về trang chủ
-          </Button>
+          <Button onClick={goToOrder}>Trở về trang đơn hàng</Button>
+          <Button type="primary" onClick={() => navigate("/", { replace: true })}>Về trang chủ</Button>
         </div>
       </div>
     </div>

@@ -128,7 +128,11 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  pointer-events: auto;
 }
+
+.oa-actions .ant-btn { pointer-events: auto; }
+
 
 .oa-status-select {
   width: 160px;

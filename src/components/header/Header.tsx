@@ -1,4 +1,4 @@
-import { Input, Avatar, Dropdown, Menu } from "antd";
+import { Avatar, Dropdown, Menu } from "antd";
 import {
   UserAddOutlined,
   UserOutlined,

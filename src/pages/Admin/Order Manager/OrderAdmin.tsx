@@ -11,7 +11,9 @@ import {
   Tooltip,
   Badge,
   Modal,
+  Button,
 } from "antd";
+import { DeleteOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
 import type { ColumnsType, TableProps } from "antd/es/table";
 import dayjs from "dayjs";
 
@@ -24,9 +26,9 @@ const { Title, Text } = Typography;
 const { Search } = Input;
 
 const STATUS_OPTIONS: { label: string; value: OrderStatusCode; color: string }[] = [
-  { value: 0, label: "PENDING", color: "gold" },
-  { value: 1, label: "PAID", color: "green" },
-  { value: 2, label: "CANCELLED", color: "red" },
+  { value: 0, label: "PENDING",   color: "gold"   },
+  { value: 1, label: "PAID",      color: "green"  },
+  { value: 2, label: "CANCELLED", color: "red"    },
 ];
 
 const statusColor = (s?: OrderStatusCode) =>
@@ -38,15 +40,22 @@ const currency = (n?: number) =>
 const OrderAdmin: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(false);
+
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState<OrderStatusCode | undefined>(undefined);
+
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const [updateModalOpen, setUpdateModalOpen] = useState(false);
+  const [updateTarget, setUpdateTarget] = useState<Order | null>(null);
+  const [updateNewStatus, setUpdateNewStatus] = useState<OrderStatusCode>(0);
 
   const loadOrders = async () => {
     setLoading(true);
     try {
       const data = await OrderService.getAll();
-      setOrders(data || []);
+      setOrders(Array.isArray(data) ? data : []);
     } catch (e: any) {
       message.error(e?.message || "Unable to load orders");
     } finally {
@@ -54,15 +63,12 @@ const OrderAdmin: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    loadOrders();
-  }, []);
+  useEffect(() => { loadOrders(); }, []);
 
   const filteredData = useMemo(() => {
     let data = orders;
-    if (statusFilter !== undefined) {
-      data = data.filter((o) => o.status === statusFilter);
-    }
+    if (statusFilter !== undefined) data = data.filter((o) => o.status === statusFilter);
+
     if (searchText.trim()) {
       const q = searchText.trim().toLowerCase();
       data = data.filter((o) => {
@@ -70,8 +76,7 @@ const OrderAdmin: React.FC = () => {
           o.id,
           o.organizationId,
           o.accountId,
-          o.subscriptionPlanId,
-          o.subscriptionPlanName,
+          (o as any).subscriptionPlanId ?? (o as any).subcriptionPlanId,
           o.orderCode?.toString() ?? "",
         ];
         return fields.some((f) => (f || "").toLowerCase().includes(q));
@@ -81,24 +86,13 @@ const OrderAdmin: React.FC = () => {
   }, [orders, statusFilter, searchText]);
 
   const doUpdateStatus = async (row: Order, newStatus: OrderStatusCode) => {
-    if (row.status === newStatus) return;
     setUpdatingId(row.id);
     try {
-      const hide = message.loading("Updating status…", 0);
-      const updated = await OrderService.updateStatus(row.id, newStatus);
-      hide();
+      const hide = message.loading("Updating status…", 0) as any;
+      await OrderService.updateStatus(row.id, newStatus); 
+      if (typeof hide === "function") hide();
       message.success("Update status successful");
-      setOrders((prev) =>
-        prev.map((o) =>
-          o.id === row.id
-            ? {
-                ...o,
-                status: updated.status ?? newStatus,
-                updatedAt: updated.updatedAt ?? new Date().toISOString(),
-              }
-            : o
-        )
-      );
+      await loadOrders();
     } catch (e: any) {
       message.error(e?.message || "Update status failure");
     } finally {
@@ -106,21 +100,77 @@ const OrderAdmin: React.FC = () => {
     }
   };
 
-  const confirmUpdate = (row: Order, val: OrderStatusCode) => {
+  const openUpdateModal = (row: Order) => {
+    setUpdateTarget(row);
+    setUpdateNewStatus((row.status ?? 0) as OrderStatusCode);
+    setUpdateModalOpen(true);
+  };
+
+  const submitUpdate = async () => {
+    if (!updateTarget) return;
+    const curr = (updateTarget.status ?? 0) as OrderStatusCode;
+    const next = updateNewStatus;
+
+    if (next === curr) {
+      message.info("Status unchanged");
+      setUpdateModalOpen(false);
+      setUpdateTarget(null);
+      return;
+    }
+
+    await doUpdateStatus(updateTarget, next);
+    setUpdateModalOpen(false);
+    setUpdateTarget(null);
+  };
+
+  const closeUpdateModal = () => {
+    setUpdateModalOpen(false);
+    setUpdateTarget(null);
+  };
+
+  const doDelete = async (row: Order) => {
+    setDeletingId(row.id);
+    try {
+      await OrderService.delete(row.id);
+      message.success("Deleted order successfully");
+      setOrders(prev => prev.filter(o => o.id !== row.id));
+      await loadOrders();
+    } catch (e: any) {
+      message.error(e?.message || "Delete order failed");
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const handleDeleteClick = (row: Order) => {
+    if (row.status !== 2) {
+      Modal.warning({
+        title: "Only CANCELLED orders can be deleted",
+        content: (
+          <span>
+            Order <Text code>{row.id}</Text> has status{" "}
+            <Tag color={statusColor(row.status)} style={{ margin: 0 }}>
+              {getOrderStatusLabel(row.status)}
+            </Tag>
+            . Please set it to <Tag color="red" style={{ margin: 0 }}>CANCELLED</Tag> first.
+          </span>
+        ),
+      });
+      return;
+    }
+
     Modal.confirm({
-      title: "Confirm status change",
+      title: "Delete this order?",
+      icon: <ExclamationCircleOutlined />,
       content: (
         <span>
-          Change status of order <Text code>{row.id}</Text> to{" "}
-          <Tag color={statusColor(val)} style={{ margin: 0 }}>
-            {getOrderStatusLabel(val)}
-          </Tag>
-          ?
+          You are deleting order <Text code>{row.id}</Text>. This action cannot be undone.
         </span>
       ),
-      okText: "Update",
+      okText: "Delete",
+      okType: "danger",
       cancelText: "Cancel",
-      onOk: () => doUpdateStatus(row, val),
+      onOk: () => doDelete(row),
     });
   };
 
@@ -134,20 +184,22 @@ const OrderAdmin: React.FC = () => {
       width: 260,
       render: (v: string) => (
         <Tooltip title={v}>
-          <span className="oa-id-chip" title={v}>
-            {v}
-          </span>
+          <span className="oa-id-chip" title={v}>{v}</span>
         </Tooltip>
       ),
     },
-    
     {
       title: "Plan",
-      dataIndex: "subcriptionPlanName",
-      key: "subcriptionPlanName",
+      dataIndex: "subscriptionPlanName",
+      key: "subscriptionPlanName",
       ellipsis: true,
-      render: (v: string | undefined) =>
-        v ? <span className="oa-plan">{v}</span> : <Text type="secondary">—</Text>,
+      render: (_: any, row) => {
+        const name =
+          (row as any).subcriptionPlanName ??
+          (row as any).subscriptionPlanId ??
+          (row as any).subcriptionPlanId;
+        return name ? <span className="oa-plan">{name}</span> : <Text type="secondary">—</Text>;
+      },
     },
     {
       title: "Total Price",
@@ -156,9 +208,9 @@ const OrderAdmin: React.FC = () => {
       width: 120,
       align: "right",
       sorter: (a, b) =>
-        ((a as any).totalPrice ?? a.price ?? 0) - ((b as any).totalPrice ?? b.price ?? 0),
+        ((a as any).totalPrice ?? a.totalPrice ?? 0) - ((b as any).totalPrice ?? b.totalPrice ?? 0),
       render: (_: any, row) => (
-        <span className="oa-price">{currency((row as any).totalPrice ?? row.price)}</span>
+        <span className="oa-price">{currency((row as any).totalPrice ?? row.totalPrice)}</span>
       ),
     },
     {
@@ -170,11 +222,8 @@ const OrderAdmin: React.FC = () => {
       onFilter: (value, record) => record.status === (value as number),
       render: (s: OrderStatusCode | undefined) => (
         <span className={`oa-status oa-status--${getOrderStatusLabel(s).toLowerCase()}`}>
-          <Badge
-            status={s === 1 ? "success" : s === 2 ? "error" : "warning"}
-            style={{ marginRight: 6 }}
-          />
-          {getOrderStatusLabel(s)}
+          <Badge status={s === 1 ? "success" : s === 2 ? "error" : "warning"} style={{ marginRight: 6 }} />
+          {getOrderStatusLabel(s)} {}
         </span>
       ),
     },
@@ -184,9 +233,7 @@ const OrderAdmin: React.FC = () => {
       key: "organizationId",
       width: 240,
       render: (v: string) => (
-        <Tooltip title={v}>
-          <span className="oa-dim">{v}</span>
-        </Tooltip>
+        <Tooltip title={v}><span className="oa-dim">{v}</span></Tooltip>
       ),
     },
     {
@@ -195,9 +242,7 @@ const OrderAdmin: React.FC = () => {
       key: "accountId",
       width: 240,
       render: (v: string) => (
-        <Tooltip title={v}>
-          <span className="oa-dim">{v}</span>
-        </Tooltip>
+        <Tooltip title={v}><span className="oa-dim">{v}</span></Tooltip>
       ),
     },
     {
@@ -205,33 +250,34 @@ const OrderAdmin: React.FC = () => {
       dataIndex: "createdAt",
       key: "createdAt",
       width: 180,
-      sorter: (a, b) =>
-        dayjs(a.createdAt || 0).valueOf() - dayjs(b.createdAt || 0).valueOf(),
+      sorter: (a, b) => dayjs(a.createdAt || 0).valueOf() - dayjs(b.createdAt || 0).valueOf(),
       render: (v?: string) => (v ? dayjs(v).format("YYYY-MM-DD HH:mm") : "—"),
     },
-  
     {
       title: "Action",
       key: "action",
-      width: 240,
-      render: (_, row) => {
-        const current = row.status ?? 0;
-        return (
-          <Space size="small" className="oa-actions">
-            <Select<OrderStatusCode>
-              value={current}
-              className="oa-status-select"
-              options={STATUS_OPTIONS.map((o) => ({ label: o.label, value: o.value }))}
-              onChange={(val) => {
-                if (val === current) return;
-                confirmUpdate(row, val);
-              }}
-              disabled={updatingId === row.id}
-              loading={updatingId === row.id}
-            />
-          </Space>
-        );
-      },
+      width: 280,
+      render: (_, row) => (
+        <Space size="small" className="oa-actions">
+          <Button
+            type="primary"
+            onClick={() => openUpdateModal(row)}
+            loading={updatingId === row.id}
+          >
+            Update
+          </Button>
+
+          <Button
+            danger
+            icon={<DeleteOutlined />}
+            loading={deletingId === row.id}
+            onClick={() => handleDeleteClick(row)}
+            data-can-delete={row.status === 2}
+          >
+            Delete
+          </Button>
+        </Space>
+      ),
     },
   ];
 
@@ -270,6 +316,44 @@ const OrderAdmin: React.FC = () => {
         scroll={{ x: 1280, y: 560 }}
         className="oa-table"
       />
+
+      <Modal
+        title="Update Order Status"
+        open={updateModalOpen}
+        onCancel={closeUpdateModal}
+        onOk={submitUpdate}
+        okText="Update"
+        okButtonProps={{
+          loading: updatingId === updateTarget?.id,
+         
+        }}
+        destroyOnHidden
+      >
+        {updateTarget && (
+          <Space direction="vertical" style={{ width: "100%" }}>
+            <div>
+              Order: <Text code>{updateTarget.id}</Text>
+            </div>
+            <div>
+              Current:&nbsp;
+              <Tag color={statusColor(updateTarget.status)} style={{ margin: 0 }}>
+                {getOrderStatusLabel(updateTarget.status)}
+              </Tag>
+            </div>
+            <div>
+              New status:
+              <div style={{ marginTop: 8 }}>
+                <Select<OrderStatusCode>
+                  value={updateNewStatus}
+                  options={STATUS_OPTIONS.map(o => ({ label: o.label, value: o.value }))}
+                  onChange={(v) => setUpdateNewStatus(v)}
+                  style={{ width: "100%" }}
+                />
+              </div>
+            </div>
+          </Space>
+        )}
+      </Modal>
     </Card>
   );
 };
