@@ -1,3 +1,5 @@
+import type { Order } from "./order";
+
 export interface SubscriptionPlan {
   id: string;
   name: string;
@@ -8,4 +10,5 @@ export interface SubscriptionPlan {
   isActive: boolean;
   createdAt?: string;
   updatedAt?: string | null;
+   orders?: Order[];
 }

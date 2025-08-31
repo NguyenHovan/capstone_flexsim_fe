@@ -5,6 +5,8 @@ import type { OrganizationAdminForm } from "../types/organizationAdmin";
 import type { UpdateAccountPayload } from "../types/account";
 import type { AccountForm} from "../types/account";
 import { getErrorMessage } from "../utils/errorHandler";
+import { getCurrentUserLite } from "../utils/currentUser";
+
 const unwrap = (d: any) => (d?.data ?? d) as any;
 
 
@@ -50,6 +52,17 @@ getAllByOrgId: async (orgId: string): Promise<Account[]> => {
     }
   },
 
+ getMe: async () => {
+    try {
+      const res = await axiosInstance.get(API.GET_ACCOUNT_ID);
+      return res.data;
+    } catch (err) {
+      // Fallback localStorage để My Subscription vẫn hoạt động
+      const cached = getCurrentUserLite();
+      if (cached) return cached as any;
+      throw err;
+    }
+  },
 
   registerOrganizationAdmin: async (payload: OrganizationAdminForm): Promise<Account> => {
     try {

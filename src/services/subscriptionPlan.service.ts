@@ -7,6 +7,10 @@ export const SubscriptionPlanService = {
     const res = await axiosInstance.get(API.GET_ALL_SUBCRIPTION);
     return res.data;
   },
+    getAllActive: async (): Promise<SubscriptionPlan[]> => {
+    const res = await axiosInstance.get(API.GET_ALL_SUBSCRIPTION_ACTIVE);
+    return res.data;
+  },
   getById: async (id: string): Promise<SubscriptionPlan> => {
     const res = await axiosInstance.get(`${API.GET_SUBCRIPTION_ID}/${id}`);
     return res.data;

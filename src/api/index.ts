@@ -156,15 +156,18 @@ export const API = {
   GET_ORDER_ID: "/api/orders",
   DELETE_ORDER: "/api/orders",
   CREATE_ORDER: "/api/orders/create",
-  UPDATE_ORDER: "/api/orders/status",
-
-  // SUBCRIPTION PLAND
+  ORDER_BY_ID: (id: string) => `/api/orders/${id}`,
+  UPDATE_ORDER_STATUS: (id: string) => `/api/orders/${id}/status`,
+  
+  // SUBCRIPTION PLAN
 
   GET_ALL_SUBCRIPTION: "/api/subscription-plan/get_all",
   GET_SUBCRIPTION_ID: "/api/subscription-plan/get",
   DELETE_SUBCRIPTION: "/api/subscription-plan/delete",
   CREATE_SUBCRIPTION: "/api/subscription-plan/create",
   UPDATE_SUBCRIPTION: "/api/subscription-plan/update",
+  GET_ALL_SUBSCRIPTION_ACTIVE: "/api/subscription-plan/get_all_active",
+  
 
   //AUTH
   LOGIN_WITH_GOOGLE: "/api/auth/login_google",

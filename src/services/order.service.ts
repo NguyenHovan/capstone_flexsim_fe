@@ -5,11 +5,20 @@ import { getErrorMessage } from "../utils/errorHandler";
 
 const unwrap = (d: any) => (d?.data ?? d);
 
+function assertCreateInput(b: OrderCreateInput) {
+  const err = (k: string) => new Error(`Missing/invalid "${k}" for OrderCreateInput`);
+  if (!b || typeof b !== "object") throw new Error("Invalid OrderCreateInput");
+  if (!b.organizationId || typeof b.organizationId !== "string") throw err("organizationId");
+  if (!b.accountId || typeof b.accountId !== "string") throw err("accountId");
+  if (!b.subscriptionPlanId || typeof b.subscriptionPlanId !== "string") throw err("subscriptionPlanId");
+}
+
 export const OrderService = {
   async getAll(): Promise<Order[]> {
     try {
       const { data } = await axiosInstance.get(API.GET_ALL_ORDER);
-      return unwrap(data) as Order[];
+      const payload = unwrap(data);
+      return Array.isArray(payload) ? payload : (payload?.items ?? []);
     } catch (err) {
       const msg = getErrorMessage(err);
       console.error("Error fetching orders:", msg);
@@ -30,7 +39,15 @@ export const OrderService = {
 
   async create(body: OrderCreateInput): Promise<Order> {
     try {
-      const { data } = await axiosInstance.post(API.CREATE_ORDER, body);
+      assertCreateInput(body);
+      const payload: OrderCreateInput = {
+        organizationId: body.organizationId,
+        accountId: body.accountId,
+        subscriptionPlanId: body.subscriptionPlanId,
+      };
+      const { data } = await axiosInstance.post(API.CREATE_ORDER, payload, {
+        headers: { "Content-Type": "application/json" },
+      });
       return unwrap(data) as Order;
     } catch (err) {
       const msg = getErrorMessage(err);
@@ -39,11 +56,13 @@ export const OrderService = {
     }
   },
 
-  async updateStatus(id: string, status: OrderStatusCode): Promise<Order> {
+  async updateStatus(id: string, status: OrderStatusCode): Promise<void> {
     try {
-      const url = `${API.UPDATE_ORDER}/${id}?status=${status}`;
-      const { data } = await axiosInstance.put(url);
-      return unwrap(data) as Order;
+      await axiosInstance.put(
+        API.UPDATE_ORDER_STATUS(id),
+        null,
+        { params: { status: Number(status) } } 
+      );
     } catch (err) {
       const msg = getErrorMessage(err);
       console.error("Error updating order status:", msg);
@@ -53,7 +72,7 @@ export const OrderService = {
 
   async delete(id: string): Promise<void> {
     try {
-      await axiosInstance.delete(`${API.DELETE_ORDER}/${id}`);
+      await axiosInstance.delete(`${API.DELETE_ORDER}/${id}`); 
     } catch (err) {
       const msg = getErrorMessage(err);
       console.error("Error deleting order:", msg);
@@ -64,11 +83,16 @@ export const OrderService = {
   getOrders(): Promise<Order[]> { return this.getAll(); },
   getOrderById(id: string): Promise<Order> { return this.getById(id); },
   createOrder(body: OrderCreateInput): Promise<Order> { return this.create(body); },
-  updateOrderStatus(id: string, status: OrderStatusCode): Promise<Order> { return this.updateStatus(id, status); },
+  updateOrderStatus(id: string, status: OrderStatusCode): Promise<void> { return this.updateStatus(id, status); },
   deleteOrder(id: string): Promise<void> { return this.delete(id); },
 
-  async updateStatusByQuery(id: string, status: OrderStatusCode): Promise<Order> {
-    const { data } = await axiosInstance.put(`${API.GET_ORDER_ID}/${id}/status?status=${status}`);
-    return unwrap(data) as Order;
+  async getByAccountId(accountId: string): Promise<Order[]> {
+    const all = await this.getAll();
+    return all.filter(o => o.accountId === accountId);
+  },
+
+  async getByOrganizationId(orgId: string): Promise<Order[]> {
+    const all = await this.getAll();
+    return all.filter(o => o.organizationId === orgId);
   },
 };
