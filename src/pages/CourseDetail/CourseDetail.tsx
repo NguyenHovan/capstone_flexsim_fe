@@ -142,10 +142,6 @@ const CourseDetail = () => {
             style={{ marginBottom: 8 }}
           />
 
-          <div style={{ color: "#555", marginBottom: 16 }}>
-            Created at: {courseDetail?.createdAt}
-          </div>
-
           <div style={{ display: "flex", gap: "12px" }}>
             <Button
               type="primary"
@@ -198,7 +194,9 @@ const CourseDetail = () => {
       >
         <Avatar src="https://cdn-icons-png.flaticon.com/512/706/706830.png" />
         <div>
-          <strong>Instructor A</strong>
+          <strong style={{ color: "black" }}>
+            {courseDetail?.instructorFullName}
+          </strong>
           <div style={{ fontSize: 12, color: "#888" }}>Lead Instructor</div>
         </div>
       </div>

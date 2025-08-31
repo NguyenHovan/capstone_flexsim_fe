@@ -21,6 +21,7 @@ export interface Course {
   reviews: any[];
   topics: any[];
   workSpace: any | null;
+  instructorFullName: string;
 }
 
 export interface CreateUpdateCourse {

@@ -1,4 +1,3 @@
-// AdminHeader.tsx
 import { Avatar, Dropdown } from "antd";
 import type { MenuProps } from "antd";
 import {
@@ -12,7 +11,7 @@ import { useAuth } from "../../hooks/useAuth";
 import { AccountService } from "../../services/account.service";
 import { useEffect, useState, useCallback } from "react";
 
-const AdminHeader = () => {
+const InstructorAdminHeader = () => {
   const navigate = useNavigate();
   const { user, isLoggedIn } = useAuth();
   const [avatar, setAvatar] = useState<string | null>(null);
@@ -46,7 +45,7 @@ const AdminHeader = () => {
 
   const items: MenuProps["items"] = [
     {
-      key: "Admin-profile",
+      key: "Instructor-profile",
       label: "Thông tin cá nhân",
       icon: <UserOutlined />,
     },
@@ -59,7 +58,7 @@ const AdminHeader = () => {
 
   const onMenuClick: MenuProps["onClick"] = ({ key }) => {
     if (key === "logout") return handleLogout();
-    if (key === "Admin-profile") return navigate("/Admin/admin-profile");
+    if (key === "Instructor-profile") return navigate("/instructor-profile");
   };
 
   return (
@@ -103,4 +102,4 @@ const AdminHeader = () => {
   );
 };
 
-export default AdminHeader;
+export default InstructorAdminHeader;

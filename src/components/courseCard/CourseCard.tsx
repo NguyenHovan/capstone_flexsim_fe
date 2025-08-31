@@ -9,16 +9,17 @@ type Props = {
   lessons: number;
   onEnroll?: () => void;
   ratingAverage: number;
+  instructor: any;
 };
 
 const CourseCard = ({
   imgUrl,
   courseName,
-  description,
   students,
   lessons,
   onEnroll,
   ratingAverage,
+  instructor,
 }: Props) => {
   return (
     <Card
@@ -34,7 +35,7 @@ const CourseCard = ({
     >
       <div style={{ fontWeight: 600, marginBottom: 4 }}>{courseName}</div>
       <div style={{ color: "#888", fontSize: 13, marginBottom: 8 }}>
-        {description}
+        {instructor?.fullName}
       </div>
 
       <div

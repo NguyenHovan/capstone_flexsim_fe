@@ -19,7 +19,7 @@ import {
   Typography,
   Upload,
 } from "antd";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { TopicService } from "../../../../services/topic.service";
 import { CourseService } from "../../../../services/course.service";
@@ -123,11 +123,6 @@ const DetailCoures = () => {
       if (values.imgUrl?.[0]?.originFileObj) {
         formData.append("imgUrl", values.imgUrl[0].originFileObj);
       }
-
-      //   if (isEditing && selectedTopicId) {
-      //     await TopicService.updateTopic(selectedTopicId, formData);
-      //     toast.success("Cập nhật topic thành công!");
-      //   } else {
       await TopicService.createTopic(formData);
       toast.success("Tạo topic thành công!");
       //   }
@@ -155,46 +150,62 @@ const DetailCoures = () => {
       toast.error("Xóa lesson thất bại");
     }
   };
-
   const onFinish = async (values: any) => {
-    const payload = {
-      ...values,
-      topicId: selectedTopic,
-      status: 1,
-    };
     if (!selectedTopic) return;
+
     try {
-      if (editingLesson) {
-        await LessonService.updateLesson(editingLesson.id, payload);
-        toast.success("Cập nhật lesson thành công");
+      const fd = new FormData();
+      fd.append("topicId", String(selectedTopic));
+      fd.append("status", "1");
+      fd.append("description", values.description);
+      fd.append("lessonName", values.lessonName);
+      fd.append("title", values.title);
+      fd.append("orderIndex", values.orderIndex);
+      const fileList = Array.isArray(values.fileUrl) ? values.fileUrl : [];
+      const fileObj: File | undefined = fileList[0]?.originFileObj;
 
-        setLessonsByTopic((prev) => ({
-          ...prev,
-          [selectedTopic]: prev[selectedTopic].map((l) =>
-            l.id === editingLesson.id ? { ...l, ...payload } : l
-          ),
-        }));
-      } else {
-        const res = await LessonService.createLesson(payload);
-        toast.success("Tạo bài học thành công");
-
-        setLessonsByTopic((prev) => ({
-          ...prev,
-          [selectedTopic]: [...(prev[selectedTopic] || []), res],
-        }));
+      if (!editingLesson && !fileObj) {
+        toast.error("Vui lòng chọn video");
+        return;
+      }
+      if (fileObj) {
+        fd.append("fileUrl", fileObj);
       }
 
+      if (editingLesson) {
+        await LessonService.updateLesson(editingLesson.id, fd);
+        toast.success("Cập nhật lesson thành công");
+      } else {
+        await LessonService.createLesson(fd);
+        toast.success("Tạo bài học thành công");
+      }
+
+      form.resetFields();
       setIsModalVisibleLesson(false);
       setEditingLesson(null);
       setSelectedTopic(null);
-      form.resetFields();
     } catch (err) {
       console.error(err);
       toast.error(editingLesson ? "Cập nhật thất bại" : "Tạo thất bại");
     }
   };
-
-  // const normFile = (e: any) => (Array.isArray(e) ? e : e?.fileList || []);
+  const mappedInitialValues = React.useMemo(() => {
+    if (!editingLesson) return { fileUrl: [] };
+    const { fileUrl, ...rest } = editingLesson;
+    return {
+      ...rest,
+      fileUrl: fileUrl
+        ? [
+            {
+              uid: "-1",
+              name: fileUrl.split("/").pop() || "video.mp4",
+              status: "done",
+              url: fileUrl,
+            },
+          ]
+        : [],
+    };
+  }, [editingLesson]);
   useEffect(() => {
     fetchDataTopic();
     fetchCoursesAndScenes();
@@ -399,27 +410,29 @@ const DetailCoures = () => {
                           )}
                         </div>
 
-                        {/* Action icons */}
                         <div style={{ display: "flex", gap: "12px" }}>
-                          <QuestionCircleOutlined
-                            style={{
-                              color: "#52c41a",
-                              fontSize: "20px",
-                              cursor: "pointer",
-                            }}
-                            onMouseEnter={(e) =>
-                              ((e.target as HTMLElement).style.color =
-                                "#73d13d")
-                            }
-                            onMouseLeave={(e) =>
-                              ((e.target as HTMLElement).style.color =
-                                "#52c41a")
-                            }
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigate(`/instructor-quiz/${lesson.id}`);
-                            }}
-                          />
+                          {lesson?.quizzes?.length === 0 && (
+                            <QuestionCircleOutlined
+                              style={{
+                                color: "#52c41a",
+                                fontSize: "20px",
+                                cursor: "pointer",
+                              }}
+                              onMouseEnter={(e) =>
+                                ((e.target as HTMLElement).style.color =
+                                  "#73d13d")
+                              }
+                              onMouseLeave={(e) =>
+                                ((e.target as HTMLElement).style.color =
+                                  "#52c41a")
+                              }
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(`/instructor-quiz/${lesson.id}/${id}`);
+                              }}
+                            />
+                          )}
+
                           <EditOutlined
                             style={{
                               color: "#1890ff",
@@ -439,6 +452,22 @@ const DetailCoures = () => {
                               setSelectedTopic(tp.id);
                               setEditingLesson(lesson);
                               setIsModalVisibleLesson(true);
+
+                              form.setFieldsValue({
+                                ...lesson,
+                                fileUrl: lesson.fileUrl
+                                  ? [
+                                      {
+                                        uid: "-1",
+                                        name:
+                                          lesson.fileUrl.split("/").pop() ||
+                                          "video.mp4",
+                                        status: "done",
+                                        url: lesson.fileUrl,
+                                      },
+                                    ]
+                                  : [],
+                              });
                             }}
                           />
                           <DeleteOutlined
@@ -550,11 +579,13 @@ const DetailCoures = () => {
         style={{ marginBottom: 24 }}
         footer={null}
         width={1000}
+        destroyOnClose
       >
         <Form
+          form={form}
           layout="vertical"
           onFinish={onFinish}
-          initialValues={editingLesson || {}}
+          initialValues={mappedInitialValues}
         >
           <Form.Item
             label="Tên bài học"
@@ -580,12 +611,22 @@ const DetailCoures = () => {
               ))}
             </Select>
           </Form.Item>
-          <Form.Item label="Video bài học" name="fileUrl">
+          <Form.Item
+            label="Video bài học"
+            name="fileUrl"
+            valuePropName="fileList"
+            getValueFromEvent={(e) => {
+              if (Array.isArray(e)) return e;
+              return e?.fileList ? e.fileList : [];
+            }}
+            rules={[
+              { required: !editingLesson, message: "Vui lòng chọn video" },
+            ]}
+          >
             <Upload accept="video/*" maxCount={1} beforeUpload={() => false}>
               <Button icon={<UploadOutlined />}>Chọn video</Button>
             </Upload>
           </Form.Item>
-
           <Form.Item
             label="Mô tả"
             name="description"

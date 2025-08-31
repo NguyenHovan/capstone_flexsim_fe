@@ -2,11 +2,11 @@ import { Button, Card, Checkbox, Form, Input, Space } from "antd";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 import { toast } from "sonner";
 import { QuizService } from "../../../services/quiz.service";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 const CreateQuizForm = ({ onCreated }: { onCreated: () => void }) => {
-  const { lessonId } = useParams();
-
+  const { lessonId, topicId } = useParams();
+  const navigate = useNavigate();
   const onFinish = async (values: any) => {
     const payload = {
       lessonId: lessonId,
@@ -25,6 +25,7 @@ const CreateQuizForm = ({ onCreated }: { onCreated: () => void }) => {
       await QuizService.createFullQuiz(payload);
       toast.success("Tạo quiz thành công!");
       onCreated?.();
+      navigate(`/instructor-course/detail/${topicId}`);
     } catch (err) {
       console.error("Error creating quiz", err);
       toast.error("Tạo quiz thất bại!");

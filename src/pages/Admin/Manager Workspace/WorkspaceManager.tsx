@@ -14,6 +14,7 @@ import {
   Avatar,
   Tag,
   Tooltip,
+  Image,
 } from "antd";
 import { DeleteOutlined, SearchOutlined } from "@ant-design/icons";
 import type { ColumnsType, TableProps } from "antd/es/table";
@@ -63,18 +64,24 @@ const WorkspaceManager: React.FC = () => {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const [selectedWorkspace, setSelectedWorkspace] = useState<Workspace | null>(null);
+  const [selectedWorkspace, setSelectedWorkspace] = useState<Workspace | null>(
+    null
+  );
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   const [isDeleteConfirmVisible, setIsDeleteConfirmVisible] = useState(false);
-  const [workspaceToDelete, setWorkspaceToDelete] = useState<Workspace | null>(null);
+  const [workspaceToDelete, setWorkspaceToDelete] = useState<Workspace | null>(
+    null
+  );
 
   // Search + Filters
   const [keyword, setKeyword] = useState<string>("");
   const [orgFilter, setOrgFilter] = useState<string | undefined>(undefined);
 
   // Per-row “show more” state for course list inside table cell
-  const [showAllCoursesCell, setShowAllCoursesCell] = useState<Record<string, boolean>>({});
+  const [showAllCoursesCell, setShowAllCoursesCell] = useState<
+    Record<string, boolean>
+  >({});
 
   /* --------------------- Load all --------------------- */
   useEffect(() => {
@@ -114,17 +121,20 @@ const WorkspaceManager: React.FC = () => {
   }, [accounts]);
 
   const getOrgName = (id?: string) =>
-    (id && organizationsById.get(normalizeId(id))?.organizationName) || id || "N/A";
+    (id && organizationsById.get(normalizeId(id))?.organizationName) ||
+    id ||
+    "N/A";
 
   /** Lấy tên giảng viên theo instructorId (accountId), bỏ qua placeholder */
   function getInstructorFullName(c: Course): { text: string; id: string } {
     const id = normalizeId(c.instructorId);
     if (id) {
       const acc = accountsById.get(id);
-      let name =
-        !isPlaceholder(acc?.fullName) ? acc?.fullName :
-        !isPlaceholder((acc as any)?.displayName) ? (acc as any)?.displayName :
-        "";
+      let name = !isPlaceholder(acc?.fullName)
+        ? acc?.fullName
+        : !isPlaceholder((acc as any)?.displayName)
+        ? (acc as any)?.displayName
+        : "";
 
       if (!name && !isPlaceholder(acc?.userName)) {
         name = acc!.userName!;
@@ -163,7 +173,9 @@ const WorkspaceManager: React.FC = () => {
     setLoading(true);
     try {
       await WorkspaceService.deleteWorkspace(workspaceToDelete.id);
-      setWorkspaces((prev) => prev.filter((ws) => ws.id !== workspaceToDelete.id));
+      setWorkspaces((prev) =>
+        prev.filter((ws) => ws.id !== workspaceToDelete.id)
+      );
       message.success("Workspace deleted successfully.");
     } catch (error: any) {
       console.error("Delete error:", error);
@@ -192,7 +204,9 @@ const WorkspaceManager: React.FC = () => {
       if (orgFilter && ws.organizationId !== orgFilter) return false;
       if (!kw) return true;
 
-      const courseTexts = (coursesByWorkspaceId.get(normalizeId(ws.id)) || []).flatMap((c) => {
+      const courseTexts = (
+        coursesByWorkspaceId.get(normalizeId(ws.id)) || []
+      ).flatMap((c) => {
         const ins = getInstructorFullName(c).text;
         return [norm(c.courseName), norm(ins)];
       });
@@ -206,7 +220,14 @@ const WorkspaceManager: React.FC = () => {
       ];
       return fields.some((x) => x.startsWith(kw) || x.includes(kw));
     });
-  }, [workspaces, keyword, orgFilter, coursesByWorkspaceId, organizationsById, accountsById]);
+  }, [
+    workspaces,
+    keyword,
+    orgFilter,
+    coursesByWorkspaceId,
+    organizationsById,
+    accountsById,
+  ]);
 
   /* --------------------- Render course list (no overflow) --------------------- */
   const renderCourseList = (list: Course[], opts?: { dense?: boolean }) => {
@@ -219,18 +240,27 @@ const WorkspaceManager: React.FC = () => {
         dataSource={list}
         renderItem={(c) => {
           const ins = getInstructorFullName(c);
-          const avatarSrc = (c.imgUrl || "").trim() ? c.imgUrl : FALLBACK_COURSE_AVATAR;
+          const avatarSrc = (c.imgUrl || "").trim()
+            ? c.imgUrl
+            : FALLBACK_COURSE_AVATAR;
           return (
             <List.Item key={c.id} className="course-list-item">
               <List.Item.Meta
                 avatar={<Avatar src={avatarSrc} shape="square" />}
                 title={
                   <div className="course-title-row">
-                    <Text className="course-title" ellipsis={{ tooltip: c.courseName }}>
+                    <Text
+                      className="course-title"
+                      ellipsis={{ tooltip: c.courseName }}
+                    >
                       {c.courseName}
                     </Text>
-                    {typeof c.ratingAverage === "number" && <Tag>{c.ratingAverage.toFixed(1)}</Tag>}
-                    <Tag color={c.isActive ? "green" : "red"}>{c.isActive ? "Active" : "Inactive"}</Tag>
+                    {typeof c.ratingAverage === "number" && (
+                      <Tag>{c.ratingAverage.toFixed(1)}</Tag>
+                    )}
+                    <Tag color={c.isActive ? "green" : "red"}>
+                      {c.isActive ? "Active" : "Inactive"}
+                    </Tag>
                   </div>
                 }
                 description={
@@ -243,11 +273,16 @@ const WorkspaceManager: React.FC = () => {
                       </Tooltip>
                       <span>
                         <b>Created:</b>{" "}
-                        {c.createdAt ? new Date(c.createdAt).toLocaleDateString() : "N/A"}
+                        {c.createdAt
+                          ? new Date(c.createdAt).toLocaleDateString()
+                          : "N/A"}
                       </span>
                     </div>
                     {c.description && (
-                      <Paragraph className="course-desc" ellipsis={{ rows: 2, tooltip: c.description }}>
+                      <Paragraph
+                        className="course-desc"
+                        ellipsis={{ rows: 2, tooltip: c.description }}
+                      >
                         {c.description}
                       </Paragraph>
                     )}
@@ -263,7 +298,14 @@ const WorkspaceManager: React.FC = () => {
 
   /* --------------------- Columns --------------------- */
   const columns: ColumnsType<Workspace> = [
-    { title: "ID", dataIndex: "id", key: "id", ellipsis: true, width: 240, sorter: (a, b) => compareStr(a.id, b.id) },
+    {
+      title: "ID",
+      dataIndex: "id",
+      key: "id",
+      ellipsis: true,
+      width: 240,
+      sorter: (a, b) => compareStr(a.id, b.id),
+    },
     {
       title: "Workspace Name",
       dataIndex: "workSpaceName",
@@ -272,7 +314,13 @@ const WorkspaceManager: React.FC = () => {
       width: 220,
       sorter: (a, b) => compareStr(a.workSpaceName, b.workSpaceName),
     },
-    { title: "Order ID", dataIndex: "orderId", key: "orderId", ellipsis: true, width: 160 },
+    {
+      title: "Order ID",
+      dataIndex: "orderId",
+      key: "orderId",
+      ellipsis: true,
+      width: 160,
+    },
     {
       title: "Organization",
       dataIndex: "organizationId",
@@ -280,7 +328,8 @@ const WorkspaceManager: React.FC = () => {
       ellipsis: true,
       width: 220,
       render: (id: string) => getOrgName(id),
-      sorter: (a, b) => compareStr(getOrgName(a.organizationId), getOrgName(b.organizationId)),
+      sorter: (a, b) =>
+        compareStr(getOrgName(a.organizationId), getOrgName(b.organizationId)),
     },
     {
       title: "Accounts",
@@ -310,7 +359,10 @@ const WorkspaceManager: React.FC = () => {
                   type="link"
                   size="small"
                   onClick={() =>
-                    setShowAllCoursesCell((prev) => ({ ...prev, [key]: !expanded }))
+                    setShowAllCoursesCell((prev) => ({
+                      ...prev,
+                      [key]: !expanded,
+                    }))
                   }
                 >
                   {expanded ? "Show less" : "Show more"}
@@ -326,16 +378,15 @@ const WorkspaceManager: React.FC = () => {
       dataIndex: "imgUrl",
       key: "imgUrl",
       width: 120,
-      render: (url: string) =>
-        url ? (
-          <a href={url} target="_blank" rel="noopener noreferrer">
-            View
-          </a>
-        ) : (
-          "N/A"
-        ),
+      render: (url: string) => <Image src={url} />,
     },
-    { title: "Description", dataIndex: "description", key: "description", ellipsis: true, width: 260 },
+    {
+      title: "Description",
+      dataIndex: "description",
+      key: "description",
+      ellipsis: true,
+      width: 260,
+    },
     {
       title: "Active",
       dataIndex: "isActive",
@@ -349,9 +400,11 @@ const WorkspaceManager: React.FC = () => {
       dataIndex: "createdAt",
       key: "createdAt",
       width: 160,
-      render: (text: string) => (text ? new Date(text).toLocaleDateString() : "N/A"),
+      render: (text: string) =>
+        text ? new Date(text).toLocaleDateString() : "N/A",
       sorter: (a, b) =>
-        (a.createdAt ? Date.parse(a.createdAt) : 0) - (b.createdAt ? Date.parse(b.createdAt) : 0),
+        (a.createdAt ? Date.parse(a.createdAt) : 0) -
+        (b.createdAt ? Date.parse(b.createdAt) : 0),
       defaultSortOrder: "descend",
     },
     {
@@ -359,18 +412,22 @@ const WorkspaceManager: React.FC = () => {
       dataIndex: "updatedAt",
       key: "updatedAt",
       width: 160,
-      render: (text: string | null) => (text ? new Date(text).toLocaleDateString() : "N/A"),
+      render: (text: string | null) =>
+        text ? new Date(text).toLocaleDateString() : "N/A",
       sorter: (a, b) =>
-        (a.updatedAt ? Date.parse(a.updatedAt) : 0) - (b.updatedAt ? Date.parse(b.updatedAt) : 0),
+        (a.updatedAt ? Date.parse(a.updatedAt) : 0) -
+        (b.updatedAt ? Date.parse(b.updatedAt) : 0),
     },
     {
       title: "Deleted At",
       dataIndex: "deleteAt",
       key: "deleteAt",
       width: 160,
-      render: (text: string | null) => (text ? new Date(text).toLocaleDateString() : "N/A"),
+      render: (text: string | null) =>
+        text ? new Date(text).toLocaleDateString() : "N/A",
       sorter: (a, b) =>
-        (a.deleteAt ? Date.parse(a.deleteAt) : 0) - (b.deleteAt ? Date.parse(b.deleteAt) : 0),
+        (a.deleteAt ? Date.parse(a.deleteAt) : 0) -
+        (b.deleteAt ? Date.parse(b.deleteAt) : 0),
     },
     {
       title: "Actions",
@@ -398,7 +455,9 @@ const WorkspaceManager: React.FC = () => {
 
   return (
     <div>
-      <Title level={2} style={{ marginBottom: 12 }}>Workspace Manager</Title>
+      <Title level={2} style={{ marginBottom: 12 }}>
+        Workspace Manager
+      </Title>
 
       <Card style={{ marginBottom: 12 }}>
         <Row gutter={[12, 12]}>
@@ -427,7 +486,12 @@ const WorkspaceManager: React.FC = () => {
             />
           </Col>
           <Col xs={24} sm={12} md={4} lg={4}>
-            <Button onClick={() => { setKeyword(""); setOrgFilter(undefined); }}>
+            <Button
+              onClick={() => {
+                setKeyword("");
+                setOrgFilter(undefined);
+              }}
+            >
               Reset
             </Button>
           </Col>
@@ -446,7 +510,9 @@ const WorkspaceManager: React.FC = () => {
         pagination={{ pageSize: 10 }}
         scroll={{ x: 2000 }}
         onChange={onTableChange}
-        rowClassName={(_, idx) => (idx % 2 === 0 ? "row-striped" : "row-normal")}
+        rowClassName={(_, idx) =>
+          idx % 2 === 0 ? "row-striped" : "row-normal"
+        }
       />
 
       <Modal
@@ -458,31 +524,77 @@ const WorkspaceManager: React.FC = () => {
       >
         {selectedWorkspace && (
           <div>
-            <p><strong>ID:</strong> {selectedWorkspace.id}</p>
-            <p><strong>Workspace Name:</strong> {selectedWorkspace.workSpaceName}</p>
-            <p><strong>Order ID:</strong> {selectedWorkspace.orderId || "N/A"}</p>
-            <p><strong>Organization:</strong> {getOrgName(selectedWorkspace.organizationId)}</p>
-            <p><strong>Number of Accounts:</strong> {selectedWorkspace.numberOfAccount}</p>
+            <p>
+              <strong>ID:</strong> {selectedWorkspace.id}
+            </p>
+            <p>
+              <strong>Workspace Name:</strong> {selectedWorkspace.workSpaceName}
+            </p>
+            <p>
+              <strong>Order ID:</strong> {selectedWorkspace.orderId || "N/A"}
+            </p>
+            <p>
+              <strong>Organization:</strong>{" "}
+              {getOrgName(selectedWorkspace.organizationId)}
+            </p>
+            <p>
+              <strong>Number of Accounts:</strong>{" "}
+              {selectedWorkspace.numberOfAccount}
+            </p>
             <p>
               <strong>Image URL:</strong>{" "}
               {selectedWorkspace.imgUrl ? (
-                <a href={selectedWorkspace.imgUrl} target="_blank" rel="noopener noreferrer">View</a>
-              ) : ("N/A")}
+                <a
+                  href={selectedWorkspace.imgUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  View
+                </a>
+              ) : (
+                "N/A"
+              )}
             </p>
-            <p><strong>Description:</strong> {selectedWorkspace.description}</p>
-            <p><strong>Active:</strong> {selectedWorkspace.isActive ? "Yes" : "No"}</p>
-            <p><strong>Created At:</strong> {new Date(selectedWorkspace.createdAt).toLocaleDateString()}</p>
-            <p><strong>Updated At:</strong> {selectedWorkspace.updatedAt ? new Date(selectedWorkspace.updatedAt).toLocaleDateString() : "N/A"}</p>
-            <p><strong>Deleted At:</strong> {selectedWorkspace.deleteAt ? new Date(selectedWorkspace.deleteAt).toLocaleDateString() : "N/A"}</p>
+            <p>
+              <strong>Description:</strong> {selectedWorkspace.description}
+            </p>
+            <p>
+              <strong>Active:</strong>{" "}
+              {selectedWorkspace.isActive ? "Yes" : "No"}
+            </p>
+            <p>
+              <strong>Created At:</strong>{" "}
+              {new Date(selectedWorkspace.createdAt).toLocaleDateString()}
+            </p>
+            <p>
+              <strong>Updated At:</strong>{" "}
+              {selectedWorkspace.updatedAt
+                ? new Date(selectedWorkspace.updatedAt).toLocaleDateString()
+                : "N/A"}
+            </p>
+            <p>
+              <strong>Deleted At:</strong>{" "}
+              {selectedWorkspace.deleteAt
+                ? new Date(selectedWorkspace.deleteAt).toLocaleDateString()
+                : "N/A"}
+            </p>
 
             <div style={{ marginTop: 16 }}>
               <Text strong>Courses in this workspace:</Text>
               <div style={{ marginTop: 8 }}>
-                {renderCourseList(coursesByWorkspaceId.get(normalizeId(selectedWorkspace.id)) || [])}
+                {renderCourseList(
+                  coursesByWorkspaceId.get(normalizeId(selectedWorkspace.id)) ||
+                    []
+                )}
               </div>
             </div>
 
-            <Button style={{ marginTop: 16 }} onClick={() => setIsModalVisible(false)}>Close</Button>
+            <Button
+              style={{ marginTop: 16 }}
+              onClick={() => setIsModalVisible(false)}
+            >
+              Close
+            </Button>
           </div>
         )}
       </Modal>
@@ -501,14 +613,20 @@ const WorkspaceManager: React.FC = () => {
       >
         {workspaceToDelete && (
           <div>
-            <p><b>Are you sure you want to permanently delete this workspace?</b></p>
             <p>
-              <strong>Name:</strong> {workspaceToDelete.workSpaceName}<br/>
-              <strong>ID:</strong> {workspaceToDelete.id}<br/>
-              <strong>Number of Accounts:</strong> {workspaceToDelete.numberOfAccount}
+              <b>Are you sure you want to permanently delete this workspace?</b>
+            </p>
+            <p>
+              <strong>Name:</strong> {workspaceToDelete.workSpaceName}
+              <br />
+              <strong>ID:</strong> {workspaceToDelete.id}
+              <br />
+              <strong>Number of Accounts:</strong>{" "}
+              {workspaceToDelete.numberOfAccount}
             </p>
             <p style={{ color: "red" }}>
-              This action <b>cannot be undone</b>. All related data will be permanently removed from the database.
+              This action <b>cannot be undone</b>. All related data will be
+              permanently removed from the database.
             </p>
           </div>
         )}

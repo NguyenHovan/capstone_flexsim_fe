@@ -52,6 +52,7 @@ import QuizPage from "../pages/QuizPage";
 import ScenarioManager from "../pages/Instructor/Manage-Scenario";
 import QuizReview from "../pages/QuizReview";
 import ClassSubmissionsTable from "../pages/Instructor/LessonSubmission";
+import ProfilePage from "../pages/Instructor/Profile";
 
 const MainRoute = () => {
   return (
@@ -164,10 +165,11 @@ const MainRoute = () => {
             element={<AddStudentPage />}
           />
           <Route path="/instructor-topic" element={<TopicManagement />} />
+          <Route path="/instructor-profile" element={<ProfilePage />} />
           <Route path="/instructor-scene" element={<SceneManagement />} />
           <Route path="/instructor-scenario" element={<ScenarioManager />} />
           <Route
-            path="/instructor-quiz/:lessonId"
+            path="/instructor-quiz/:lessonId/:topicId"
             element={<QuizManagement />}
           />
           <Route path="/instructor-review" element={<ReviewManagement />} />
