@@ -4,11 +4,14 @@ import type { Account } from "../types/account";
 import type { OrganizationAdminForm } from "../types/organizationAdmin";
 import type { UpdateAccountPayload } from "../types/account";
 import type { AccountForm} from "../types/account";
+import type { ForgotPassword as ForgotPasswordPayload } from "../types/account";
+
 import { getErrorMessage } from "../utils/errorHandler";
 import { getCurrentUserLite } from "../utils/currentUser";
 
 const unwrap = (d: any) => (d?.data ?? d) as any;
 
+export type ResetPasswordPayload = { token: string; newPassword: string };
 
 export const AccountService = {
   getAllAccounts: async (): Promise<Account[]> => {
@@ -21,7 +24,6 @@ export const AccountService = {
       throw error; 
     }
   },
-
   
   getAccountById: async (id: string): Promise<Account> => {
     try {
@@ -57,7 +59,6 @@ getAllByOrgId: async (orgId: string): Promise<Account[]> => {
       const res = await axiosInstance.get(API.GET_ACCOUNT_ID);
       return res.data;
     } catch (err) {
-      // Fallback localStorage để My Subscription vẫn hoạt động
       const cached = getCurrentUserLite();
       if (cached) return cached as any;
       throw err;
@@ -120,32 +121,26 @@ async uploadAvatar(file: File): Promise<string> {
   },
 
 async updateAccount(id: string, body: UpdateAccountPayload): Promise<Account> {
-    try {
-      const norm: UpdateAccountPayload = { ...body };
+  try {
+    // KHÔNG convert gender nữa: BE dùng 1/2/3 giống UI
+    const clean = Object.fromEntries(
+      Object.entries(body).filter(
+        ([, v]) => v !== undefined && v !== null && !(typeof v === "string" && v.trim() === "")
+      )
+    ) as UpdateAccountPayload;
 
-      if (typeof norm.gender === "number") {
-        const uiToBe: Record<number, number> = { 1: 0, 2: 1, 3: 2 };
-        if (norm.gender in uiToBe) norm.gender = uiToBe[norm.gender];
-      }
+    const base = String(API.UPDATE_ACCOUNT || '').replace(/\/+$/, '');
+    const url  = `${base}/${encodeURIComponent(id)}`;
 
-      const clean = Object.fromEntries(
-        Object.entries(norm).filter(
-          ([, v]) => v !== undefined && v !== null && !(typeof v === "string" && v.trim() === "")
-        )
-      ) as UpdateAccountPayload;
-
-      const base = String(API.UPDATE_ACCOUNT || '').replace(/\/+$/, '');
-      const url  = `${base}/${encodeURIComponent(id)}`;
-
-      const { data } = await axiosInstance.put(url, clean, {
-        headers: { 'Content-Type': 'application/json' },
-      });
-      return data as Account;
-    } catch (error: any) {
-      console.error('PUT /update_account error:', error?.response?.status, error?.response?.data);
-      throw error;
-    }
-  },
+    const { data } = await axiosInstance.put(url, clean, {
+      headers: { 'Content-Type': 'application/json' },
+    });
+    return data as Account;
+  } catch (error: any) {
+    console.error('PUT /update_account error:', error?.response?.status, error?.response?.data);
+    throw error;
+  }
+},
 
   deleteAccount: async (id: string): Promise<void> => {
     try {
@@ -204,8 +199,6 @@ async updateAccount(id: string, body: UpdateAccountPayload): Promise<Account> {
       throw new Error(msg);
     }
   },
-
-  /** Import STUDENTS từ file Excel (multipart/form-data) */
   importStudents: async (organizationId: string, file: File): Promise<any> => {
     try {
       const form = new FormData();
@@ -230,7 +223,6 @@ async updateAccount(id: string, body: UpdateAccountPayload): Promise<Account> {
     }
   },
 
-  /** Export/Download danh sách hoặc template INSTRUCTORS (trả Blob) */
   exportInstructors: async (organizationId: string): Promise<Blob> => {
     try {
       const { data } = await axiosInstance.get(
@@ -245,7 +237,6 @@ async updateAccount(id: string, body: UpdateAccountPayload): Promise<Account> {
     }
   },
 
-  /** Export/Download danh sách hoặc template STUDENTS (trả Blob) */
   exportStudents: async (organizationId: string): Promise<Blob> => {
     try {
       const { data } = await axiosInstance.get(
@@ -259,5 +250,85 @@ async updateAccount(id: string, body: UpdateAccountPayload): Promise<Account> {
       throw new Error(msg);
     }
   },
+   async changePassword(payload: { currentPassword: string; newPassword: string }): Promise<void> {
+    const me = getCurrentUserLite(); 
+    const url = me?.id
+      ? `${API.CHANGE_PASSWORD}?accountId=${encodeURIComponent(me.id)}`
+      : API.CHANGE_PASSWORD;
 
-};
+    const body = me?.id ? { ...payload, accountId: me.id } : payload;
+
+    try {
+      await axiosInstance.post(url, body, {
+        headers: { "Content-Type": "application/json" },
+      });
+    } catch (error: any) {
+      console.error("changePassword error:", {
+        url,
+        me,
+        status: error?.response?.status,
+        backend: error?.response?.data,
+      });
+      throw new Error(getErrorMessage(error) || "Change password failed");
+    }
+  },
+   async forgotPassword(payload: ForgotPasswordPayload): Promise<void> {
+    try {
+      await axiosInstance.post(API.FORGOT_PASSWORD, payload, {
+        headers: { "Content-Type": "application/json" },
+      });
+    } catch (err: any) {
+      throw new Error(getErrorMessage(err) || "Forgot password failed");
+    }
+  },
+    async resetPassword(payload: ResetPasswordPayload) {
+    try {
+      await axiosInstance.post(API.RESET_PASSWORD, payload, {
+        headers: { "Content-Type": "application/json" },
+      });
+    } catch (err: any) {
+      throw new Error(getErrorMessage(err) || "Reset password failed");
+    }
+  },
+  async resendVerify(identity: string) {
+    try {
+      await axiosInstance.post(API.RESEND_VERIFY, JSON.stringify(identity), {
+        headers: { "Content-Type": "application/json" },
+      });
+    } catch (err: any) {
+      throw new Error(getErrorMessage(err) || "Resend verify failed");
+    }
+  },
+
+  async verifyEmail(otp: string) {
+    try {
+      await axiosInstance.post(API.VERIFY_EMAIL, JSON.stringify(otp), {
+        headers: { "Content-Type": "application/json" },
+      });
+    } catch (err: any) {
+      throw new Error(getErrorMessage(err) || "Verify email failed");
+    }
+  },
+   async requestChangeEmail(payload: { newEmail: string; password: string }): Promise<void> {
+    const body = { newEmail: payload.newEmail, password: payload.password, PASSWORD: payload.password };
+    try {
+      await axiosInstance.post(API.REQUEST_CHANGE_EMAIL, body, {
+        headers: { "Content-Type": "application/json" },
+      });
+    } catch (err: any) {
+      throw new Error(getErrorMessage(err) || "Request change email failed");
+    }
+  },
+
+  async confirmChangeEmail(code: string): Promise<void> {
+    try {
+      await axiosInstance.post(
+        API.CONFIRM_CHANGE_EMAIL,
+        JSON.stringify(code.trim()),
+        { headers: { "Content-Type": "application/json" } }
+      );
+    } catch (err: any) {
+      throw new Error(getErrorMessage(err) || "Confirm change email failed");
+    }
+  },
+} as const;

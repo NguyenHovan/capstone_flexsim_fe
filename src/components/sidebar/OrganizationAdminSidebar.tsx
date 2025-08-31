@@ -1,4 +1,4 @@
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   HomeOutlined,
   LogoutOutlined,
@@ -7,6 +7,13 @@ import {
   CrownOutlined,
   ShoppingCartOutlined,
   QuestionCircleOutlined,
+  SettingOutlined,
+  UserOutlined,
+  KeyOutlined,
+  DownOutlined,
+  RightOutlined,
+  MailOutlined,
+ 
 } from "@ant-design/icons";
 import React from "react";
 import "./organizationAdminSidebar.css";
@@ -20,6 +27,7 @@ type MenuItem = {
 
 const OrganizationAdminSidebar: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
@@ -37,12 +45,21 @@ const OrganizationAdminSidebar: React.FC = () => {
     { label: "Subscription Plan", icon: <CrownOutlined />,          path: "/organizationAdmin/subscription" },
     { label: "Order Manager",     icon: <ShoppingCartOutlined />,   path: "/organizationAdmin/order-manager" },
     { label: "Support & Help",    icon: <QuestionCircleOutlined />, path: "/organizationAdmin/support" },
-    { label: "Logout",            icon: <LogoutOutlined />,         path: "/organizationAdmin/logout", onClick: handleLogout },
   ];
+
+  const isSettingsChildActive = [
+    "/organizationAdmin/orgAdmin-profile",
+    "/organizationAdmin/orgAdmin-change-password",
+    "/organizationAdmin/orgAdmin-change-email",
+  ].some(p => location.pathname.startsWith(p));
+
+  const [openSettings, setOpenSettings] = React.useState<boolean>(isSettingsChildActive);
+  React.useEffect(() => setOpenSettings(isSettingsChildActive), [isSettingsChildActive]);
 
   return (
     <div className="organizationAdmin-sidebar" role="navigation" aria-label="Organization admin sidebar">
       <div className="sidebar-section-title">ORGANIZATION ADMIN</div>
+
       <ul className="organizationAdmin-sidebar-menu">
         {menuItems.map((item) => (
           <li key={item.path}>
@@ -59,6 +76,75 @@ const OrganizationAdminSidebar: React.FC = () => {
             </NavLink>
           </li>
         ))}
+
+        {/* ===== Settings ===== */}
+        <li>
+          <div
+            role="button"
+            aria-expanded={openSettings}
+            className={`organizationAdmin-sidebar-item ${isSettingsChildActive ? "active" : ""}`}
+            onClick={() => setOpenSettings(v => !v)}
+          >
+            <SettingOutlined />
+            <span className="organizationAdmin-sidebar-label">Settings</span>
+            <span style={{ marginLeft: "auto" }}>
+              {openSettings ? <DownOutlined /> : <RightOutlined />}
+            </span>
+          </div>
+
+          {openSettings && (
+            <ul className="organizationAdmin-submenu">
+              <li>
+                <NavLink
+                  to="/organizationAdmin/orgAdmin-profile"
+                  className={({ isActive }) =>
+                    `organizationAdmin-sidebar-item organizationAdmin-submenu-item ${isActive ? "active" : ""}`
+                  }
+                >
+                  <UserOutlined />
+                  <span className="organizationAdmin-sidebar-label">Profile</span>
+                </NavLink>
+              </li>
+
+              <li>
+                <NavLink
+                  to="/organizationAdmin/orgAdmin-change-password"
+                  className={({ isActive }) =>
+                    `organizationAdmin-sidebar-item organizationAdmin-submenu-item ${isActive ? "active" : ""}`
+                  }
+                >
+                  <KeyOutlined />
+                  <span className="organizationAdmin-sidebar-label">Change password</span>
+                </NavLink>
+              </li>
+
+              <li>
+                <NavLink
+                  to="/organizationAdmin/orgAdmin-change-email"
+                  className={({ isActive }) =>
+                    `organizationAdmin-sidebar-item organizationAdmin-submenu-item ${isActive ? "active" : ""}`
+                  }
+                >
+                  <MailOutlined />
+                  <span className="organizationAdmin-sidebar-label">Change email</span>
+                </NavLink>
+              </li>
+
+            </ul>
+          )}
+        </li>
+
+        {/* Logout */}
+        <li>
+          <NavLink
+            to="/organizationAdmin/logout"
+            className="organizationAdmin-sidebar-item"
+            onClick={(e) => handleLogout(e)}
+          >
+            <LogoutOutlined />
+            <span className="organizationAdmin-sidebar-label">Logout</span>
+          </NavLink>
+        </li>
       </ul>
     </div>
   );

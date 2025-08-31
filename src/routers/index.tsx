@@ -43,8 +43,6 @@ import OrderAdmin from "../pages/Admin/Order Manager/OrderAdmin";
 import AddStudentPage from "../pages/Instructor/Add-student/Add-student";
 import MyCertificate from "../pages/MyCertificate/MyCertificate";
 import ContentCourse from "../pages/Instructor/Course-manage/ContentCourse";
-import AdminProfile from "../pages/Admin/Profile/AdminProfile";
-import OrgAdminProfile from "../pages/OrganizationAdmin/Profile/OrgAdminProfile";
 import OrgAdminSubscriptionPlans from "../pages/OrganizationAdmin/Subcription/Subcription";
 import QuizDetail from "../pages/Instructor/Quiz-manage/Quiz-Detail";
 import TopicDetail from "../pages/TopicDetail/TopicDetail";
@@ -53,6 +51,13 @@ import ScenarioManager from "../pages/Instructor/Manage-Scenario";
 import QuizReview from "../pages/QuizReview";
 import ClassSubmissionsTable from "../pages/Instructor/LessonSubmission";
 import ProfilePage from "../pages/Instructor/Profile";
+import OrgAdminChangePassword from "../pages/OrganizationAdmin/Settings/Change Password/OrgAdminChangePassword";
+import OrgAdminChangeEmail from "../pages/OrganizationAdmin/Settings/Change Email/OrgAdminChangeEmail";
+import AdminChangePassword from "../pages/Admin/Settings/Change Password/AdminChangePassword";
+import AdminChangeEmail from "../pages/Admin/Settings/Change Email/AdminChangeEmail";
+import AdminProfile from "../pages/Admin/Settings/Profile/AdminProfile";
+import OrgAdminProfile from "../pages/OrganizationAdmin/Settings/Profile/OrgAdminProfile";
+import ResetPasswordPage from "../pages/ResetPassword/ResetPassword";
 
 const MainRoute = () => {
   return (
@@ -61,6 +66,7 @@ const MainRoute = () => {
       <Route path="/login" element={<LoginPage />} />
       {/* <Route path="/signup" element={<SignUpPage />} /> */}
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/verify-code" element={<VerifyCodePage />} />
       <Route path="/payment/success" element={<PaymentSuccess />} />
       <Route path="/payment/fail" element={<PaymentFail />} />
@@ -134,6 +140,9 @@ const MainRoute = () => {
           />
           <Route path="order-manager" element={<OrderAdmin />} />
           <Route path="admin-profile" element={<AdminProfile />} />
+          <Route path="admin-change-password" element={<AdminChangePassword />} />
+          <Route path="admin-change-email" element={<AdminChangeEmail />} />
+
         </Route>
       </Route>
 
@@ -147,6 +156,9 @@ const MainRoute = () => {
           <Route path="subscription" element={<OrgAdminSubscriptionPlans />} />
           <Route path="order-manager" element={<OrderOrganization />} />
           <Route path="orgAdmin-profile" element={<OrgAdminProfile />} />
+          <Route path="orgAdmin-change-password" element={<OrgAdminChangePassword />} />
+          <Route path="orgAdmin-change-email" element={<OrgAdminChangeEmail />} />
+
         </Route>
       </Route>
 

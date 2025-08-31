@@ -7,7 +7,7 @@ export interface Account {
   email: string;
   password?: string;
   phone: string;
-  gender: number; // 0: Male, 1: Female, 2: Other
+  gender: number; // 1: Male, 2: Female, 3: Other
   address?: string;
   avtUrl?: string;
   isEmailVerify: boolean;
@@ -28,7 +28,7 @@ export type UpdateAccountPayload = {
   organizationId?: string;
   roleId?: string;
   phone?: string;
-  gender?: number;
+  gender?: number; 
   address?: string;
   avtUrl?: string;
 };

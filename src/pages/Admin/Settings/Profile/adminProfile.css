@@ -25,7 +25,7 @@
   font-size: 14px;
 }
 
-/* AVATAR block */
+/* ============= AVATAR ============= */
 .avatar-block {
   display: grid;
   place-items: center;
@@ -39,11 +39,21 @@
   height: 112px;
 }
 
-.avatar-block__img {
+/* avatar tròn & fit ảnh */
+.avatar-block__img,
+.avatar-block__img .ant-avatar,
+.avatar-block__img img,
+.ant-avatar > img {
+  width: 112px !important;
+  height: 112px !important;
+  border-radius: 50% !important;
+  object-fit: cover;
+  display: block;
   box-shadow: 0 8px 24px rgba(35, 52, 132, 0.18);
   border: 3px solid #fff;
 }
 
+/* vị trí uploader (nút "Đổi ảnh") */
 .avatar-block__uploader {
   position: absolute;
   right: -8px;
@@ -52,19 +62,17 @@
   align-items: center;
 }
 
-.avatar-block__camera {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 999px;
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  color: #374151;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-  cursor: default; /* chỉ là icon minh họa */
-  margin-right: 8px;
+/* ẨN HOÀN TOÀN preview hình vuông của Ant Upload trong uploader */
+.avatar-block__uploader .ant-upload-list,
+.avatar-block__uploader .ant-upload-list * {
+  display: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* (nếu uploader hiện hình <img> demo) đảm bảo nó cũng ẩn */
+.avatar-block__uploader img {
+  display: none !important;
 }
 
 /* BTN Save avatar */
@@ -72,7 +80,7 @@
   min-width: 120px;
 }
 
-/* MAIN CARD */
+/* ============= MAIN CARD ============= */
 .profile-card {
   border-radius: 12px;
   border: 1px solid #f0f0f0;
@@ -91,4 +99,20 @@
   display: flex;
   justify-content: flex-end;
   margin-top: 24px;
+}
+
+/* ============= RESPONSIVE ============= */
+@media (max-width: 768px) {
+  .profile-hero {
+    padding: 22px 12px 72px;
+  }
+
+  .avatar-block__outer,
+  .avatar-block__img,
+  .avatar-block__img .ant-avatar,
+  .avatar-block__img img,
+  .ant-avatar > img {
+    width: 96px !important;
+    height: 96px !important;
+  }
 }

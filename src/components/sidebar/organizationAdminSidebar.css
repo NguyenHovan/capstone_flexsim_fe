@@ -1,31 +1,31 @@
 .organizationAdmin-sidebar {
-  width: 240px; /* Tăng chiều rộng nhẹ để thoải mái hơn */
-  background: linear-gradient(135deg, #ffffff 0%, #f5faff 100%); /* Gradient nền hiện đại */
-  border-right: 1px solid rgba(238, 238, 238, 0.5); /* Màu viền nhạt hơn */
-  padding-top: 32px; /* Tăng khoảng cách trên */
+  width: 240px;
+  background: linear-gradient(135deg, #ffffff 0%, #f5faff 100%); 
+  border-right: 1px solid rgba(238, 238, 238, 0.5); 
+  padding-top: 32px; 
   min-height: calc(100vh - 64px);
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding-left: 24px; /* Tăng padding trái */
-  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.05); /* Thêm bóng đổ nhẹ */
-  transition: width 0.3s ease; /* Hiệu ứng thu phóng */
+  padding-left: 24px; 
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.05); 
+  transition: width 0.3s ease; 
 }
 
 .organizationAdmin-sidebar:hover {
-  width: 260px; /* Mở rộng khi hover để hiệu ứng responsive */
+  width: 260px; 
 }
 
 .sidebar-section-title {
-  font-size: 18px; /* Tăng kích thước chữ */
-  font-weight: 800; /* Tăng đậm */
+  font-size: 18px; 
+  font-weight: 800;
   color: #0b025b;
-  margin-bottom: 32px; /* Tăng khoảng cách dưới */
+  margin-bottom: 32px; 
   letter-spacing: 2px;
   font-family: 'Montserrat', Arial, sans-serif;
-  text-transform: uppercase; /* Chữ in hoa để nổi bật */
-  text-shadow: 0 1px 2px rgba(255, 251, 231, 0.2), 0 2px 6px rgba(200, 200, 0, 0.05); /* Tinh chỉnh shadow */
-  position: relative; /* Thêm hiệu ứng đường kẻ */
+  text-transform: uppercase; 
+  text-shadow: 0 1px 2px rgba(255, 251, 231, 0.2), 0 2px 6px rgba(200, 200, 0, 0.05); 
+  position: relative; 
 }
 
 .sidebar-section-title::after {
@@ -35,12 +35,12 @@
   left: 0;
   width: 40px;
   height: 2px;
-  background: #1890ff; /* Đường kẻ màu xanh */
+  background: #1890ff; 
   transition: width 0.3s ease;
 }
 
 .sidebar-section-title:hover::after {
-  width: 60px; /* Mở rộng đường kẻ khi hover */
+  width: 60px; 
 }
 
 .organizationAdmin-sidebar-menu {
@@ -48,7 +48,7 @@
   padding: 0;
   margin: 0;
   width: 100%;
-  flex-grow: 1; /* Đảm bảo menu chiếm hết chiều cao còn lại */
+  flex-grow: 1; 
 }
 
 .organizationAdmin-sidebar-item {
@@ -57,12 +57,12 @@
   padding: 14px 24px;
   cursor: pointer;
   font-size: 15px;
-  color: #666666; /* Màu chữ tối hơn một chút */
-  transition: all 0.2s ease-in-out; /* Hiệu ứng mượt hơn */
-  border-radius: 8px; /* Bo góc lớn hơn */
+  color: #666666; 
+  transition: all 0.2s ease-in-out; 
+  border-radius: 8px; 
   margin-bottom: 6px;
   text-decoration: none;
-  position: relative; /* Thêm hiệu ứng chỉ báo */
+  position: relative; 
 }
 
 .organizationAdmin-sidebar-item::before {
@@ -79,39 +79,38 @@
 }
 
 .organizationAdmin-sidebar-item:hover {
-  background: rgba(24, 144, 255, 0.1); /* Nền nhạt khi hover */
-  color: #1890ff; /* Chữ sáng lên */
+  background: rgba(24, 144, 255, 0.1); 
+  color: #1890ff; 
 }
 
 .organizationAdmin-sidebar-item:hover::before {
-  background: #1890ff; /* Chỉ báo màu xanh khi hover */
+  background: #1890ff; 
 }
 
 .organizationAdmin-sidebar-item.active {
-  background: rgba(24, 144, 255, 0.15); /* Nền nhạt hơn khi active */
+  background: rgba(24, 144, 255, 0.15); 
   color: #1890ff;
   font-weight: 600;
 }
 
 .organizationAdmin-sidebar-item.active::before {
-  background: #1890ff; /* Chỉ báo màu xanh khi active */
+  background: #1890ff; 
 }
 
 .organizationAdmin-sidebar-label {
-  margin-left: 16px; /* Tăng khoảng cách giữa icon và text */
+  margin-left: 16px; 
   font-family: 'Montserrat', Arial, sans-serif;
   transition: color 0.2s ease;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .organizationAdmin-sidebar {
-    width: 200px; /* Thu hẹp trên màn hình nhỏ */
+    width: 200px; 
     padding-left: 16px;
   }
 
   .organizationAdmin-sidebar:hover {
-    width: 200px; /* Vô hiệu hóa hiệu ứng hover trên màn hình nhỏ */
+    width: 200px; 
   }
 
   .sidebar-section-title {
@@ -127,4 +126,20 @@
   .organizationAdmin-sidebar-label {
     margin-left: 12px;
   }
+}
+.organizationAdmin-submenu {
+  list-style: none;
+  padding-left: 14px;
+  margin: 6px 0 8px;
+}
+
+.organizationAdmin-submenu-item {
+  padding: 10px 16px;
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+.organizationAdmin-submenu .organizationAdmin-sidebar-item::before {
+  left: 6px;           
+  height: 16px;
 }
