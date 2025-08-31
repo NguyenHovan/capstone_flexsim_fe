@@ -65,12 +65,7 @@ const sidebarItems = [
   //   label: "Quizzes",
   //   url: "/instructor-quiz",
   // },
-  {
-    key: "Reviews",
-    icon: <UserOutlined />,
-    label: "Reviews",
-    url: "/instructor-review",
-  },
+
   {
     key: "Setting",
     icon: <SettingOutlined />,

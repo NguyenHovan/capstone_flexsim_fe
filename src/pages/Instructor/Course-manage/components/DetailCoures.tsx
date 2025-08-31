@@ -27,7 +27,9 @@ import { SceneService } from "../../../../services/scene.service";
 import { toast } from "sonner";
 import { LessonService } from "../../../../services/lesson.service";
 import { ScenarioService } from "../../../../services/scenario.service";
+
 const { Panel } = Collapse;
+
 const DetailCoures = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -35,7 +37,7 @@ const DetailCoures = () => {
   const [topics, setTopics] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isModalVisibleLesson, setIsModalVisibleLesson] = useState(false);
-  const [selectedTopic, setSelectedTopic] = useState(null);
+  const [selectedTopic, setSelectedTopic] = useState<any>(null);
   const [activeKeys, setActiveKeys] = useState<string[]>([]);
   const [editingLesson, setEditingLesson] = useState<any>(null);
   const [courseDetail, setCourseDetail] = useState({
@@ -50,6 +52,7 @@ const DetailCoures = () => {
   console.log({ scenes, selectedTopic });
   const [scenarios, setScenarios] = useState<any[]>([]);
   const [form] = Form.useForm();
+
   const fetchCourseDetail = async () => {
     try {
       const response = await CourseService.getCourseById(id || "");
@@ -58,6 +61,7 @@ const DetailCoures = () => {
       console.log({ error });
     }
   };
+
   const fetchDataTopic = async () => {
     try {
       if (!id) {
@@ -70,6 +74,7 @@ const DetailCoures = () => {
       setLoading(false);
     }
   };
+
   const fetchCoursesAndScenes = async () => {
     const [, sceneRes] = await Promise.all([
       CourseService.getAllCourses(),
@@ -78,6 +83,7 @@ const DetailCoures = () => {
 
     setScenes(sceneRes);
   };
+
   const fetchLessons = async (topicId: string) => {
     try {
       const res = await LessonService.getLessonByTopic(topicId);
@@ -86,6 +92,7 @@ const DetailCoures = () => {
       console.log(error);
     }
   };
+
   const fetchScenairios = async () => {
     try {
       const res = await ScenarioService.getScenarios();
@@ -109,6 +116,7 @@ const DetailCoures = () => {
     form.resetFields();
     setIsModalVisible(true);
   };
+
   const handleSubmitTopic = async () => {
     if (!id) {
       return;
@@ -125,7 +133,6 @@ const DetailCoures = () => {
       }
       await TopicService.createTopic(formData);
       toast.success("Tạo topic thành công!");
-      //   }
       setIsModalVisible(false);
       fetchDataTopic();
     } catch (e) {
@@ -150,6 +157,7 @@ const DetailCoures = () => {
       toast.error("Xóa lesson thất bại");
     }
   };
+
   const onFinish = async (values: any) => {
     if (!selectedTopic) return;
 
@@ -160,14 +168,16 @@ const DetailCoures = () => {
       fd.append("description", values.description);
       fd.append("lessonName", values.lessonName);
       fd.append("title", values.title);
-      fd.append("orderIndex", values.orderIndex);
+
+      // Chỉ append orderIndex nếu có (tránh undefined khi tạo mới)
+      if (values.orderIndex !== undefined && values.orderIndex !== null) {
+        fd.append("orderIndex", String(values.orderIndex));
+      }
+
       const fileList = Array.isArray(values.fileUrl) ? values.fileUrl : [];
       const fileObj: File | undefined = fileList[0]?.originFileObj;
 
-      if (!editingLesson && !fileObj) {
-        toast.error("Vui lòng chọn video");
-        return;
-      }
+      // Video là tùy chọn: chỉ append khi người dùng chọn
       if (fileObj) {
         fd.append("fileUrl", fileObj);
       }
@@ -189,6 +199,7 @@ const DetailCoures = () => {
       toast.error(editingLesson ? "Cập nhật thất bại" : "Tạo thất bại");
     }
   };
+
   const mappedInitialValues = React.useMemo(() => {
     if (!editingLesson) return { fileUrl: [] };
     const { fileUrl, ...rest } = editingLesson;
@@ -206,6 +217,7 @@ const DetailCoures = () => {
         : [],
     };
   }, [editingLesson]);
+
   useEffect(() => {
     fetchDataTopic();
     fetchCoursesAndScenes();
@@ -530,6 +542,7 @@ const DetailCoures = () => {
           ))}
         </Collapse>
       </Flex>
+
       <Modal
         open={isModalVisible}
         title={"Add new topic"}
@@ -602,6 +615,7 @@ const DetailCoures = () => {
           >
             <Input placeholder="VD: Giới thiệu bài học" />
           </Form.Item>
+
           <Form.Item label="Scenario" name="scenarioId">
             <Select placeholder="Chọn scenarioId">
               {scenarios.map((scene) => (
@@ -611,22 +625,22 @@ const DetailCoures = () => {
               ))}
             </Select>
           </Form.Item>
+
+          {/* Video tùy chọn */}
           <Form.Item
-            label="Video bài học"
+            label="Video bài học (không bắt buộc)"
             name="fileUrl"
             valuePropName="fileList"
             getValueFromEvent={(e) => {
               if (Array.isArray(e)) return e;
               return e?.fileList ? e.fileList : [];
             }}
-            rules={[
-              { required: !editingLesson, message: "Vui lòng chọn video" },
-            ]}
           >
             <Upload accept="video/*" maxCount={1} beforeUpload={() => false}>
-              <Button icon={<UploadOutlined />}>Chọn video</Button>
+              <Button icon={<UploadOutlined />}>Chọn video (tuỳ chọn)</Button>
             </Upload>
           </Form.Item>
+
           <Form.Item
             label="Mô tả"
             name="description"
@@ -634,6 +648,7 @@ const DetailCoures = () => {
           >
             <Input.TextArea rows={6} placeholder="Nhập mô tả bài học" />
           </Form.Item>
+
           {editingLesson && (
             <Form.Item
               label="Thứ tự bài giảng"
