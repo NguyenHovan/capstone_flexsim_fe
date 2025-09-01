@@ -1,16 +1,22 @@
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   HomeOutlined,
   TeamOutlined,
   UserOutlined,
   SettingOutlined,
   LogoutOutlined,
-  QuestionCircleOutlined,
+  KeyOutlined,
+  MailOutlined,
+  DownOutlined,
+  RightOutlined,
+  AppstoreOutlined,
 } from "@ant-design/icons";
+import React from "react";
 import "./adminSidebar.css";
 
-const AdminSidebar = () => {
+const AdminSidebar: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
@@ -22,62 +28,30 @@ const AdminSidebar = () => {
   };
 
   const menuItems = [
-    {
-      label: "Overview",
-      icon: <HomeOutlined />,
-      path: "/admin/",
-    },
-    {
-      label: "Organization Manager",
-      icon: <TeamOutlined />,
-      path: "/admin/organization-manager",
-    },
-    {
-      label: "User Manager",
-      icon: <UserOutlined />,
-      path: "/admin/user-manager",
-    },
-    {
-      label: "Workspace Manager",
-      icon: <SettingOutlined />,
-      path: "/admin/workspace-manager",
-    },
-    {
-      label: "Subcription Manager",
-      icon: <SettingOutlined />,
-      path: "/admin/subscriptionPlan-manager",
-    },
-    {
-      label: "Order Manager",
-      icon: <SettingOutlined />,
-      path: "/admin/order-manager",
-    },
-    {
-      label: "Scene Manager",
-      icon: <SettingOutlined />,
-      path: "/admin/scene-manager",
-    },
-    {
-      label: "Scenario Manager",
-      icon: <SettingOutlined />,
-      path: "/admin/scenario-manager",
-    },
-    {
-      label: "Support & Help",
-      icon: <QuestionCircleOutlined />,
-      path: "/admin/support",
-    },
-    {
-      label: "Logout",
-      icon: <LogoutOutlined />,
-      path: "/admin/logout",
-      onClick: handleLogout,
-    },
-  ];
+    { label: "Overview",              icon: <HomeOutlined />,       path: "/admin/" },
+    { label: "Organization Manager",  icon: <TeamOutlined />,       path: "/admin/organization-manager" },
+    { label: "User Manager",          icon: <UserOutlined />,       path: "/admin/user-manager" },
+    { label: "Workspace Manager",     icon: <AppstoreOutlined />,   path: "/admin/workspace-manager" },
+    { label: "Subcription Manager",   icon: <SettingOutlined />,    path: "/admin/subscriptionPlan-manager" },
+    { label: "Order Manager",         icon: <SettingOutlined />,    path: "/admin/order-manager" },
+    // { label: "Scene Manager",         icon: <SettingOutlined />,    path: "/admin/scene-manager" },
+    // { label: "Scenario Manager",      icon: <SettingOutlined />,    path: "/admin/scenario-manager" },
+    // { label: "Support & Help",        icon: <QuestionCircleOutlined />, path: "/admin/support" },
+  ] as const;
+
+  const isSettingsChildActive = [
+    "/admin/admin-profile",
+    "/admin/admin-change-password",
+    "/admin/admin-change-email",
+  ].some((p) => location.pathname.startsWith(p));
+
+  const [openSettings, setOpenSettings] = React.useState<boolean>(isSettingsChildActive);
+  React.useEffect(() => setOpenSettings(isSettingsChildActive), [isSettingsChildActive]);
 
   return (
-    <div className="admin-sidebar">
+    <div className="admin-sidebar" role="navigation" aria-label="Admin sidebar">
       <div className="sidebar-section-title">SYSTEM ADMIN</div>
+
       <ul className="admin-sidebar-menu">
         {menuItems.map((item) => (
           <li key={item.path}>
@@ -86,14 +60,78 @@ const AdminSidebar = () => {
               className={({ isActive }) =>
                 `admin-sidebar-item ${isActive ? "active" : ""}`
               }
-              end
-              onClick={(e) => item.onClick && item.onClick(e)}
+              end={item.path === "/admin/"} 
             >
               {item.icon}
               <span className="admin-sidebar-label">{item.label}</span>
             </NavLink>
           </li>
         ))}
+
+        <li>
+          <div
+            role="button"
+            aria-expanded={openSettings}
+            className={`admin-sidebar-item ${isSettingsChildActive ? "active" : ""}`}
+            onClick={() => setOpenSettings((v) => !v)}
+          >
+            <SettingOutlined />
+            <span className="admin-sidebar-label">Settings</span>
+            <span style={{ marginLeft: "auto" }}>
+              {openSettings ? <DownOutlined /> : <RightOutlined />}
+            </span>
+          </div>
+
+          {openSettings && (
+            <ul className="admin-submenu">
+              <li>
+                <NavLink
+                  to="/admin/admin-profile"
+                  className={({ isActive }) =>
+                    `admin-sidebar-item admin-submenu-item ${isActive ? "active" : ""}`
+                  }
+                >
+                  <UserOutlined />
+                  <span className="admin-sidebar-label">Profile</span>
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  to="/admin/admin-change-password"
+                  className={({ isActive }) =>
+                    `admin-sidebar-item admin-submenu-item ${isActive ? "active" : ""}`
+                  }
+                >
+                  <KeyOutlined />
+                  <span className="admin-sidebar-label">Change password</span>
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  to="/admin/admin-change-email"
+                  className={({ isActive }) =>
+                    `admin-sidebar-item admin-submenu-item ${isActive ? "active" : ""}`
+                  }
+                >
+                  <MailOutlined />
+                  <span className="admin-sidebar-label">Change email</span>
+                </NavLink>
+              </li>
+            </ul>
+          )}
+        </li>
+
+        {/* Logout */}
+        <li>
+          <NavLink
+            to="/admin/logout"
+            className="admin-sidebar-item"
+            onClick={(e) => handleLogout(e)}
+          >
+            <LogoutOutlined />
+            <span className="admin-sidebar-label">Logout</span>
+          </NavLink>
+        </li>
       </ul>
     </div>
   );

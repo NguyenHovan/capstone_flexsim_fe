@@ -43,12 +43,11 @@ import "./userOrganization.css";
 const { Content } = Layout;
 const { Title } = Typography;
 
-/* =================== CONSTANTS =================== */
 const roleNameMap: Record<number, string> = { 3: "Instructor", 4: "Student" };
-const genderNameMap: Record<number, string> = {
-  1: "Male",
-  2: "Female",
-  3: "Other",
+
+const prettyGender = (g: unknown) => {
+  const num = Number(g);
+  return ({ 1: "Male", 2: "Female", 3: "Other" } as Record<number, string>)[num] ?? "—";
 };
 const VISIBLE_ROLE_IDS = new Set<number>([3, 4]);
 
@@ -81,7 +80,6 @@ const genderOptions = [
   { label: "Other", value: 3 },
 ] as const;
 
-/* =================== UTILS =================== */
 const getOrganizationId = (): string => {
   try {
     const s = localStorage.getItem("currentUser");
@@ -246,7 +244,6 @@ const TemplateBox: React.FC<{
   </Card>
 );
 
-/* =================== COMPONENT =================== */
 const UserOrganization: React.FC = () => {
   const [users, setUsers] = useState<Account[]>([]);
   const [loading, setLoading] = useState(false);
@@ -263,17 +260,14 @@ const UserOrganization: React.FC = () => {
   const [formStud] = Form.useForm();
   const [formEdit] = Form.useForm();
 
-  // toast flags
   const [, setShowUpdatedToast] = useState(false);
-  const toastFlagRef = useRef(false); // chống double-fire
-  const prevOpenRef = useRef(false); // theo dõi chuyển trạng thái open→close
+  const toastFlagRef = useRef(false); 
+  const prevOpenRef = useRef(false); 
 
-  // inline errors
   const [instrError, setInstrError] = useState<string | null>(null);
   const [studError, setStudError] = useState<string | null>(null);
   const [editError, setEditError] = useState<string | null>(null);
 
-  // search/filter/sort
   const [searchText, setSearchText] = useState("");
   const [debounced, setDebounced] = useState("");
   const [roleFilter, setRoleFilter] = useState<number | "">("");
@@ -285,7 +279,6 @@ const UserOrganization: React.FC = () => {
   );
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
-  // import tabs + files
   const [tabInstr, setTabInstr] = useState<"manual" | "import">("manual");
   const [tabStud, setTabStud] = useState<"manual" | "import">("manual");
   const [instrFile, setInstrFile] = useState<File | null>(null);
@@ -402,15 +395,12 @@ const UserOrganization: React.FC = () => {
   const onEdit = (u: Account) => {
     setEditingUser(u);
     setEditError(null);
-    const beToUi = (g?: number) =>
-      g === 0 ? 1 : g === 1 ? 2 : g === 2 ? 3 : undefined;
-
     formEdit.setFieldsValue({
       userName: u.userName,
       fullName: u.fullName,
       email: u.email,
       phone: u.phone,
-      gender: beToUi(u.gender),
+      gender: Number(u.gender) || undefined,
       address: (u as any).address,
       avtUrl: (u as any).avtUrl,
       isActive: u.isActive,
@@ -437,8 +427,7 @@ const UserOrganization: React.FC = () => {
         diff.fullName = trim(v.fullName) as string;
       }
       if (v.gender !== undefined) {
-        const uiToBe: Record<number, number> = { 1: 0, 2: 1, 3: 2 };
-        const normalized = uiToBe[Number(v.gender)] ?? Number(v.gender);
+        const normalized = Number(v.gender) ?? Number(v.gender);
         if (normalized !== Number(editingUser.gender)) diff.gender = normalized;
       }
       if (trim(v.phone) !== (editingUser.phone ?? ""))
@@ -447,7 +436,10 @@ const UserOrganization: React.FC = () => {
         diff.address = trim(v.address) as string | undefined;
       const newAvt = (trim(v.avtUrl) as string) || "";
       if (newAvt !== (editingUser.avtUrl || "")) diff.avtUrl = newAvt;
-
+      const nextGender = Number(v.gender);
+      if ([1, 2, 3].includes(nextGender) && nextGender !== Number(editingUser.gender)) {
+      diff.gender = nextGender; // <-- CHANGED
+      }
       if (Object.keys(diff).length === 0) {
         setSavingEdit(false);
         message.info("Không có thay đổi nào để cập nhật");
@@ -473,7 +465,6 @@ const UserOrganization: React.FC = () => {
     }
   };
 
-  /* ====== Toggle via Switch ====== */
   const onToggleActive = async (rec: Account, checked: boolean) => {
     if (togglingId || actionId) return;
     setTogglingId(rec.id);
@@ -500,7 +491,6 @@ const UserOrganization: React.FC = () => {
     }
   };
 
-  /* ====== Ban/Unban via ACTION buttons ====== */
   const onBanBtn = async (rec: Account) => {
     if (actionId) return;
     setActionId(rec.id);
@@ -535,7 +525,6 @@ const UserOrganization: React.FC = () => {
     }
   };
 
-  /* ====== Create (manual) ====== */
   const submitCreateInstructor = async () => {
     if (creatingInstructor) return;
     const vals = await formInstr.validateFields();
@@ -584,7 +573,6 @@ const UserOrganization: React.FC = () => {
     }
   };
 
-  /* ====== Import/Export (template download + import) ====== */
   const handleDownloadInstructorTemplate = () => {
     // const blob = buildExcelTemplateBlob("instructor");
     // downloadBlob(blob, "instructors_template.xls");
@@ -643,7 +631,6 @@ const UserOrganization: React.FC = () => {
     }
   };
 
-  /* ====== View data (search/filter/sort) ====== */
   const dataView = useMemo(() => {
     const q = debounced.toLowerCase();
     let list = users.filter((u) => VISIBLE_ROLE_IDS.has(Number(u.roleId)));
@@ -725,15 +712,7 @@ const UserOrganization: React.FC = () => {
       dataIndex: "gender",
       key: "gender",
       width: 110,
-      // BE trả 0/1/2 -> hiển thị chuẩn; nếu lỡ khác, fallback map 1/2/3
-      render: (g) =>
-        g === 0
-          ? "Male"
-          : g === 1
-          ? "Female"
-          : g === 2
-          ? "Other"
-          : genderNameMap[Number(g)] || g,
+      render: (g) => prettyGender(g),
     },
     {
       title: "Active",
@@ -814,7 +793,6 @@ const UserOrganization: React.FC = () => {
   return (
     <Layout>
       <Content style={{ padding: 24 }}>
-        {/* Header + create buttons */}
         <Row
           justify="space-between"
           align="middle"
@@ -857,7 +835,6 @@ const UserOrganization: React.FC = () => {
           </Col>
         </Row>
 
-        {/* Toolbar */}
         <Card style={{ marginBottom: 12 }}>
           <Row gutter={[12, 12]} align="middle">
             <Col xs={24} md={10} lg={12}>
@@ -905,7 +882,6 @@ const UserOrganization: React.FC = () => {
           </Row>
         </Card>
 
-        {/* Table */}
         <Card>
           <Table
             columns={columns}
@@ -921,7 +897,6 @@ const UserOrganization: React.FC = () => {
           />
         </Card>
 
-        {/* View modal */}
         <Modal
           title="User Details"
           open={isViewModal}
@@ -958,16 +933,8 @@ const UserOrganization: React.FC = () => {
                   {roleNameMap[Number(viewingUser.roleId)] ||
                     viewingUser.roleId}
                 </p>
-                <p>
-                  <b>Gender:</b>{" "}
-                  {viewingUser.gender === 0
-                    ? "Male"
-                    : viewingUser.gender === 1
-                    ? "Female"
-                    : viewingUser.gender === 2
-                    ? "Other"
-                    : genderNameMap[Number(viewingUser.gender)]}
-                </p>
+                <p><b>Gender:</b> {prettyGender(viewingUser.gender)}</p> 
+
                 <p>
                   <b>Status:</b>{" "}
                   {viewingUser.isActive ? "Active" : "Not active"}
@@ -977,7 +944,6 @@ const UserOrganization: React.FC = () => {
           )}
         </Modal>
 
-        {/* Edit modal */}
         <Modal
           title="Edit User"
           open={isEditModal}
@@ -1076,7 +1042,6 @@ const UserOrganization: React.FC = () => {
           </Form>
         </Modal>
 
-        {/* Create Instructor (manual + import) */}
         <Modal
           title="Create New Instructor"
           open={isCreateInstructor}
@@ -1238,7 +1203,6 @@ const UserOrganization: React.FC = () => {
           />
         </Modal>
 
-        {/* Create Student (manual + import) */}
         <Modal
           title="Create New Student"
           open={isCreateStudent}

@@ -200,7 +200,7 @@ const OrderOrganization: React.FC = () => {
         onCancel={() => setOpenCreate(false)}
         onOk={handleCreateAndPay}
         okText="Thanh toán"
-        destroyOnClose
+        destroyOnHidden
       >
         <Form form={form} layout="vertical">
           <Form.Item

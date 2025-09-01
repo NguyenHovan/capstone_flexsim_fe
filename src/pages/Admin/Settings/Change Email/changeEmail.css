@@ -1,0 +1,38 @@
+.ce-wrapper {
+  max-width: 720px;
+  margin: 24px auto;
+  padding: 12px;
+}
+
+.ce-card {
+  border-radius: 14px;
+  padding: 20px 22px;
+  box-shadow: 0 10px 30px rgba(20,40,80,.06);
+  border: 1px solid #eef2f7;
+  background: #fff;
+}
+
+.ce-title {
+  text-align: center;
+  margin-bottom: 12px !important;
+}
+
+.ce-form .ant-input,
+.ce-form .ant-input-password {
+  border-radius: 10px;
+}
+
+.ce-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.ce-desc {
+  margin-bottom: 8px;
+}
+
+@media (max-width: 576px) {
+  .ce-wrapper { margin: 12px auto; padding: 8px; }
+  .ce-actions { flex-direction: column; }
+}

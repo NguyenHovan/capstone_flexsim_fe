@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
-  Tabs, Row, Col, Card, Typography, Empty, Skeleton, message, Tag, Space
+  Tabs, Row, Col, Card, Typography, Empty, Skeleton, message, Tag, Space, Button
 } from "antd";
 import { CheckCircleFilled } from "@ant-design/icons";
 import dayjs from "dayjs";
@@ -35,7 +35,6 @@ function pickVariant(name: string, idx: number): PlanView["_variant"] {
   if (n.includes("basic") || n.includes("starter")) return "basic";
   return (["basic", "standard", "business", "premium"] as const)[idx % 4];
 }
-
 function splitTextBenefits(desc?: string): string[] {
   const d = (desc || "").trim();
   if (!d) return [];
@@ -44,7 +43,6 @@ function splitTextBenefits(desc?: string): string[] {
     .map((s) => s.replace(/^[-•\s]+/, "").trim())
     .filter(Boolean);
 }
-
 function extractSections(plan: SubscriptionPlan): { sections: PlanView["_sections"]; all: string[] } {
   const raw = (plan.description || "").trim();
   if (raw) {
@@ -60,24 +58,27 @@ function extractSections(plan: SubscriptionPlan): { sections: PlanView["_section
   const all = splitTextBenefits(plan.description);
   return { sections: null, all };
 }
-
 const getCurrentUserLite = () => {
   try {
     const raw = localStorage.getItem("currentUser");
     if (!raw) return null;
     const u = JSON.parse(raw);
     return u?.id ? ({ id: u.id, organizationId: u.organizationId } as { id: string; organizationId?: string }) : null;
-  } catch {
-    return null;
-  }
+  } catch { return null; }
 };
 
-const PlanGrid: React.FC<{
+type PlanGridProps = {
   plans: SubscriptionPlan[];
   loading?: boolean;
   extraHeader?: (p: SubscriptionPlan) => React.ReactNode;
   extraFooter?: (p: SubscriptionPlan) => React.ReactNode;
-}> = ({ plans, loading, extraHeader, extraFooter }) => {
+  onCreate?: (p: SubscriptionPlan) => void;
+  creatingPlanId?: string | null;
+};
+
+const PlanGrid: React.FC<PlanGridProps> = ({
+  plans, loading, extraHeader, extraFooter, onCreate, creatingPlanId
+}) => {
   const items: PlanView[] = useMemo(
     () =>
       plans.map((p, i) => {
@@ -104,10 +105,7 @@ const PlanGrid: React.FC<{
       </Row>
     );
   }
-
-  if (items.length === 0) {
-    return <Empty description="Không có gói nào." image={Empty.PRESENTED_IMAGE_SIMPLE} />;
-  }
+  if (!items.length) return <Empty description="Không có gói nào." image={Empty.PRESENTED_IMAGE_SIMPLE} />;
 
   return (
     <Row gutter={[16, 16]}>
@@ -174,6 +172,18 @@ const PlanGrid: React.FC<{
             )}
 
             {extraFooter?.(p)}
+
+            {onCreate && p.isActive && (
+              <div className="pp-footer">
+                <Button
+                  className="pp-subscribe"
+                  onClick={() => onCreate(p)}
+                  loading={creatingPlanId === p.id}
+                >
+                  Create Order
+                </Button>
+              </div>
+            )}
           </Card>
         </Col>
       ))}
@@ -182,14 +192,15 @@ const PlanGrid: React.FC<{
 };
 
 const OrgAdminSubscriptions: React.FC = () => {
-  const [me, setMe] = useState<{ id: string; organizationId?: string } | null>(null);
+  const [msg, contextHolder] = message.useMessage();
 
+  const [me, setMe] = useState<{ id: string; organizationId?: string } | null>(null);
   const [activePlans, setActivePlans] = useState<SubscriptionPlan[]>([]);
   const [myPlans, setMyPlans] = useState<SubscriptionPlan[]>([]);
-  const [ordersByPlan, setOrdersByPlan] = useState<Record<string, Order[]>>({}); 
-
+  const [ordersByPlan, setOrdersByPlan] = useState<Record<string, Order[]>>({});
   const [loadingActive, setLoadingActive] = useState(false);
   const [loadingMine, setLoadingMine] = useState(false);
+  const [creatingPlanId, setCreatingPlanId] = useState<string | null>(null);
 
   useEffect(() => {
     const cached = getCurrentUserLite();
@@ -198,7 +209,7 @@ const OrgAdminSubscriptions: React.FC = () => {
       try {
         const res = await AccountService.getMe();
         if (res?.id) setMe({ id: res.id, organizationId: res.organizationId });
-      } catch { }
+      } catch {}
     })();
   }, []);
 
@@ -212,62 +223,97 @@ const OrgAdminSubscriptions: React.FC = () => {
         });
         setActivePlans(Array.isArray(data) ? data : []);
       } catch {
-        message.error("Tải danh sách gói (Active) thất bại.");
-      } finally { setLoadingActive(false); }
+        msg.error("Tải danh sách gói (Active) thất bại.");
+      } finally {
+        setLoadingActive(false);
+      }
     })();
-  }, []);
+  }, [msg]);
+
+  const loadMine = async (accountId: string) => {
+    setLoadingMine(true);
+    try {
+      const [orders, plans] = await Promise.all([
+        OrderService.getAll(),
+        SubscriptionPlanService.getAll(),
+      ]);
+
+      const mine = orders.filter(o => o.accountId === accountId && o.status === 1);
+
+      const grouped = new Map<string, Order[]>();
+      for (const o of mine) {
+        const pid = (o as any).subscriptionPlanId ?? (o as any).subcriptionPlanId;
+        if (!pid) continue;
+        const arr = grouped.get(pid) || [];
+        arr.push(o);
+        grouped.set(pid, arr);
+      }
+      grouped.forEach((arr) => {
+        arr.sort((a, b) =>
+          new Date(b.createdAt ?? (b as any).orderTime ?? 0).getTime() -
+          new Date(a.createdAt ?? (a as any).orderTime ?? 0).getTime()
+        );
+      });
+
+      const planMap = new Map(plans.map(p => [p.id, p]));
+      const activePlanList: SubscriptionPlan[] = [];
+      const ordersByPlanObj: Record<string, Order[]> = {};
+
+      grouped.forEach((ordList, pid) => {
+        const plan = planMap.get(pid);
+        if (plan && plan.isActive) {
+          activePlanList.push(plan);
+          ordersByPlanObj[pid] = ordList;
+        }
+      });
+
+      const uniq = Array.from(new Map(activePlanList.map(p => [p.id, p])).values());
+      setMyPlans(uniq);
+      setOrdersByPlan(ordersByPlanObj);
+    } catch {
+      msg.error("Tải gói đã mua thất bại.");
+    } finally { setLoadingMine(false); }
+  };
 
   useEffect(() => {
-    if (!me?.id) return;
-    (async () => {
-      setLoadingMine(true);
-      try {
-        const [orders, plans] = await Promise.all([
-          OrderService.getAll(),
-          SubscriptionPlanService.getAll(),
-        ]);
-
-        const mine = orders.filter(o => o.accountId === me.id && o.status === 1);
-
-        const grouped = new Map<string, Order[]>();
-        for (const o of mine) {
-          const pid = (o as any).subscriptionPlanId ?? (o as any).subcriptionPlanId;
-          if (!pid) continue;
-          const arr = grouped.get(pid) || [];
-          arr.push(o);
-          grouped.set(pid, arr);
-        }
-        grouped.forEach((arr) => {
-          arr.sort((a, b) =>
-            new Date(b.createdAt ?? (b as any).orderTime ?? 0).getTime() -
-            new Date(a.createdAt ?? (a as any).orderTime ?? 0).getTime()
-          );
-        });
-
-        const planMap = new Map(plans.map(p => [p.id, p]));
-        const activePlanList: SubscriptionPlan[] = [];
-        const ordersByPlanObj: Record<string, Order[]> = {};
-
-        grouped.forEach((ordList, pid) => {
-          const plan = planMap.get(pid);
-          if (plan && plan.isActive) {
-            activePlanList.push(plan);
-            ordersByPlanObj[pid] = ordList; 
-          }
-        });
-
-        const uniq = Array.from(new Map(activePlanList.map(p => [p.id, p])).values());
-
-        setMyPlans(uniq);
-        setOrdersByPlan(ordersByPlanObj);
-      } catch {
-        message.error("Tải gói đã mua thất bại.");
-      } finally { setLoadingMine(false); }
-    })();
+    if (me?.id) loadMine(me.id);
   }, [me?.id]);
+
+  const createOrderFor = async (plan: SubscriptionPlan) => {
+    if (!me?.id || !me.organizationId) {
+      return msg.warning("Không tìm thấy thông tin tài khoản/đơn vị.");
+    }
+    const key = `create-order-${plan.id}`;
+    try {
+      setCreatingPlanId(plan.id);
+      msg.loading({ content: "Đang tạo order…", key, duration: 0 });
+
+      const created = await OrderService.create({
+        organizationId: me.organizationId,
+        accountId: me.id,
+        subscriptionPlanId: plan.id,
+      });
+
+      if (!created || !(created as any).id) {
+        throw new Error("Tạo order không thành công.");
+      }
+
+      msg.success({ content: "Tạo order thành công!!!", key, duration: 2.5 });
+
+      await loadMine(me.id);
+      return created;
+    } catch (e: any) {
+      msg.destroy(key);
+      msg.error(e?.response?.data?.message || e?.message || "Tạo order thất bại");
+    } finally {
+      setCreatingPlanId(null);
+    }
+  };
 
   return (
     <div className="pricing-pro">
+      {contextHolder}
+
       <div className="pricing-pro__heading">
         <Title level={3} className="pricing-pro__title">Subscription Plans</Title>
       </div>
@@ -278,7 +324,14 @@ const OrgAdminSubscriptions: React.FC = () => {
           {
             key: "active",
             label: "All Active Plans",
-            children: <PlanGrid plans={activePlans} loading={loadingActive} />,
+            children: (
+              <PlanGrid
+                plans={activePlans}
+                loading={loadingActive}
+                onCreate={createOrderFor}
+                creatingPlanId={creatingPlanId}
+              />
+            ),
           },
           {
             key: "mine",
