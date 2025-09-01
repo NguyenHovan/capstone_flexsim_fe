@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   List,
   Button,
@@ -241,20 +241,20 @@ const TopicDetail = () => {
     }
   };
 
-  const latestQuizScore: number = useMemo(() => {
-    const quizzes = selectedLesson?.quizzes ?? [];
-    const allMySubs: QuizSubmission[] = quizzes.flatMap((q) =>
-      (q.quizSubmissions ?? []).filter((s) => s.accountId === currentAccountId)
-    );
+  // const latestQuizScore: number = useMemo(() => {
+  //   const quizzes = selectedLesson?.quizzes ?? [];
+  //   const allMySubs: QuizSubmission[] = quizzes.flatMap((q) =>
+  //     (q.quizSubmissions ?? []).filter((s) => s.accountId === currentAccountId)
+  //   );
 
-    if (allMySubs.length === 0) return 0;
+  //   if (allMySubs.length === 0) return 0;
 
-    allMySubs.sort(
-      (a, b) =>
-        new Date(b.submitTime).getTime() - new Date(a.submitTime).getTime()
-    );
-    return Number(allMySubs[0]?.totalScore ?? 0);
-  }, [selectedLesson?.quizzes, currentAccountId]);
+  //   allMySubs.sort(
+  //     (a, b) =>
+  //       new Date(b.submitTime).getTime() - new Date(a.submitTime).getTime()
+  //   );
+  //   return Number(allMySubs[0]?.totalScore ?? 0);
+  // }, [selectedLesson?.quizzes, currentAccountId]);
 
   const getDisabled = () => {
     const fileUrlTruthy = !!selectedLesson?.fileUrl;

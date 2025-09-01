@@ -104,10 +104,10 @@ const ProfilePage = () => {
     [user?.userName, user?.id]
   );
 
-  const fetchUserById = async (id: string | number) => {
+  const fetchUserById = async (id: string) => {
     try {
       setLoadingProfile(true);
-      const response = await AccountService.getAccountById(id);
+      const response = await AccountService.getAccountById(id ?? "");
       formProfile.setFieldsValue({
         email: response.email,
         userName: response.userName,
@@ -238,7 +238,7 @@ const ProfilePage = () => {
                         type="default"
                         onClick={() => {
                           setIsEditing(false);
-                          fetchUserById();
+                          fetchUserById(user?.id ?? "");
                         }}
                         style={{
                           background: "rgba(255,255,255,0.2)",

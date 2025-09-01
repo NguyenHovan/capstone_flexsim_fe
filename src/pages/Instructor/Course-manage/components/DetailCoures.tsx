@@ -48,7 +48,7 @@ const DetailCoures = () => {
   const [lessonsByTopic, setLessonsByTopic] = useState<{
     [key: string]: any[];
   }>({});
-  const [scenes, setScenes] = useState<any[]>([]);
+  const [, setScenes] = useState<any[]>([]);
   const [editingTopic, setEditingTopic] = useState<any>(null);
   const [scenarios, setScenarios] = useState<any[]>([]);
   const [form] = Form.useForm();
@@ -116,11 +116,11 @@ const DetailCoures = () => {
     form.resetFields();
     setIsModalVisible(true);
   };
-  const handleOpenCreateTopic = () => {
-    form.resetFields();
-    setEditingTopic(null);
-    setIsModalVisible(true);
-  };
+  // const handleOpenCreateTopic = () => {
+  //   form.resetFields();
+  //   setEditingTopic(null);
+  //   setIsModalVisible(true);
+  // };
 
   const handleOpenEditTopic = (tp: any) => {
     setEditingTopic(tp);
@@ -138,7 +138,7 @@ const DetailCoures = () => {
       const formData = new FormData();
       formData.append("topicName", values.topicName);
       formData.append("description", values.description);
-      formData.append("orderIndex", Number(values.orderIndex));
+      formData.append("orderIndex", values.orderIndex);
       formData.append("courseId", id);
 
       if (values.imgUrl?.[0]?.originFileObj) {
