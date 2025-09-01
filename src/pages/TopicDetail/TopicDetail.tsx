@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   List,
   Button,
@@ -9,72 +9,166 @@ import {
   Flex,
   Modal,
   Input,
+  Tag,
 } from "antd";
 import { useNavigate, useParams } from "react-router-dom";
 import { LessonService } from "../../services/lesson.service";
 import { LessonProgressService } from "../../services/lessonProgress.service";
 import { toast } from "sonner";
 import { LessonSubmission } from "../../services/lessonSubmission.service";
+
 const { TextArea } = Input;
+
+// ---- Types (optional, to make state safer) ----
+interface QuizSubmission {
+  id: string;
+  accountId: string;
+  totalScore?: number;
+  submitTime: string;
+}
+
+interface Quiz {
+  id: string;
+  quizName: string;
+  quizSubmissions?: QuizSubmission[];
+}
+
+interface Scenario {
+  scenarioName: string;
+  description: string;
+  fileUrl?: string;
+}
+
+interface LessonProgress {
+  accountId: string;
+  status: number; // 2 = completed (as per your code)
+}
+
+interface LessonSubmissionItem {
+  id: string;
+  fileUrl: string;
+  note?: string;
+  totalScore?: number;
+  submitTime?: string;
+}
+
+interface LessonItem {
+  id: string;
+  lessonName: string;
+  description: string;
+  fileUrl?: string; // video url
+  scenario?: Scenario;
+  lessonSubmissions?: LessonSubmissionItem[];
+  quizzes?: Quiz[];
+  lessonProgresses: LessonProgress[];
+}
+
+interface MyLessonSubmit {
+  totalScore?: number;
+  [key: string]: any;
+}
+
 const TopicDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+
   const userString = localStorage.getItem("currentUser");
   const currentUser = userString ? JSON.parse(userString) : null;
-  const currentAccountId = currentUser?.id || "";
+  const currentAccountId: string = currentUser?.id || "";
+
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [note, setNote] = useState<string>("");
-  const [data, setData] = useState<any[]>([]);
-  const [selectedLesson, setSelectedLesson] = useState<any>();
+  const [data, setData] = useState<LessonItem[]>([]);
+  const [selectedLesson, setSelectedLesson] = useState<LessonItem | null>(null);
   const [isCompleted, setIsCompleted] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [maxWatchTime] = useState(0);
+  const maxWatchRef = useRef<number>(0);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingSubmission, setEditingSubmission] = useState<any>(null);
+  const [editingSubmission, setEditingSubmission] =
+    useState<LessonSubmissionItem | null>(null);
   const [editNote, setEditNote] = useState("");
   const [editFile, setEditFile] = useState<File | null>(null);
-  const [myLessonSubmit, setMyLessonSubmit] = useState();
+  const [myLessonSubmit, setMyLessonSubmit] = useState<MyLessonSubmit | null>(
+    null
+  );
   const [editLoading, setEditLoading] = useState(false);
+
+  // ---- Fetch topic + initial state ----
   const fetchTopicDetail = async () => {
     try {
-      const response = await LessonService.getLessonByTopic(id ?? "");
+      const response: LessonItem[] = await LessonService.getLessonByTopic(
+        id ?? ""
+      );
       setData(response);
-      setSelectedLesson(response[0]);
-      fetchMyLessonSubmit(response[0].id);
+      setSelectedLesson(response?.[0] ?? null);
+      // fetchMyLessonSubmit will run in the useEffect that watches selectedLesson?.id
     } catch (error: any) {
       console.log({ error });
+      toast.error(
+        error?.response?.data?.message || "Không tải được dữ liệu topic"
+      );
     }
   };
+
+  const fetchMyLessonSubmit = async (lessonId: string) => {
+    try {
+      const response = await LessonSubmission.getMyLessonSubmitssion(lessonId);
+      setMyLessonSubmit(response ?? null);
+    } catch (error) {
+      console.log({ error });
+      setMyLessonSubmit(null);
+    }
+  };
+
+  useEffect(() => {
+    fetchTopicDetail();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Whenever lesson changes: refetch submission + reset watch state
+  useEffect(() => {
+    if (selectedLesson?.id) {
+      fetchMyLessonSubmit(selectedLesson.id);
+      // reset watch status for new lesson
+      setIsCompleted(false);
+      maxWatchRef.current = 0;
+      // reset video to start
+      if (videoRef.current) {
+        try {
+          videoRef.current.currentTime = 0;
+        } catch {}
+      }
+    }
+  }, [selectedLesson?.id]);
+
+  // ---- Video handlers ----
   const handleTimeUpdate = (e: React.SyntheticEvent<HTMLVideoElement>) => {
     const video = e.currentTarget;
-    const progress = video.currentTime / video.duration;
-
+    if (video.currentTime > maxWatchRef.current) {
+      maxWatchRef.current = video.currentTime;
+    }
+    const progress = video.duration ? video.currentTime / video.duration : 0;
     if (progress >= 0.75 && !isCompleted) {
       setIsCompleted(true);
+    }
+  };
+
+  const handleSeeking = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (v.currentTime > maxWatchRef.current + 2) {
+      v.currentTime = maxWatchRef.current;
     }
   };
 
   const handleVideoEnded = () => {
     setIsCompleted(true);
   };
-  const fetchMyLessonSubmit = async (lessonId: string) => {
-    try {
-      const response = await LessonSubmission.getMyLessonSubmitssion(lessonId);
-      setMyLessonSubmit(response);
-    } catch (error) {
-      console.log({ error });
-    }
-  };
 
-  const handleSeeking = () => {
-    if (videoRef.current) {
-      if (videoRef.current.currentTime > maxWatchTime + 2) {
-        // người dùng tua vượt quá chỗ đã xem + 2s → chặn
-        videoRef.current.currentTime = maxWatchTime;
-      }
-    }
-  };
+  // ---- Actions ----
   const handleComplete = async () => {
+    if (!currentUser || !selectedLesson) return;
     try {
       await LessonProgressService.updateLessonProgress(
         currentUser.id,
@@ -83,7 +177,7 @@ const TopicDetail = () => {
       toast.success("Cập nhật thành công");
       fetchTopicDetail();
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Cập nhật thất bại");
+      toast.error(error?.response?.data?.message || "Cập nhật thất bại");
     }
   };
 
@@ -92,6 +186,8 @@ const TopicDetail = () => {
       toast.error("Vui lòng chọn file trước khi nộp!");
       return;
     }
+    if (!selectedLesson) return;
+
     try {
       const formData = new FormData();
       formData.append("lessonId", selectedLesson.id);
@@ -105,12 +201,12 @@ const TopicDetail = () => {
       setSelectedFile(null);
       setNote("");
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Upload thất bại!");
+      toast.error(error?.response?.data?.message || "Upload thất bại!");
     }
   };
 
   const handleEditSubmit = async () => {
-    if (!editingSubmission) return;
+    if (!editingSubmission || !selectedLesson) return;
     try {
       setEditLoading(true);
 
@@ -138,17 +234,38 @@ const TopicDetail = () => {
     } catch (err: any) {
       console.log(err);
       toast.error(
-        err.response?.data?.message || "Có lỗi xảy ra khi cập nhật bài nộp"
+        err?.response?.data?.message || "Có lỗi xảy ra khi cập nhật bài nộp"
       );
     } finally {
       setEditLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchTopicDetail();
-  }, []);
-  console.log({ myLessonSubmit, selectedLesson });
+  const latestQuizScore: number = useMemo(() => {
+    const quizzes = selectedLesson?.quizzes ?? [];
+    const allMySubs: QuizSubmission[] = quizzes.flatMap((q) =>
+      (q.quizSubmissions ?? []).filter((s) => s.accountId === currentAccountId)
+    );
+
+    if (allMySubs.length === 0) return 0;
+
+    allMySubs.sort(
+      (a, b) =>
+        new Date(b.submitTime).getTime() - new Date(a.submitTime).getTime()
+    );
+    return Number(allMySubs[0]?.totalScore ?? 0);
+  }, [selectedLesson?.quizzes, currentAccountId]);
+
+  const getDisabled = () => {
+    const fileUrlTruthy = !!selectedLesson?.fileUrl;
+    const total = Number(myLessonSubmit?.totalScore ?? 0);
+    if (total > 5) {
+      return false;
+    }
+
+    return fileUrlTruthy && !isCompleted;
+  };
+
   return (
     <div
       style={{
@@ -174,15 +291,15 @@ const TopicDetail = () => {
         <List
           itemLayout="horizontal"
           dataSource={data}
-          renderItem={(lesson: any, index: number) => {
-            const progress = lesson.lessonProgresses.find(
+          renderItem={(lesson: LessonItem, index: number) => {
+            const progress = lesson.lessonProgresses?.find(
               (p: any) => p.accountId === currentAccountId && p.status === 2
             );
 
             let disabled = false;
             if (index > 0) {
               const prevLesson = data[index - 1];
-              const prevProgress = prevLesson.lessonProgresses.find(
+              const prevProgress = prevLesson.lessonProgresses?.find(
                 (p: any) => p.accountId === currentAccountId && p.status === 2
               );
               if (!prevProgress) disabled = true;
@@ -205,7 +322,7 @@ const TopicDetail = () => {
                   display: "flex",
                   alignItems: "center",
                   gap: "8px",
-                  opacity: disabled ? 0.5 : 1, // mờ nếu disabled
+                  opacity: disabled ? 0.5 : 1,
                 }}
                 onMouseEnter={(e) =>
                   !disabled &&
@@ -220,9 +337,7 @@ const TopicDetail = () => {
                 onClick={() => !disabled && setSelectedLesson(lesson)}
               >
                 <span role="img" aria-label="lesson">
-                  <span role="img" aria-label="lesson">
-                    {progress ? "✅" : "📘"}
-                  </span>
+                  {progress ? "✅" : "📘"}
                 </span>
                 <Typography.Text strong>{lesson.lessonName}</Typography.Text>
               </List.Item>
@@ -236,6 +351,7 @@ const TopicDetail = () => {
           <>
             {selectedLesson.fileUrl && (
               <video
+                ref={videoRef}
                 style={{
                   width: "80%",
                   maxWidth: "1000px",
@@ -255,11 +371,12 @@ const TopicDetail = () => {
             </Typography.Title>
             <Typography.Paragraph>
               {selectedLesson.description
-                .split("\n")
-                .map((line: any, idx: number) => (
+                ?.split("\n")
+                .map((line: string, idx: number) => (
                   <p key={idx}>{line}</p>
                 ))}
             </Typography.Paragraph>
+
             {selectedLesson?.scenario && (
               <>
                 <Divider />
@@ -295,7 +412,10 @@ const TopicDetail = () => {
                           boxShadow: "0 3px 6px rgba(0,0,0,0.1)",
                         }}
                         onClick={() =>
-                          window.open(selectedLesson.scenario.fileUrl, "_blank")
+                          window.open(
+                            selectedLesson.scenario!.fileUrl!,
+                            "_blank"
+                          )
                         }
                       >
                         Tải file xuống
@@ -402,7 +522,7 @@ const TopicDetail = () => {
                         width: "100%",
                       }}
                       onClick={handleSubmit}
-                      disabled={myLessonSubmit}
+                      disabled={!!myLessonSubmit} // đã nộp rồi thì khoá nút nộp mới
                     >
                       Nộp file
                     </Button>
@@ -417,7 +537,7 @@ const TopicDetail = () => {
                           <List
                             itemLayout="horizontal"
                             dataSource={selectedLesson.lessonSubmissions}
-                            renderItem={(item: any) => (
+                            renderItem={(item: LessonSubmissionItem) => (
                               <List.Item
                                 style={{
                                   padding: "12px",
@@ -431,6 +551,7 @@ const TopicDetail = () => {
                                 }}
                                 actions={[
                                   <a
+                                    key="dl"
                                     href={item.fileUrl}
                                     target="_blank"
                                     rel="noopener noreferrer"
@@ -439,6 +560,7 @@ const TopicDetail = () => {
                                   </a>,
                                   myLessonSubmit && (
                                     <Button
+                                      key="edit"
                                       type="link"
                                       onClick={() => {
                                         setEditingSubmission(item);
@@ -464,15 +586,24 @@ const TopicDetail = () => {
                                       Note: {item.note}
                                     </Typography.Paragraph>
                                   )}
+                                  {typeof item.totalScore !== "undefined" && (
+                                    <Typography.Paragraph
+                                      type="secondary"
+                                      style={{ margin: 0 }}
+                                    >
+                                      Score:{" "}
+                                      <Tag color="blue">{item.totalScore}</Tag>
+                                    </Typography.Paragraph>
+                                  )}
                                   {item.submitTime && (
                                     <Typography.Paragraph
                                       type="secondary"
                                       style={{ margin: 0, fontSize: 12 }}
                                     >
                                       Nộp lúc:{" "}
-                                      {new Date(
-                                        item.submitTime
-                                      ).toLocaleString()}
+                                      {new Date(item.submitTime).toLocaleString(
+                                        "vi-VN"
+                                      )}
                                     </Typography.Paragraph>
                                   )}
                                 </div>
@@ -481,6 +612,7 @@ const TopicDetail = () => {
                           />
                         </div>
                       )}
+
                     <Modal
                       title="Chỉnh sửa bài nộp"
                       open={isModalOpen}
@@ -532,19 +664,23 @@ const TopicDetail = () => {
             )}
 
             <Divider />
-            {selectedLesson?.quizzes?.length && (
+
+            {/* Quizzes */}
+            {selectedLesson?.quizzes?.length ? (
               <>
                 <Typography.Title level={5}>Quizzes</Typography.Title>
                 <List
                   itemLayout="horizontal"
                   dataSource={selectedLesson.quizzes}
-                  renderItem={(quiz: any) => {
+                  renderItem={(quiz: Quiz) => {
                     const latestSubmission = quiz.quizSubmissions?.length
-                      ? [...quiz.quizSubmissions].sort(
-                          (a, b) =>
-                            new Date(b.submitTime).getTime() -
-                            new Date(a.submitTime).getTime()
-                        )[0]
+                      ? [...quiz.quizSubmissions]
+                          .filter((s) => s.accountId === currentAccountId)
+                          .sort(
+                            (a, b) =>
+                              new Date(b.submitTime).getTime() -
+                              new Date(a.submitTime).getTime()
+                          )[0]
                       : null;
 
                     return (
@@ -597,7 +733,10 @@ const TopicDetail = () => {
                           {latestSubmission && (
                             <div style={{ fontSize: "12px", color: "#555" }}>
                               <div>
-                                <b>Điểm:</b> {latestSubmission.totalScore}
+                                <b>Điểm:</b>{" "}
+                                <Tag color="blue">
+                                  {latestSubmission.totalScore}
+                                </Tag>
                               </div>
                               <div>
                                 <b>Nộp:</b>{" "}
@@ -609,7 +748,9 @@ const TopicDetail = () => {
                           )}
                         </div>
                         <Flex gap={24}>
-                          {quiz.quizSubmissions?.length ? (
+                          {quiz.quizSubmissions?.some(
+                            (s) => s.accountId === currentAccountId
+                          ) ? (
                             <Button
                               type="primary"
                               size="small"
@@ -619,7 +760,7 @@ const TopicDetail = () => {
                               style={{
                                 borderRadius: "8px",
                                 background:
-                                  "linear-gradient(90deg, #5fb7ffffrgba(123, 195, 254, 1)7b)",
+                                  "linear-gradient(90deg, #5fb7ff, rgba(123, 195, 254, 1))",
                                 border: "none",
                                 color: "white",
                                 fontWeight: 600,
@@ -640,9 +781,7 @@ const TopicDetail = () => {
                             >
                               Review Quiz
                             </Button>
-                          ) : (
-                            <></>
-                          )}
+                          ) : null}
 
                           <Button
                             type="primary"
@@ -677,13 +816,13 @@ const TopicDetail = () => {
                   }}
                 />
               </>
-            )}
+            ) : null}
 
             <Button
               type="primary"
               style={{ marginTop: "16px", borderRadius: "6px" }}
-              onClick={() => handleComplete()}
-              disabled={selectedLesson?.fileUrl ? !isCompleted : false}
+              onClick={handleComplete}
+              disabled={getDisabled()}
             >
               Completed
             </Button>

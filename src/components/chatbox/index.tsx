@@ -291,7 +291,6 @@ const FloatingDualChat: React.FC = () => {
               display: "flex",
               flexDirection: "column",
               flex: 1,
-              minHeight: 0, // ⬅️ cho phép nội dung bên trong cuộn
             }}
           >
             <Tabs
@@ -302,7 +301,6 @@ const FloatingDualChat: React.FC = () => {
                 display: "flex",
                 flexDirection: "column",
                 height: "100%",
-                minHeight: 0, // ⬅️ rất quan trọng để content có thể overflow
               }}
               items={[
                 {
@@ -319,7 +317,7 @@ const FloatingDualChat: React.FC = () => {
                         height: "100%",
                         display: "flex",
                         flexDirection: "column",
-                        minHeight: 0, // ⬅️ cho ChatWindow cuộn
+                        minHeight: 400,
                       }}
                     >
                       <ChatWindow

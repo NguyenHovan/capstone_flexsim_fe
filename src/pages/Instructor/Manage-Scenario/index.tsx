@@ -9,6 +9,8 @@ import {
   message,
   Popconfirm,
   Select,
+  Tooltip,
+  Typography,
 } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { ScenarioService } from "../../../services/scenario.service";
@@ -89,7 +91,25 @@ const ScenarioManager: React.FC = () => {
 
   const columns = [
     { title: "Scenario Name", dataIndex: "scenarioName", key: "scenarioName" },
-    { title: "Description", dataIndex: "description", key: "description" },
+    {
+      title: "Description",
+      dataIndex: "description",
+      key: "description",
+      render: (text: string) => {
+        if (!text) return "—";
+        return (
+          <Tooltip title={text}>
+            <Typography.Paragraph
+              style={{ margin: 0, maxWidth: 420 }}
+              ellipsis={{ rows: 2, expandable: false }}
+            >
+              {text}
+            </Typography.Paragraph>
+          </Tooltip>
+        );
+      },
+    },
+
     {
       title: "Scene",
       dataIndex: "sceneId",

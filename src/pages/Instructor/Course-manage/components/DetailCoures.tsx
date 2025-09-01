@@ -47,7 +47,7 @@ const DetailCoures = () => {
     [key: string]: any[];
   }>({});
   const [scenes, setScenes] = useState<any[]>([]);
-  console.log({ scenes, selectedTopic });
+  const [editingTopic, setEditingTopic] = useState<any>(null);
   const [scenarios, setScenarios] = useState<any[]>([]);
   const [form] = Form.useForm();
   const fetchCourseDetail = async () => {
@@ -109,27 +109,50 @@ const DetailCoures = () => {
     form.resetFields();
     setIsModalVisible(true);
   };
+  const handleOpenCreateTopic = () => {
+    form.resetFields();
+    setEditingTopic(null);
+    setIsModalVisible(true);
+  };
+
+  const handleOpenEditTopic = (tp: any) => {
+    setEditingTopic(tp);
+    setIsModalVisible(true);
+    form.setFieldsValue({
+      topicName: tp.topicName,
+      description: tp.description,
+      orderIndex: tp.orderIndex,
+    });
+  };
   const handleSubmitTopic = async () => {
-    if (!id) {
-      return;
-    }
+    if (!id) return;
     try {
       const values = await form.validateFields();
       const formData = new FormData();
       formData.append("topicName", values.topicName);
       formData.append("description", values.description);
+      formData.append("orderIndex", Number(values.orderIndex));
       formData.append("courseId", id);
-      formData.append("sceneId", values.sceneId);
+
       if (values.imgUrl?.[0]?.originFileObj) {
         formData.append("imgUrl", values.imgUrl[0].originFileObj);
       }
-      await TopicService.createTopic(formData);
-      toast.success("Tạo topic thành công!");
-      //   }
+
+      if (editingTopic) {
+        await TopicService.updateTopic(editingTopic.id, formData);
+        toast.success("Cập nhật topic thành công!");
+      } else {
+        await TopicService.createTopic(formData);
+        toast.success("Tạo topic thành công!");
+      }
+
       setIsModalVisible(false);
+      setEditingTopic(null);
       fetchDataTopic();
     } catch (e) {
-      toast.error("Có lỗi xảy ra khi lưu topic!");
+      toast.error(
+        editingTopic ? "Có lỗi khi cập nhật topic!" : "Có lỗi khi tạo topic!"
+      );
     }
   };
 
@@ -220,9 +243,11 @@ const DetailCoures = () => {
           <Typography style={{ fontSize: "30px", fontWeight: "bold" }}>
             {courseDetail?.courseName} - {courseDetail?.instructorFullName}
           </Typography>
-          <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
-            Add new topic
-          </Button>
+          <Flex gap={12}>
+            <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
+              Add new topic
+            </Button>
+          </Flex>
         </Flex>
 
         <Collapse
@@ -248,24 +273,56 @@ const DetailCoures = () => {
                   >
                     📚 {tp?.topicName}
                   </Typography>
-                  <Button
-                    type="primary"
-                    icon={<PlusOutlined />}
-                    style={{
-                      background: "linear-gradient(90deg, #ff7e5f, #feb47b)",
-                      border: "none",
-                      color: "white",
-                      fontWeight: 600,
-                      borderRadius: "8px",
-                    }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedTopic(tp.id);
-                      setIsModalVisibleLesson(true);
-                    }}
-                  >
-                    Add Lesson
-                  </Button>
+                  <Flex gap={12}>
+                    <Button
+                      type="default"
+                      icon={<EditOutlined />}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleOpenEditTopic(tp);
+                      }}
+                    >
+                      Edit Topic
+                    </Button>
+
+                    <Button
+                      type="primary"
+                      icon={<DeleteOutlined />}
+                      style={{
+                        background:
+                          "linear-gradient(90deg, #ff7e5f, #ff0000ff)",
+                        border: "none",
+                        color: "white",
+                        fontWeight: 600,
+                        borderRadius: "8px",
+                      }}
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        await TopicService.deleteTopic(tp.id);
+                        fetchDataTopic();
+                      }}
+                    >
+                      Delete Topic
+                    </Button>
+                    <Button
+                      type="primary"
+                      icon={<PlusOutlined />}
+                      style={{
+                        background: "linear-gradient(90deg, #ff7e5f, #feb47b)",
+                        border: "none",
+                        color: "white",
+                        fontWeight: 600,
+                        borderRadius: "8px",
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedTopic(tp.id);
+                        setIsModalVisibleLesson(true);
+                      }}
+                    >
+                      Add Lesson
+                    </Button>
+                  </Flex>
                 </Flex>
               }
               key={tp.id}
@@ -532,8 +589,11 @@ const DetailCoures = () => {
       </Flex>
       <Modal
         open={isModalVisible}
-        title={"Add new topic"}
-        onCancel={() => setIsModalVisible(false)}
+        title={editingTopic ? "Edit topic" : "Add new topic"}
+        onCancel={() => {
+          setIsModalVisible(false);
+          setEditingTopic(null);
+        }}
         onOk={handleSubmitTopic}
       >
         <Form layout="vertical" form={form}>
@@ -553,19 +613,15 @@ const DetailCoures = () => {
             <Input.TextArea rows={3} />
           </Form.Item>
 
-          {/* <Form.Item
-            label="Scene"
-            name="sceneId"
-            rules={[{ required: true, message: "Bắt buộc" }]}
+          <Form.Item
+            label="Thứ tự"
+            name="orderIndex"
+            rules={[
+              { required: true, message: "Vui lòng nhập thứ tự bài giảng" },
+            ]}
           >
-            <Select placeholder="Chọn scene">
-              {scenes.map((scene) => (
-                <Select.Option key={scene.id} value={scene.id}>
-                  {scene.sceneName}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item> */}
+            <InputNumber min={1} />
+          </Form.Item>
         </Form>
       </Modal>
 

@@ -13,9 +13,7 @@ export const TopicService = {
   },
 
   updateTopic: async (id: string, payload: FormData) => {
-    const res = await axiosInstance.put(`${API.UPDATE_TOPIC}/${id}`, payload, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+    const res = await axiosInstance.put(`${API.UPDATE_TOPIC}/${id}`, payload);
     return res.data;
   },
 
