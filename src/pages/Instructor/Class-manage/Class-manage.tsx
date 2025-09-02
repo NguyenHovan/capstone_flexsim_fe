@@ -79,12 +79,17 @@ const ClassManagement = () => {
 
   const handleSubmit = async () => {
     try {
+      const user = JSON.parse(localStorage.getItem("currentUser") || "null");
       const values = await form.validateFields();
       if (isEditing && selectedClassId) {
         await ClassService.update(selectedClassId, { ...values, courseId: id });
         toast.success("Cập nhật lớp học thành công!");
       } else {
-        await ClassService.create({ ...values, courseId: id });
+        await ClassService.create({
+          ...values,
+          courseId: id,
+          instructorId: user.id,
+        });
         toast.success("Tạo lớp học thành công!");
       }
       setIsModalVisible(false);
