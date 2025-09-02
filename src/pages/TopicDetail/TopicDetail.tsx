@@ -19,7 +19,6 @@ import { LessonSubmission } from "../../services/lessonSubmission.service";
 
 const { TextArea } = Input;
 
-// ---- Types (optional, to make state safer) ----
 interface QuizSubmission {
   id: string;
   accountId: string;
@@ -41,7 +40,7 @@ interface Scenario {
 
 interface LessonProgress {
   accountId: string;
-  status: number; // 2 = completed (as per your code)
+  status: number;
 }
 
 interface LessonSubmissionItem {
@@ -67,7 +66,29 @@ interface MyLessonSubmit {
   totalScore?: number;
   [key: string]: any;
 }
+function extractMaxScore(lessons: any) {
+  let maxScore: number | null = null;
+  let meta: { lessonId: string; lessonName?: string; quizId: string } | null =
+    null;
 
+  for (const lesson of lessons ?? []) {
+    for (const q of lesson.quizzes ?? []) {
+      const raw = (q.latestScore ?? q.totalScore ?? 0) as number | string;
+      const score = Number(raw);
+      if (!Number.isFinite(score)) continue;
+
+      if (maxScore === null || score > maxScore) {
+        maxScore = score;
+        meta = {
+          lessonId: lesson.id,
+          lessonName: lesson.lessonName,
+          quizId: q.id,
+        };
+      }
+    }
+  }
+  return { maxScore, meta };
+}
 const TopicDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -92,9 +113,18 @@ const TopicDetail = () => {
   const [myLessonSubmit, setMyLessonSubmit] = useState<MyLessonSubmit | null>(
     null
   );
+  const [quizMaxScore, setQuizMaxScore] = useState<number>(0);
   const [editLoading, setEditLoading] = useState(false);
 
-  // ---- Fetch topic + initial state ----
+  const fetchQuizSubmitssionScore = async () => {
+    try {
+      const response = await LessonService.getQuizScoreByTopicId(id ?? "");
+      const { maxScore } = extractMaxScore(response);
+      setQuizMaxScore(Number(maxScore));
+    } catch (error) {
+      console.log({ error });
+    }
+  };
   const fetchTopicDetail = async () => {
     try {
       const response: LessonItem[] = await LessonService.getLessonByTopic(
@@ -102,7 +132,6 @@ const TopicDetail = () => {
       );
       setData(response);
       setSelectedLesson(response?.[0] ?? null);
-      // fetchMyLessonSubmit will run in the useEffect that watches selectedLesson?.id
     } catch (error: any) {
       console.log({ error });
       toast.error(
@@ -123,17 +152,16 @@ const TopicDetail = () => {
 
   useEffect(() => {
     fetchTopicDetail();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    fetchQuizSubmitssionScore();
   }, []);
 
-  // Whenever lesson changes: refetch submission + reset watch state
   useEffect(() => {
     if (selectedLesson?.id) {
       fetchMyLessonSubmit(selectedLesson.id);
-      // reset watch status for new lesson
+
       setIsCompleted(false);
       maxWatchRef.current = 0;
-      // reset video to start
+
       if (videoRef.current) {
         try {
           videoRef.current.currentTime = 0;
@@ -142,7 +170,6 @@ const TopicDetail = () => {
     }
   }, [selectedLesson?.id]);
 
-  // ---- Video handlers ----
   const handleTimeUpdate = (e: React.SyntheticEvent<HTMLVideoElement>) => {
     const video = e.currentTarget;
     if (video.currentTime > maxWatchRef.current) {
@@ -166,7 +193,6 @@ const TopicDetail = () => {
     setIsCompleted(true);
   };
 
-  // ---- Actions ----
   const handleComplete = async () => {
     if (!currentUser || !selectedLesson) return;
     try {
@@ -259,11 +285,10 @@ const TopicDetail = () => {
   const getDisabled = () => {
     const fileUrlTruthy = !!selectedLesson?.fileUrl;
     const total = Number(myLessonSubmit?.totalScore ?? 0);
-    if (total > 5) {
-      return false;
-    }
+    const allConditions =
+      quizMaxScore > 8 && total > 5 && fileUrlTruthy && isCompleted;
 
-    return fileUrlTruthy && !isCompleted;
+    return !allConditions;
   };
 
   return (

@@ -95,7 +95,10 @@ const OrgAdminProfile: React.FC = () => {
     (async () => {
       try {
         const acc = await AccountService.getAccountById(userId);
-        const normalized: Account = { ...acc, gender: normalizeGender(acc.gender) };
+        const normalized: Account = {
+          ...acc,
+          gender: normalizeGender(acc.gender),
+        };
         setUser(normalized);
         setAvatarUrl(normalized.avtUrl || "");
         form.setFieldsValue({
@@ -128,7 +131,10 @@ const OrgAdminProfile: React.FC = () => {
     try {
       await AccountService.updateAccount(user.id, { avtUrl: avatarUrl });
       const fresh = await AccountService.getAccountById(user.id);
-      const normalized: Account = { ...fresh, gender: normalizeGender(fresh.gender) };
+      const normalized: Account = {
+        ...fresh,
+        gender: normalizeGender(fresh.gender),
+      };
       setUser(normalized);
       setAvatarUrl(normalized.avtUrl || "");
       setAvatarDirty(false);
@@ -168,18 +174,22 @@ const OrgAdminProfile: React.FC = () => {
       const diff: UpdateAccountPayload = {};
 
       const nextFullName = trim(values.fullName);
-      if (nextFullName !== (user.fullName ?? "")) diff.fullName = nextFullName as string;
+      if (nextFullName !== (user.fullName ?? ""))
+        diff.fullName = nextFullName as string;
 
       const nextPhone = trim(values.phone);
-      if (nextPhone !== (user.phone ?? "")) diff.phone = nextPhone as string | undefined;
+      if (nextPhone !== (user.phone ?? ""))
+        diff.phone = nextPhone as string | undefined;
 
       const nextAddress = trim(values.address);
-      if (nextAddress !== ((user as any).address ?? "")) diff.address = nextAddress as string | undefined;
+      if (nextAddress !== ((user as any).address ?? ""))
+        diff.address = nextAddress as string | undefined;
 
       const nextGender = normalizeGender(values.gender); // 1/2/3
       if (normalizeGender(user.gender) !== nextGender) diff.gender = nextGender;
 
-      if ((avatarUrl || "") !== (user.avtUrl || "")) diff.avtUrl = avatarUrl || "";
+      if ((avatarUrl || "") !== (user.avtUrl || ""))
+        diff.avtUrl = avatarUrl || "";
 
       if (Object.keys(diff).length === 0) {
         toast.info("Không có thay đổi nào để cập nhật");
@@ -191,7 +201,10 @@ const OrgAdminProfile: React.FC = () => {
 
       // GET lại và đồng bộ localStorage
       const fresh = await AccountService.getAccountById(user.id);
-      const normalized: Account = { ...fresh, gender: normalizeGender(fresh.gender) };
+      const normalized: Account = {
+        ...fresh,
+        gender: normalizeGender(fresh.gender),
+      };
       setUser(normalized);
       setAvatarUrl(normalized.avtUrl || "");
       setAvatarDirty(false);
@@ -211,7 +224,6 @@ const OrgAdminProfile: React.FC = () => {
       setSavingAll(false);
     }
   };
-
 
   return (
     <div className="profile-page">
@@ -263,7 +275,11 @@ const OrgAdminProfile: React.FC = () => {
         <Form form={form} layout="vertical" onFinish={handleUpdate}>
           <Row gutter={[24, 8]}>
             <Col xs={24} md={12}>
-              <Form.Item name="fullName" label="Full name" rules={[{ required: true }]}>
+              <Form.Item
+                name="fullName"
+                label="Full name"
+                rules={[{ required: true }]}
+              >
                 <Input
                   placeholder="Your full name"
                   onPressEnter={(e) => {
@@ -283,11 +299,17 @@ const OrgAdminProfile: React.FC = () => {
                 />
               </Form.Item>
 
-              <Form.Item name="gender" label="Gender" rules={[{ required: true }]}>
+              <Form.Item
+                name="gender"
+                label="Gender"
+                rules={[{ required: true }]}
+              >
                 <Select
                   options={GENDER_OPTIONS}
                   // đảm bảo value luôn là number 1..3
-                  onChange={(val) => form.setFieldValue("gender", asNum(val, 1))}
+                  onChange={(val) =>
+                    form.setFieldValue("gender", asNum(val, 1))
+                  }
                 />
               </Form.Item>
             </Col>
@@ -308,7 +330,11 @@ const OrgAdminProfile: React.FC = () => {
               </Form.Item>
 
               <div className="profile-actions">
-                <Button icon={<ReloadOutlined />} onClick={onReset} style={{ marginRight: 8 }}>
+                <Button
+                  icon={<ReloadOutlined />}
+                  onClick={onReset}
+                  style={{ marginRight: 8 }}
+                >
                   Reset
                 </Button>
                 <Button type="primary" htmlType="submit" loading={savingAll}>

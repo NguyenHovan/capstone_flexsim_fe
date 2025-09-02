@@ -59,18 +59,18 @@ const sidebarItems = [
     label: "Scene",
     url: "/instructor-scene",
   },
-  // {
-  //   key: "Quizzes",
-  //   icon: <SettingOutlined />,
-  //   label: "Quizzes",
-  //   url: "/instructor-quiz",
-  // },
+  {
+    key: "ChangePassword",
+    icon: <SettingOutlined />,
+    label: "Change Password",
+    url: "/instructor-change-password",
+  },
 
   {
-    key: "Setting",
+    key: "ChangeEmail",
     icon: <SettingOutlined />,
-    label: "Setting",
-    url: "/instructor",
+    label: "Change Email",
+    url: "/instructor-change-email",
   },
   {
     key: "Support / Help",

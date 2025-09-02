@@ -10,6 +10,7 @@ import {
   Select,
   Divider,
   Typography,
+  Flex,
 } from "antd";
 import { SaveOutlined, ReloadOutlined, UserOutlined } from "@ant-design/icons";
 import { toast } from "sonner";
@@ -95,7 +96,10 @@ const AdminProfile: React.FC = () => {
     (async () => {
       try {
         const acc = await AccountService.getAccountById(userId);
-        const normalized: Account = { ...acc, gender: normalizeGender(acc.gender) };
+        const normalized: Account = {
+          ...acc,
+          gender: normalizeGender(acc.gender),
+        };
         setUser(normalized);
         setAvatarUrl(normalized.avtUrl || "");
         form.setFieldsValue({
@@ -128,7 +132,10 @@ const AdminProfile: React.FC = () => {
     try {
       await AccountService.updateAccount(user.id, { avtUrl: avatarUrl });
       const fresh = await AccountService.getAccountById(user.id);
-      const normalized: Account = { ...fresh, gender: normalizeGender(fresh.gender) };
+      const normalized: Account = {
+        ...fresh,
+        gender: normalizeGender(fresh.gender),
+      };
       setUser(normalized);
       setAvatarUrl(normalized.avtUrl || "");
       setAvatarDirty(false);
@@ -168,18 +175,22 @@ const AdminProfile: React.FC = () => {
       const diff: UpdateAccountPayload = {};
 
       const nextFullName = trim(values.fullName);
-      if (nextFullName !== (user.fullName ?? "")) diff.fullName = nextFullName as string;
+      if (nextFullName !== (user.fullName ?? ""))
+        diff.fullName = nextFullName as string;
 
       const nextPhone = trim(values.phone);
-      if (nextPhone !== (user.phone ?? "")) diff.phone = nextPhone as string | undefined;
+      if (nextPhone !== (user.phone ?? ""))
+        diff.phone = nextPhone as string | undefined;
 
       const nextAddress = trim(values.address);
-      if (nextAddress !== ((user as any).address ?? "")) diff.address = nextAddress as string | undefined;
+      if (nextAddress !== ((user as any).address ?? ""))
+        diff.address = nextAddress as string | undefined;
 
       const nextGender = normalizeGender(values.gender); // 1/2/3
       if (normalizeGender(user.gender) !== nextGender) diff.gender = nextGender;
 
-      if ((avatarUrl || "") !== (user.avtUrl || "")) diff.avtUrl = avatarUrl || "";
+      if ((avatarUrl || "") !== (user.avtUrl || ""))
+        diff.avtUrl = avatarUrl || "";
 
       if (Object.keys(diff).length === 0) {
         toast.info("Không có thay đổi nào để cập nhật");
@@ -191,7 +202,10 @@ const AdminProfile: React.FC = () => {
 
       // GET lại và đồng bộ localStorage
       const fresh = await AccountService.getAccountById(user.id);
-      const normalized: Account = { ...fresh, gender: normalizeGender(fresh.gender) };
+      const normalized: Account = {
+        ...fresh,
+        gender: normalizeGender(fresh.gender),
+      };
       setUser(normalized);
       setAvatarUrl(normalized.avtUrl || "");
       setAvatarDirty(false);
@@ -212,13 +226,12 @@ const AdminProfile: React.FC = () => {
     }
   };
 
-
   return (
     <div className="profile-page">
       {/* HERO */}
       <div className="profile-hero">
         <Title level={3} className="profile-hero__title">
-          Welcome to LogiSimEdu
+          Welcome to LogiSimEduss
         </Title>
         <Text className="profile-hero__subtitle">
           {(user?.fullName || currentUser?.fullName) ?? "Organization Admin"}
@@ -232,21 +245,24 @@ const AdminProfile: React.FC = () => {
               icon={!avatarUrl ? <UserOutlined /> : undefined}
               className="avatar-block__img"
             />
+          </div>
+          <Flex gap={24}>
             <div className="avatar-block__uploader">
+              {" "}
               <UploadCloudinary value={avatarUrl} onChange={setAvatarUrl} />
             </div>
-          </div>
 
-          <Button
-            type="primary"
-            icon={<SaveOutlined />}
-            onClick={saveAvatarOnly}
-            disabled={!avatarDirty}
-            loading={savingAvatar}
-            className="avatar-block__savebtn"
-          >
-            Lưu ảnh
-          </Button>
+            <Button
+              type="primary"
+              icon={<SaveOutlined />}
+              onClick={saveAvatarOnly}
+              disabled={!avatarDirty}
+              loading={savingAvatar}
+              className="avatar-block__savebtn"
+            >
+              Lưu ảnh
+            </Button>
+          </Flex>
         </div>
       </div>
 
@@ -263,7 +279,11 @@ const AdminProfile: React.FC = () => {
         <Form form={form} layout="vertical" onFinish={handleUpdate}>
           <Row gutter={[24, 8]}>
             <Col xs={24} md={12}>
-              <Form.Item name="fullName" label="Full name" rules={[{ required: true }]}>
+              <Form.Item
+                name="fullName"
+                label="Full name"
+                rules={[{ required: true }]}
+              >
                 <Input
                   placeholder="Your full name"
                   onPressEnter={(e) => {
@@ -283,11 +303,17 @@ const AdminProfile: React.FC = () => {
                 />
               </Form.Item>
 
-              <Form.Item name="gender" label="Gender" rules={[{ required: true }]}>
+              <Form.Item
+                name="gender"
+                label="Gender"
+                rules={[{ required: true }]}
+              >
                 <Select
                   options={GENDER_OPTIONS}
                   // đảm bảo value luôn là number 1..3
-                  onChange={(val) => form.setFieldValue("gender", asNum(val, 1))}
+                  onChange={(val) =>
+                    form.setFieldValue("gender", asNum(val, 1))
+                  }
                 />
               </Form.Item>
             </Col>
@@ -308,7 +334,11 @@ const AdminProfile: React.FC = () => {
               </Form.Item>
 
               <div className="profile-actions">
-                <Button icon={<ReloadOutlined />} onClick={onReset} style={{ marginRight: 8 }}>
+                <Button
+                  icon={<ReloadOutlined />}
+                  onClick={onReset}
+                  style={{ marginRight: 8 }}
+                >
                   Reset
                 </Button>
                 <Button type="primary" htmlType="submit" loading={savingAll}>

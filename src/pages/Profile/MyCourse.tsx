@@ -2,8 +2,10 @@ import { Card, Button, Row, Col, Empty } from "antd";
 import { useEffect, useState } from "react";
 import { EnrollmentRequestService } from "../../services/enrollment-request.service";
 import type { Course } from "../../types/course";
+import { useNavigate } from "react-router-dom";
 
 const MyCourse = () => {
+  const navigate = useNavigate();
   const [myCourses, setMyCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -37,12 +39,14 @@ const MyCourse = () => {
           {myCourses.map((course) => (
             <Col xs={24} sm={12} md={8} lg={6} key={course.id}>
               <Card
+                style={{ height: 350 }}
+                onClick={() => navigate(`/course-detail/${course.id}`)}
                 hoverable
                 cover={
                   <img
                     alt={course.courseName}
                     src={course.imgUrl}
-                    style={{ height: 160, objectFit: "cover" }}
+                    style={{ height: 200, objectFit: "cover" }}
                   />
                 }
               >
@@ -50,9 +54,6 @@ const MyCourse = () => {
                   title={course.courseName}
                   description={course.description}
                 />
-                <div style={{ marginTop: 12, textAlign: "right" }}>
-                  <Button type="primary">View</Button>
-                </div>
               </Card>
             </Col>
           ))}

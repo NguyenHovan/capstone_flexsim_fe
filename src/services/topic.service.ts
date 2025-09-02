@@ -27,4 +27,10 @@ export const TopicService = {
     );
     return res.data;
   },
+  studentFinishTopic: async (courseId: string) => {
+    const res = await axiosInstance.get(
+      `/api/topic/course/${courseId}/with-student-finish`
+    );
+    return res.data;
+  },
 };

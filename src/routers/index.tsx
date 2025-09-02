@@ -106,6 +106,22 @@ const MainRoute = () => {
           }
         />
         <Route
+          path="/change-password"
+          element={
+            <ProfileLayout>
+              <OrgAdminChangePassword />
+            </ProfileLayout>
+          }
+        />
+        <Route
+          path="/change-email"
+          element={
+            <ProfileLayout>
+              <OrgAdminChangeEmail />
+            </ProfileLayout>
+          }
+        />
+        <Route
           path="/my-certificate"
           element={
             <ProfileLayout>
@@ -140,9 +156,11 @@ const MainRoute = () => {
           />
           <Route path="order-manager" element={<OrderAdmin />} />
           <Route path="admin-profile" element={<AdminProfile />} />
-          <Route path="admin-change-password" element={<AdminChangePassword />} />
+          <Route
+            path="admin-change-password"
+            element={<AdminChangePassword />}
+          />
           <Route path="admin-change-email" element={<AdminChangeEmail />} />
-
         </Route>
       </Route>
 
@@ -156,9 +174,14 @@ const MainRoute = () => {
           <Route path="subscription" element={<OrgAdminSubscriptionPlans />} />
           <Route path="order-manager" element={<OrderOrganization />} />
           <Route path="orgAdmin-profile" element={<OrgAdminProfile />} />
-          <Route path="orgAdmin-change-password" element={<OrgAdminChangePassword />} />
-          <Route path="orgAdmin-change-email" element={<OrgAdminChangeEmail />} />
-
+          <Route
+            path="orgAdmin-change-password"
+            element={<OrgAdminChangePassword />}
+          />
+          <Route
+            path="orgAdmin-change-email"
+            element={<OrgAdminChangeEmail />}
+          />
         </Route>
       </Route>
 
@@ -188,6 +211,14 @@ const MainRoute = () => {
           <Route path="/instructor-lesson" element={<LessonManagement />} />
           <Route path="/instructor-enroll-request" element={<EnrollManage />} />
           <Route path="/instructor-quiz-detail/:id" element={<QuizDetail />} />
+          <Route
+            path="/instructor-change-password"
+            element={<OrgAdminChangePassword />}
+          />
+          <Route
+            path="/instructor-change-email"
+            element={<OrgAdminChangeEmail />}
+          />
           <Route
             path="/instructor-lesson-submission/:id"
             element={<ClassSubmissionsTable />}

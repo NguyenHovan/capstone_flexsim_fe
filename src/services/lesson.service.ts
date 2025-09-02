@@ -43,4 +43,15 @@ export const LessonService = {
     );
     return res.data;
   },
+  getQuizScoreByTopicId: async (topicId: string) => {
+    const userString = localStorage.getItem("currentUser");
+    const currentUser = userString ? JSON.parse(userString) : null;
+    const res = await axiosInstance.get(
+      `/api/lesson/by-topic-quiz/${topicId}`,
+      {
+        params: { accountId: currentUser.id, topicId: topicId },
+      }
+    );
+    return res.data;
+  },
 };
