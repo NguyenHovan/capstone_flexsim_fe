@@ -1,0 +1,118 @@
+:root{
+  --about-max: 1200px;
+  --brand: #1677ff;
+  --ink-2: rgba(0,0,0,0.65);
+}
+
+/* ===== Base ===== */
+.about-layout{ background:#fff; }
+.about-content{ max-width:var(--about-max); margin:0 auto; padding:40px 16px 64px; }
+.about-section{ margin:24px 0 56px; }
+.section-title{ letter-spacing:.2px; }
+
+/* ===== Hero ===== */
+.about-hero{
+  position:relative; min-height:68vh; padding:0; display:grid; place-items:center; overflow:hidden;
+  background: radial-gradient(1200px 600px at 80% -10%, rgba(22,119,255,.25), transparent 60%),
+              radial-gradient(900px 500px at 10% 110%, rgba(0,213,255,.25), transparent 60%),
+              linear-gradient(135deg,#0f172a,#0b1223 40%, #0a1b3a);
+}
+.about-hero__bg::before{
+  content:""; position:absolute; inset:-20%; background:
+    url("/assets/logisimedu/hero.jpg") center/cover no-repeat; opacity:.15; filter: blur(8px) saturate(1.1);
+}
+.about-hero__glow{
+  position:absolute; width:800px; height:800px; border-radius:50%;
+  background: radial-gradient(closest-side, rgba(22,119,255,.35), transparent 70%);
+  filter: blur(40px); top:-120px; right:-140px; pointer-events:none;
+}
+.glass{
+  backdrop-filter: saturate(160%) blur(8px);
+  background: linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,.06));
+  border: 1px solid rgba(255,255,255,.25);
+  box-shadow: 0 10px 30px rgba(0,0,0,.25);
+  border-radius: 18px;
+}
+.about-hero__content{ position:relative; padding:28px; color:#fff; width:min(960px, 92vw); }
+.about-hero__title{ margin:0 0 4px !important; font-size:48px !important; }
+.gradient-text{
+  background: linear-gradient(90deg,#e0f2ff,#a1c4ff,#e0f2ff);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+.about-hero__subtitle{ color:rgba(255,255,255,.85) !important; margin-bottom:16px !important; }
+
+.btn-shadow{ box-shadow:0 10px 18px rgba(22,119,255,.35); }
+.btn-ghost{ background:transparent; color:#fff; border-color:rgba(255,255,255,.35); }
+.btn-ghost:hover{ color:#001529; background:#fff; }
+
+/* Stats */
+.about-stats{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:16px; }
+.about-stat{ display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:14px;
+  background: linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,.08));
+  border:1px solid rgba(255,255,255,.25);
+}
+.about-stat__icon{ font-size:20px; width:36px; height:36px; display:grid; place-items:center; border-radius:10px; background:rgba(255,255,255,.2); }
+.about-stat__value{ font-weight:700; font-size:18px; line-height:1; }
+.about-stat__label{ font-size:12px; opacity:.9; }
+
+/* ===== Illustration ===== */
+.gradient-border{
+  position:relative; border-radius:16px !important; padding:2px;
+  background: linear-gradient(120deg, rgba(22,119,255,.55), rgba(0,212,255,.45));
+}
+.gradient-border .ant-card-cover{ border-radius:14px; overflow:hidden; }
+.about-hero__image{ width:100%; padding-top:60%; background:url("/assets/logisimedu/overview.jpg") center/cover no-repeat; }
+
+/* ===== Bullets ===== */
+.about-bullets{ margin:12px 0 16px; padding-left:18px; }
+.about-bullets li{ margin:6px 0; line-height:1.6; color:var(--ink-2); }
+
+/* ===== Cards ===== */
+.about-card{ height:100%; border-radius:16px !important; border:1px solid #f0f0f0; background:#fff; }
+.about-card--border{ border:1px solid #eaeaea !important; }
+.about-card--soft{ background:linear-gradient(180deg,#ffffff, #f7fbff); }
+.about-card__icon{
+  font-size:26px; width:46px; height:46px; border-radius:12px; display:grid; place-items:center;
+  color:var(--brand); background:rgba(22,119,255,.12); margin-bottom:10px;
+}
+.pulse{ animation: pulse 2.4s ease-in-out infinite; }
+@keyframes pulse{
+  0%,100%{ transform: translateZ(0) scale(1); box-shadow: 0 0 0 0 rgba(22,119,255,.0);}
+  50%{ transform: translateZ(0) scale(1.04); box-shadow: 0 0 0 8px rgba(22,119,255,.08);}
+}
+
+/* Hover effects */
+.lift{ transition: transform .25s ease, box-shadow .25s ease; }
+.lift:hover{ transform: translateY(-4px); box-shadow:0 14px 34px rgba(0,0,0,.12); }
+.glow-on-hover:hover{ box-shadow: 0 14px 40px rgba(22,119,255,.22); }
+
+/* Timeline */
+.about-timeline .ant-timeline-item-content{ font-size:14px; }
+
+/* CTA */
+.about-cta{
+  margin-top:24px; border-radius:18px; padding:20px 22px;
+  background: linear-gradient(90deg, rgba(22,119,255,.08), rgba(0,212,255,.06));
+  border:1px solid rgba(22,119,255,.18);
+}
+
+/* Divider */
+.decor-divider{
+  margin:18px 0 28px !important;
+  border-color: transparent !important;
+  height: 1px; background:
+    linear-gradient(90deg, transparent, rgba(22,119,255,.35), transparent);
+}
+
+/* Footer */
+.about-footer{ text-align:center; background:#fff; padding:24px 16px; border-top:1px solid #f0f0f0; }
+
+/* Responsive */
+@media (max-width: 992px){
+  .about-hero{ min-height:62vh; }
+  .about-stats{ grid-template-columns:1fr 1fr; }
+}
+@media (max-width: 576px){
+  .about-hero__title{ font-size:36px !important; }
+  .about-stats{ grid-template-columns:1fr; }
+}

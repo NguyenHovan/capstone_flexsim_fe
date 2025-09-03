@@ -58,6 +58,7 @@ import AdminChangeEmail from "../pages/Admin/Settings/Change Email/AdminChangeEm
 import AdminProfile from "../pages/Admin/Settings/Profile/AdminProfile";
 import OrgAdminProfile from "../pages/OrganizationAdmin/Settings/Profile/OrgAdminProfile";
 import ResetPasswordPage from "../pages/ResetPassword/ResetPassword";
+import AboutLogisimEdu from "../pages/About/About";
 
 const MainRoute = () => {
   return (
@@ -65,6 +66,7 @@ const MainRoute = () => {
       {/* Auth routes */}
       <Route path="/login" element={<LoginPage />} />
       {/* <Route path="/signup" element={<SignUpPage />} /> */}
+      
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/verify-code" element={<VerifyCodePage />} />
@@ -75,6 +77,7 @@ const MainRoute = () => {
       <Route element={<LayoutMain />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/about" element={<AboutLogisimEdu />} />
         <Route path="/new-password" element={<NewPasswordPage />} />
         <Route path="/course-list" element={<CourseList />} />
         <Route path="/course-detail/:id" element={<CourseDetail />} />
