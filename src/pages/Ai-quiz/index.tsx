@@ -1,34 +1,75 @@
 import React, { useMemo, useState } from "react";
 import {
-  Upload,
   Button,
   Card,
   Typography,
   Space,
-  message,
   Row,
   Col,
-  Tag,
+  message,
   Radio,
+  Tag,
   Alert,
   Progress,
+  InputNumber,
 } from "antd";
 import {
-  UploadOutlined,
-  FileExcelOutlined,
-  ReloadOutlined,
   CheckCircleTwoTone,
   CloseCircleTwoTone,
+  UploadOutlined,
+  ReloadOutlined,
+  DownloadOutlined,
 } from "@ant-design/icons";
 import { FlexsimService } from "../../services/flexsim.service";
 
 const { Title, Text, Paragraph } = Typography;
+
+const PRESETS = [
+  {
+    label: "Content.csv",
+    url: "https://res.cloudinary.com/dsfrqevvg/raw/upload/v1756923749/LogiSimEdu_File/Content.csv",
+  },
+  {
+    label: "Output.csv",
+    url: "https://res.cloudinary.com/dsfrqevvg/raw/upload/v1756923781/LogiSimEdu_File/Output.csv",
+  },
+];
 
 const DIFF_COLOR: Record<string, string> = {
   easy: "green",
   medium: "orange",
   hard: "red",
 };
+
+const mimeFromExt = (ext: string) => {
+  const e = ext.toLowerCase();
+  if (e === "csv") return "text/csv";
+  if (e === "json") return "application/json";
+  if (e === "xlsx")
+    return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+  if (e === "xls") return "application/vnd.ms-excel";
+  return "application/octet-stream";
+};
+
+const filenameFromUrl = (url: string) => {
+  try {
+    const clean = url.split("?")[0];
+    return decodeURIComponent(clean.substring(clean.lastIndexOf("/") + 1));
+  } catch {
+    return `dataset_${Date.now()}`;
+  }
+};
+
+async function fetchUrlAsFile(url: string): Promise<File> {
+  const res = await fetch(url, { mode: "cors" });
+  if (!res.ok)
+    throw new Error(`Không tải được file từ URL (HTTP ${res.status})`);
+  const blob = await res.blob();
+  const name = filenameFromUrl(url);
+  const ext = name.includes(".") ? name.split(".").pop()! : "bin";
+  const type = mimeFromExt(ext);
+  return new File([blob], name, { type });
+}
 
 function QuizView({ questions }: { questions: any[] }) {
   const [answers, setAnswers] = useState<Record<string, number | undefined>>(
@@ -129,30 +170,28 @@ function QuizView({ questions }: { questions: any[] }) {
           >
             <Radio.Group
               value={chosen}
-              onChange={(e) => onPick(q.id, e.target.value)}
+              onChange={(e) =>
+                setAnswers((p) => ({ ...p, [q.id]: e.target.value }))
+              }
               disabled={done}
               style={{ display: "grid", gap: 10 }}
             >
-              {q.options.map((opt, idx) => {
-                const isCorrect = idx === q.correctIndex;
+              {q.options.map((opt: any, idx: number) => {
+                const ok = idx === q.correctIndex;
                 const isChosen = chosen === idx;
                 return (
-                  <div
-                    key={idx}
-                    style={styles.option(isChosen, isCorrect, done)}
-                  >
+                  <div key={idx} style={styles.option(isChosen, ok, done)}>
                     <Radio value={idx}>
                       <Text
                         style={{
-                          fontWeight:
-                            done && isCorrect ? 700 : isChosen ? 600 : 400,
+                          fontWeight: done && ok ? 700 : isChosen ? 600 : 400,
                         }}
                       >
                         {opt}
                       </Text>
                     </Radio>
                     {done &&
-                      (isCorrect ? (
+                      (ok ? (
                         <CheckCircleTwoTone twoToneColor="#22c55e" />
                       ) : isChosen ? (
                         <CloseCircleTwoTone twoToneColor="#ef4444" />
@@ -173,20 +212,16 @@ function QuizView({ questions }: { questions: any[] }) {
                 >
                   Check
                 </Button>
-              ) : (
-                q.explanation && (
-                  <Alert
-                    type={correct ? "success" : "error"}
-                    showIcon
-                    message={<Text strong>Giải thích</Text>}
-                    description={
-                      <Paragraph style={{ margin: 0 }}>
-                        {q.explanation}
-                      </Paragraph>
-                    }
-                  />
-                )
-              )}
+              ) : q.explanation ? (
+                <Alert
+                  type={correct ? "success" : "error"}
+                  showIcon
+                  message={<Text strong>Giải thích</Text>}
+                  description={
+                    <Paragraph style={{ margin: 0 }}>{q.explanation}</Paragraph>
+                  }
+                />
+              ) : null}
             </Space>
           </Card>
         );
@@ -195,58 +230,48 @@ function QuizView({ questions }: { questions: any[] }) {
   );
 }
 
-export default function QuizUploadPage() {
-  const [fileList, setFileList] = useState<any[]>([]);
+export default function QuizFromPresetsPage() {
+  const [selectedUrl, setSelectedUrl] = useState<string>(PRESETS[0].url);
+  const [maxQuestions, setMaxQuestions] = useState<number | null>(10);
+  const [lang, setLang] = useState<string>("vi");
   const [uploading, setUploading] = useState(false);
-  const [progress, setProgress] = useState(0);
+  const [percent, setPercent] = useState(0);
   const [questions, setQuestions] = useState<any[] | null>(null);
 
-  const beforeUpload = (file: File) => {
-    const okType =
-      file.type ===
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
-      file.type === "application/vnd.ms-excel" ||
-      [".xlsx", ".xls", ".csv", ".json"].some((ext) => file.name.endsWith(ext));
-    if (!okType) {
-      message.error("Vui lòng chọn file Excel/CSV/JSON đúng định dạng");
-      return Upload.LIST_IGNORE as any;
-    }
-    const okSize = file.size / 1024 / 1024 < 20;
-    if (!okSize) {
-      message.error("File quá lớn (>20MB)");
-      return Upload.LIST_IGNORE as any;
-    }
-    setFileList([file]);
-    return false;
+  const resetAll = () => {
+    setQuestions(null);
+    setPercent(0);
   };
 
-  const doUpload = async () => {
-    const file = fileList[0];
-    if (!file) return message.warning("Chọn 1 file để upload");
-
-    setUploading(true);
-    setProgress(0);
+  const start = async () => {
     try {
-      const res = await FlexsimService.flexsimUpload(file as File);
+      setUploading(true);
+      setPercent(0);
+
+      const file = await fetchUrlAsFile(selectedUrl);
+
+      const res = await FlexsimService.flexsimUpload(
+        file,
+        { maxQuestions: maxQuestions ?? undefined, lang, filename: file.name },
+        setPercent
+      );
+
       if (!res?.questions || !Array.isArray(res.questions)) {
         throw new Error("Phản hồi không đúng định dạng { questions: [...] }");
       }
       setQuestions(res.questions);
-      message.success(`Tải lên thành công • ${res.questions.length} câu hỏi`);
+      message.success(`OK • ${res.questions.length} câu hỏi`);
     } catch (e: any) {
       console.error(e);
-      message.error(e?.message || "Upload thất bại");
+      message.error(e?.message || "Xử lý thất bại");
     } finally {
       setUploading(false);
     }
   };
-
-  const resetAll = () => {
-    setFileList([]);
-    setQuestions(null);
-    setProgress(0);
+  const file = {
+    label: "Scene_1.fsm",
+    url: "https://res.cloudinary.com/dsfrqevvg/raw/upload/v1756923724/LogiSimEdu_File/Scene_1.fsm",
   };
-
   return (
     <div style={{ maxWidth: 1000, margin: "0 auto", padding: "24px 16px" }}>
       <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
@@ -259,15 +284,22 @@ export default function QuizUploadPage() {
                 color: "transparent",
               }}
             >
-              Upload FlexSim → Generate Quiz
+              Use Preset Dataset → Generate Quiz
             </span>
           </Title>
           <Text type="secondary">
-            Tải file mô phỏng (Excel/CSV), hệ thống sinh câu hỏi tự động.
+            Chọn 1 dataset có sẵn rồi gửi lên backend.
           </Text>
         </Col>
         <Col>
           <Space>
+            <Button
+              icon={<DownloadOutlined />}
+              href={file.url}
+              download={file.label}
+            >
+              Download {file.label}
+            </Button>
             <Button
               icon={<ReloadOutlined />}
               onClick={resetAll}
@@ -286,42 +318,50 @@ export default function QuizUploadPage() {
           marginBottom: 16,
         }}
       >
-        <Upload.Dragger
-          multiple={false}
-          accept=".xlsx,.xls,.csv,.json"
-          beforeUpload={beforeUpload}
-          fileList={fileList as any}
-          onRemove={() => {
-            setFileList([]);
-            return true;
-          }}
-          itemRender={(originNode) => originNode}
-          style={{ borderRadius: 12 }}
-        >
-          <p className="ant-upload-drag-icon">
-            <FileExcelOutlined />
-          </p>
-          <p className="ant-upload-text">Kéo thả hoặc bấm để chọn file</p>
-          <p className="ant-upload-hint">
-            Hỗ trợ: .xlsx, .xls, .csv, .json • Tối đa 20MB
-          </p>
-        </Upload.Dragger>
-
-        <Space style={{ marginTop: 12 }}>
-          <Button
-            type="primary"
-            icon={<UploadOutlined />}
-            onClick={doUpload}
-            loading={uploading}
-            disabled={!fileList.length}
+        <Space direction="vertical" size={12} style={{ width: "100%" }}>
+          <Text strong>Chọn dataset:</Text>
+          <Radio.Group
+            value={selectedUrl}
+            onChange={(e) => setSelectedUrl(e.target.value)}
+            style={{ display: "grid", gap: 8 }}
           >
-            Upload & Generate
-          </Button>
-          {uploading && (
-            <div style={{ minWidth: 220 }}>
-              <Progress percent={progress} status="active" />
-            </div>
-          )}
+            {PRESETS.map((p) => (
+              <Radio key={p.url} value={p.url}>
+                {p.label}
+              </Radio>
+            ))}
+          </Radio.Group>
+
+          <Row gutter={[12, 12]}>
+            <Col xs={24} sm={12} md={8}>
+              <Text style={{ display: "block", marginBottom: 4 }}>
+                Max questions
+              </Text>
+              <InputNumber
+                min={0}
+                placeholder="0 = để BE quyết"
+                style={{ width: "100%" }}
+                value={maxQuestions as any}
+                onChange={(v) => setMaxQuestions(v as number | null)}
+              />
+            </Col>
+          </Row>
+
+          <Space style={{ marginTop: 8 }}>
+            <Button
+              type="primary"
+              icon={<UploadOutlined />}
+              onClick={start}
+              loading={uploading}
+            >
+              Generate from preset
+            </Button>
+            {uploading && (
+              <div style={{ minWidth: 220 }}>
+                <Progress percent={percent} status="active" />
+              </div>
+            )}
+          </Space>
         </Space>
       </Card>
 
