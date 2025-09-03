@@ -109,3 +109,35 @@
   font-weight: 600;
   cursor: pointer;
 }
+
+.password-field {
+  position: relative;
+}
+
+.password-field > input {
+  width: 93%;
+  padding-right: 40px; /* chừa chỗ cho nút con mắt, KHÔNG đổi chiều cao */
+}
+
+.password-toggle {
+  position: absolute;
+  right: -17px;
+  top: 40%;
+  transform: translateY(-50%);
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  color: #666;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.password-toggle:hover { color: #111; }
+
+.password-toggle svg {
+  width: 18px;
+  height: 18px;
+}
+

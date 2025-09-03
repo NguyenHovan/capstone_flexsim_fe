@@ -3,7 +3,7 @@ import { API } from "../api";
 import type { Account } from "../types/account";
 import type { OrganizationAdminForm } from "../types/organizationAdmin";
 import type { UpdateAccountPayload } from "../types/account";
-import type { AccountForm} from "../types/account";
+import type { AccountForm } from "../types/account";
 import type { ForgotPassword as ForgotPasswordPayload } from "../types/account";
 
 import { getErrorMessage } from "../utils/errorHandler";
@@ -21,10 +21,24 @@ export const AccountService = {
     } catch (error: any) {
       const msg = getErrorMessage(error);
       console.error("Error fetching accounts:", msg);
-      throw error; 
+      throw error;
     }
   },
-  
+  exportData: async () => {
+    const userString = localStorage.getItem("currentUser");
+    const currentUser = userString ? JSON.parse(userString) : null;
+    const orgId = currentUser?.organizationId;
+
+    const res = await axiosInstance.get(`/api/account/instructors/${orgId}`, {
+      responseType: "blob",
+      headers: {
+        Accept:
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      },
+    });
+    return res;
+  },
+
   getAccountById: async (id: string): Promise<Account> => {
     try {
       const { data } = await axiosInstance.get(`${API.GET_ACCOUNT_ID}/${id}`);
@@ -32,29 +46,33 @@ export const AccountService = {
     } catch (error: any) {
       const msg = getErrorMessage(error);
       console.error(`Error fetching account ${id}:`, msg);
-      throw error; 
+      throw error;
     }
   },
-getAllByOrgId: async (orgId: string): Promise<Account[]> => {
+  getAllByOrgId: async (orgId: string): Promise<Account[]> => {
     try {
-      const res = await axiosInstance.get(`${API.GET_ALL_ACCOUNT_ORGID}/${orgId}`);
+      const res = await axiosInstance.get(
+        `${API.GET_ALL_ACCOUNT_ORGID}/${orgId}`
+      );
       const payload = res?.data;
 
-      const list =
-        Array.isArray(payload) ? payload :
-        Array.isArray(payload?.data) ? payload.data :
-        Array.isArray(payload?.items) ? payload.items :
-        [];
+      const list = Array.isArray(payload)
+        ? payload
+        : Array.isArray(payload?.data)
+        ? payload.data
+        : Array.isArray(payload?.items)
+        ? payload.items
+        : [];
 
       return list as Account[];
     } catch (error) {
       const msg = getErrorMessage(error);
-      console.error('Error fetching accounts by orgId:', msg);
+      console.error("Error fetching accounts by orgId:", msg);
       throw new Error(msg);
     }
   },
 
- getMe: async () => {
+  getMe: async () => {
     try {
       const res = await axiosInstance.get(API.GET_ACCOUNT_ID);
       return res.data;
@@ -65,14 +83,16 @@ getAllByOrgId: async (orgId: string): Promise<Account[]> => {
     }
   },
 
-  registerOrganizationAdmin: async (payload: OrganizationAdminForm): Promise<Account> => {
+  registerOrganizationAdmin: async (
+    payload: OrganizationAdminForm
+  ): Promise<Account> => {
     try {
       const { data } = await axiosInstance.post(API.CREATE_ORG_ADMIN, payload);
       return data as Account;
     } catch (error: any) {
       const msg = getErrorMessage(error);
       console.error("Error registering org admin:", msg);
-      throw error; 
+      throw error;
     }
   },
 
@@ -83,7 +103,7 @@ getAllByOrgId: async (orgId: string): Promise<Account[]> => {
     } catch (error: any) {
       const msg = getErrorMessage(error);
       console.error("Error registering instructor:", msg);
-      throw error; 
+      throw error;
     }
   },
 
@@ -98,17 +118,19 @@ getAllByOrgId: async (orgId: string): Promise<Account[]> => {
     }
   },
 
-async uploadAvatar(file: File): Promise<string> {
+  async uploadAvatar(file: File): Promise<string> {
     try {
       const formData = new FormData();
       formData.append("file", file);
 
       const { data } = await axiosInstance.post(API.UPLOAD_FILE, formData, {
-        transformRequest: [(form, headers) => {
-          delete headers["Content-Type"];
-          delete (headers as any)["content-type"];
-          return form as any;
-        }],
+        transformRequest: [
+          (form, headers) => {
+            delete headers["Content-Type"];
+            delete (headers as any)["content-type"];
+            return form as any;
+          },
+        ],
       });
 
       const payload = unwrap(data);
@@ -120,27 +142,37 @@ async uploadAvatar(file: File): Promise<string> {
     }
   },
 
-async updateAccount(id: string, body: UpdateAccountPayload): Promise<Account> {
-  try {
-    // KHÔNG convert gender nữa: BE dùng 1/2/3 giống UI
-    const clean = Object.fromEntries(
-      Object.entries(body).filter(
-        ([, v]) => v !== undefined && v !== null && !(typeof v === "string" && v.trim() === "")
-      )
-    ) as UpdateAccountPayload;
+  async updateAccount(
+    id: string,
+    body: UpdateAccountPayload
+  ): Promise<Account> {
+    try {
+      // KHÔNG convert gender nữa: BE dùng 1/2/3 giống UI
+      const clean = Object.fromEntries(
+        Object.entries(body).filter(
+          ([, v]) =>
+            v !== undefined &&
+            v !== null &&
+            !(typeof v === "string" && v.trim() === "")
+        )
+      ) as UpdateAccountPayload;
 
-    const base = String(API.UPDATE_ACCOUNT || '').replace(/\/+$/, '');
-    const url  = `${base}/${encodeURIComponent(id)}`;
+      const base = String(API.UPDATE_ACCOUNT || "").replace(/\/+$/, "");
+      const url = `${base}/${encodeURIComponent(id)}`;
 
-    const { data } = await axiosInstance.put(url, clean, {
-      headers: { 'Content-Type': 'application/json' },
-    });
-    return data as Account;
-  } catch (error: any) {
-    console.error('PUT /update_account error:', error?.response?.status, error?.response?.data);
-    throw error;
-  }
-},
+      const { data } = await axiosInstance.put(url, clean, {
+        headers: { "Content-Type": "application/json" },
+      });
+      return data as Account;
+    } catch (error: any) {
+      console.error(
+        "PUT /update_account error:",
+        error?.response?.status,
+        error?.response?.data
+      );
+      throw error;
+    }
+  },
 
   deleteAccount: async (id: string): Promise<void> => {
     try {
@@ -148,7 +180,7 @@ async updateAccount(id: string, body: UpdateAccountPayload): Promise<Account> {
     } catch (error: any) {
       const msg = getErrorMessage(error);
       console.error(`Error deleting account ${id}:`, msg);
-      throw error; 
+      throw error;
     }
   },
 
@@ -160,7 +192,7 @@ async updateAccount(id: string, body: UpdateAccountPayload): Promise<Account> {
     } catch (error: any) {
       const msg = getErrorMessage(error);
       console.error(`Error banning account ${id}:`, msg);
-      throw error; 
+      throw error;
     }
   },
 
@@ -172,11 +204,14 @@ async updateAccount(id: string, body: UpdateAccountPayload): Promise<Account> {
     } catch (error: any) {
       const msg = getErrorMessage(error);
       console.error(`Error unbanning account ${id}:`, msg);
-      throw error; 
+      throw error;
     }
   },
 
-  importInstructors: async (organizationId: string, file: File): Promise<any> => {
+  importInstructors: async (
+    organizationId: string,
+    file: File
+  ): Promise<any> => {
     try {
       const form = new FormData();
       form.append("file", file);
@@ -185,11 +220,13 @@ async updateAccount(id: string, body: UpdateAccountPayload): Promise<Account> {
         `${API.IMPORT_INSTRUCTOR}/${encodeURIComponent(organizationId)}`,
         form,
         {
-          transformRequest: [(f, h) => {
-            delete h["Content-Type"];
-            delete (h as any)["content-type"];
-            return f as any;
-          }],
+          transformRequest: [
+            (f, h) => {
+              delete h["Content-Type"];
+              delete (h as any)["content-type"];
+              return f as any;
+            },
+          ],
         }
       );
       return unwrap(data);
@@ -208,11 +245,13 @@ async updateAccount(id: string, body: UpdateAccountPayload): Promise<Account> {
         `${API.IMPORT_STUDENT}/${encodeURIComponent(organizationId)}`,
         form,
         {
-          transformRequest: [(f, h) => {
-            delete h["Content-Type"];
-            delete (h as any)["content-type"];
-            return f as any;
-          }],
+          transformRequest: [
+            (f, h) => {
+              delete h["Content-Type"];
+              delete (h as any)["content-type"];
+              return f as any;
+            },
+          ],
         }
       );
       return unwrap(data);
@@ -250,8 +289,11 @@ async updateAccount(id: string, body: UpdateAccountPayload): Promise<Account> {
       throw new Error(msg);
     }
   },
-   async changePassword(payload: { currentPassword: string; newPassword: string }): Promise<void> {
-    const me = getCurrentUserLite(); 
+  async changePassword(payload: {
+    currentPassword: string;
+    newPassword: string;
+  }): Promise<void> {
+    const me = getCurrentUserLite();
     const url = me?.id
       ? `${API.CHANGE_PASSWORD}?accountId=${encodeURIComponent(me.id)}`
       : API.CHANGE_PASSWORD;
@@ -272,7 +314,7 @@ async updateAccount(id: string, body: UpdateAccountPayload): Promise<Account> {
       throw new Error(getErrorMessage(error) || "Change password failed");
     }
   },
-   async forgotPassword(payload: ForgotPasswordPayload): Promise<void> {
+  async forgotPassword(payload: ForgotPasswordPayload): Promise<void> {
     try {
       await axiosInstance.post(API.FORGOT_PASSWORD, payload, {
         headers: { "Content-Type": "application/json" },
@@ -281,7 +323,7 @@ async updateAccount(id: string, body: UpdateAccountPayload): Promise<Account> {
       throw new Error(getErrorMessage(err) || "Forgot password failed");
     }
   },
-    async resetPassword(payload: ResetPasswordPayload) {
+  async resetPassword(payload: ResetPasswordPayload) {
     try {
       await axiosInstance.post(API.RESET_PASSWORD, payload, {
         headers: { "Content-Type": "application/json" },
@@ -309,8 +351,15 @@ async updateAccount(id: string, body: UpdateAccountPayload): Promise<Account> {
       throw new Error(getErrorMessage(err) || "Verify email failed");
     }
   },
-   async requestChangeEmail(payload: { newEmail: string; password: string }): Promise<void> {
-    const body = { newEmail: payload.newEmail, password: payload.password, PASSWORD: payload.password };
+  async requestChangeEmail(payload: {
+    newEmail: string;
+    password: string;
+  }): Promise<void> {
+    const body = {
+      newEmail: payload.newEmail,
+      password: payload.password,
+      PASSWORD: payload.password,
+    };
     try {
       await axiosInstance.post(API.REQUEST_CHANGE_EMAIL, body, {
         headers: { "Content-Type": "application/json" },

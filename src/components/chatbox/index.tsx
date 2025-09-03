@@ -1,12 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
-import { Button, Input, Space, Tabs, Badge, Spin, Tooltip } from "antd";
-import {
-  MessageOutlined,
-  SendOutlined,
-  ThunderboltOutlined,
-  RobotOutlined,
-  CloseOutlined,
-} from "@ant-design/icons";
+import { Button, Input, Space, Badge, Spin, Tooltip } from "antd";
+import { MessageOutlined, SendOutlined, CloseOutlined } from "@ant-design/icons";
 import { ChatService } from "../../services/chat.service";
 
 type Msg = { id: string; role: "user" | "assistant"; text: string };
@@ -193,29 +187,23 @@ const ChatWindow: React.FC<{
 
 const FloatingDualChat: React.FC = () => {
   const [open, setOpen] = useState(false);
-  const [active, setActive] = useState<"gemini" | "gpt">("gemini");
 
+  // Chỉ dùng 1 hook cho Gemini
   const geminiHook = useChat(ChatService.gemini);
-  const gptHook = useChat(ChatService.gpt);
 
+  // Badge đếm tin nhắn mới từ AI khi cửa sổ đang đóng
   const [unread, setUnread] = useState(0);
   const prevGemLen = useRef(0);
-  const prevGPTLen = useRef(0);
 
   useEffect(() => {
     if (!open) {
-      const aiNew =
-        geminiHook.messages
-          .slice(prevGemLen.current)
-          .filter((m) => m.role === "assistant").length +
-        gptHook.messages
-          .slice(prevGPTLen.current)
-          .filter((m) => m.role === "assistant").length;
+      const aiNew = geminiHook.messages
+        .slice(prevGemLen.current)
+        .filter((m) => m.role === "assistant").length;
       setUnread((u) => u + aiNew);
     }
     prevGemLen.current = geminiHook.messages.length;
-    prevGPTLen.current = gptHook.messages.length;
-  }, [geminiHook.messages, gptHook.messages, open]);
+  }, [geminiHook.messages, open]);
 
   useEffect(() => {
     if (open) setUnread(0);
@@ -275,7 +263,7 @@ const FloatingDualChat: React.FC = () => {
           >
             <Space>
               <MessageOutlined />
-              <span style={{ fontWeight: 700 }}>AI Chatbox</span>
+              <span style={{ fontWeight: 700, color: "#000" }}>AI Chatbox</span>
             </Space>
             <Button
               type="text"
@@ -284,7 +272,7 @@ const FloatingDualChat: React.FC = () => {
             />
           </div>
 
-          {/* Content (flex column full height) */}
+          {/* Content */}
           <div
             style={{
               padding: 10,
@@ -293,65 +281,9 @@ const FloatingDualChat: React.FC = () => {
               flex: 1,
             }}
           >
-            <Tabs
-              activeKey={active}
-              onChange={(k) => setActive(k as "gemini" | "gpt")}
-              tabBarStyle={{ marginBottom: 8 }}
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                height: "100%",
-              }}
-              items={[
-                {
-                  key: "gemini",
-                  label: (
-                    <Space>
-                      <ThunderboltOutlined style={{ color: "#722ED1" }} />
-                      Gemini
-                    </Space>
-                  ),
-                  children: (
-                    <div
-                      style={{
-                        height: "100%",
-                        display: "flex",
-                        flexDirection: "column",
-                        minHeight: 400,
-                      }}
-                    >
-                      <ChatWindow
-                        placeholder="Nhập tin nhắn cho Gemini..."
-                        hook={geminiHook}
-                      />
-                    </div>
-                  ),
-                },
-                {
-                  key: "gpt",
-                  label: (
-                    <Space>
-                      <RobotOutlined style={{ color: "#1677FF" }} />
-                      ChatGPT
-                    </Space>
-                  ),
-                  children: (
-                    <div
-                      style={{
-                        height: "100%",
-                        display: "flex",
-                        flexDirection: "column",
-                        minHeight: 0,
-                      }}
-                    >
-                      <ChatWindow
-                        placeholder="Nhập tin nhắn cho ChatGPT..."
-                        hook={gptHook}
-                      />
-                    </div>
-                  ),
-                },
-              ]}
+            <ChatWindow
+              placeholder="Nhập tin nhắn cho AIChatbox..."
+              hook={geminiHook}
             />
           </div>
         </div>

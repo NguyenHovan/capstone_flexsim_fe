@@ -208,11 +208,15 @@ const UserManager: React.FC = () => {
 
   const handleToggleActive = (checked: boolean, record: Account) => {
     setRowLoadingId(record.id);
-    const fn = checked ? AccountService.unbanAccount : AccountService.banAccount;
+    const fn = checked
+      ? AccountService.unbanAccount
+      : AccountService.banAccount;
     fn(record.id)
       .then(() => {
         setUsers((prev) =>
-          prev.map((u) => (u.id === record.id ? { ...u, isActive: checked } : u))
+          prev.map((u) =>
+            u.id === record.id ? { ...u, isActive: checked } : u
+          )
         );
         message.success("Status updated.");
       })
@@ -313,7 +317,7 @@ const UserManager: React.FC = () => {
             display: "block",
             margin: "0 auto",
           }}
-          preview={!!url ? { mask: "Preview" } : false}
+          preview={url ? { mask: "Preview" } : false}
           alt={`avatar-${record.userName}`}
         />
       ),
@@ -325,7 +329,8 @@ const UserManager: React.FC = () => {
       ellipsis: true,
       width: 220,
       render: (id: string) => getOrgName(id),
-      sorter: (a, b) => compareStr(getOrgName(a.organizationId), getOrgName(b.organizationId)),
+      sorter: (a, b) =>
+        compareStr(getOrgName(a.organizationId), getOrgName(b.organizationId)),
     },
     {
       title: "Role",
@@ -416,12 +421,17 @@ const UserManager: React.FC = () => {
       ellipsis: true,
       width: 190,
       render: (date?: string) => {
-        const time = date && !Number.isNaN(Date.parse(date)) ? new Date(date) : null;
+        const time =
+          date && !Number.isNaN(Date.parse(date)) ? new Date(date) : null;
         return time ? time.toLocaleString() : "N/A";
       },
       sorter: (a, b) =>
-        (a.createdAt && !Number.isNaN(Date.parse(a.createdAt)) ? Date.parse(a.createdAt) : 0) -
-        (b.createdAt && !Number.isNaN(Date.parse(b.createdAt)) ? Date.parse(b.createdAt) : 0),
+        (a.createdAt && !Number.isNaN(Date.parse(a.createdAt))
+          ? Date.parse(a.createdAt)
+          : 0) -
+        (b.createdAt && !Number.isNaN(Date.parse(b.createdAt))
+          ? Date.parse(b.createdAt)
+          : 0),
       defaultSortOrder: "descend",
     },
     {
@@ -431,12 +441,17 @@ const UserManager: React.FC = () => {
       ellipsis: true,
       width: 190,
       render: (date?: string) => {
-        const time = date && !Number.isNaN(Date.parse(date)) ? new Date(date) : null;
+        const time =
+          date && !Number.isNaN(Date.parse(date)) ? new Date(date) : null;
         return time ? time.toLocaleString() : "N/A";
       },
       sorter: (a, b) =>
-        (a.updatedAt && !Number.isNaN(Date.parse(a.updatedAt)) ? Date.parse(a.updatedAt) : 0) -
-        (b.updatedAt && !Number.isNaN(Date.parse(b.updatedAt)) ? Date.parse(b.updatedAt) : 0),
+        (a.updatedAt && !Number.isNaN(Date.parse(a.updatedAt))
+          ? Date.parse(a.updatedAt)
+          : 0) -
+        (b.updatedAt && !Number.isNaN(Date.parse(b.updatedAt))
+          ? Date.parse(b.updatedAt)
+          : 0),
     },
     {
       title: "Actions",
@@ -474,7 +489,11 @@ const UserManager: React.FC = () => {
           style={{ marginBottom: 12, padding: "0 24px" }}
         >
           <Col>
-            <Title level={2} className="dashboard-title" style={{ marginBottom: 0 }}>
+            <Title
+              level={2}
+              className="dashboard-title"
+              style={{ marginBottom: 0 }}
+            >
               User Manager
             </Title>
           </Col>
@@ -558,32 +577,66 @@ const UserManager: React.FC = () => {
         >
           {viewingUser && (
             <div className="view-details">
-              <p><strong>ID:</strong> {viewingUser.id}</p>
-              <p><strong>Organization:</strong> {getOrgName(viewingUser.organizationId)}</p>
-              <p><strong>Role:</strong> {ROLE_LABEL_MAP[viewingUser.roleId]}</p>
-              <p><strong>Username:</strong> {viewingUser.userName}</p>
-              <p><strong>Full Name:</strong> {viewingUser.fullName}</p>
-              <p><strong>Email:</strong> {viewingUser.email}</p>
-              <p><strong>Phone:</strong> {viewingUser.phone}</p>
-              <p><strong>Gender:</strong> {GENDER_MAP[viewingUser.gender]}</p>
-              <p><strong>Address:</strong> {viewingUser.address || "N/A"}</p>
+              <p>
+                <strong>ID:</strong> {viewingUser.id}
+              </p>
+              <p>
+                <strong>Organization:</strong>{" "}
+                {getOrgName(viewingUser.organizationId)}
+              </p>
+              <p>
+                <strong>Role:</strong> {ROLE_LABEL_MAP[viewingUser.roleId]}
+              </p>
+              <p>
+                <strong>Username:</strong> {viewingUser.userName}
+              </p>
+              <p>
+                <strong>Full Name:</strong> {viewingUser.fullName}
+              </p>
+              <p>
+                <strong>Email:</strong> {viewingUser.email}
+              </p>
+              <p>
+                <strong>Phone:</strong> {viewingUser.phone}
+              </p>
+              <p>
+                <strong>Gender:</strong> {GENDER_MAP[viewingUser.gender]}
+              </p>
+              <p>
+                <strong>Address:</strong> {viewingUser.address || "N/A"}
+              </p>
               <p>
                 <strong>Avatar URL:</strong>{" "}
                 {viewingUser.avtUrl ? (
-                  <a href={viewingUser.avtUrl} target="_blank" rel="noopener noreferrer">View</a>
-                ) : ("N/A")}
+                  <a
+                    href={viewingUser.avtUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    View
+                  </a>
+                ) : (
+                  "N/A"
+                )}
               </p>
-              <p><strong>Email Verified:</strong> {viewingUser.isEmailVerify ? "Yes" : "No"}</p>
-              <p><strong>Active:</strong> {viewingUser.isActive ? "Yes" : "No"}</p>
+              <p>
+                <strong>Email Verified:</strong>{" "}
+                {viewingUser.isEmailVerify ? "Yes" : "No"}
+              </p>
+              <p>
+                <strong>Active:</strong> {viewingUser.isActive ? "Yes" : "No"}
+              </p>
               <p>
                 <strong>Created At:</strong>{" "}
-                {viewingUser.createdAt && !Number.isNaN(Date.parse(viewingUser.createdAt))
+                {viewingUser.createdAt &&
+                !Number.isNaN(Date.parse(viewingUser.createdAt))
                   ? new Date(viewingUser.createdAt).toLocaleString()
                   : "N/A"}
               </p>
               <p>
                 <strong>Updated At:</strong>{" "}
-                {viewingUser.updatedAt && !Number.isNaN(Date.parse(viewingUser.updatedAt))
+                {viewingUser.updatedAt &&
+                !Number.isNaN(Date.parse(viewingUser.updatedAt))
                   ? new Date(viewingUser.updatedAt).toLocaleString()
                   : "N/A"}
               </p>
@@ -604,7 +657,12 @@ const UserManager: React.FC = () => {
           destroyOnHidden
         >
           {createError && (
-            <Alert style={{ marginBottom: 12 }} type="error" showIcon message={createError} />
+            <Alert
+              style={{ marginBottom: 12 }}
+              type="error"
+              showIcon
+              message={createError}
+            />
           )}
 
           <Form
@@ -617,7 +675,9 @@ const UserManager: React.FC = () => {
             <Form.Item
               name="organizationId"
               label="Organization"
-              rules={[{ required: true, message: "Please select an organization!" }]}
+              rules={[
+                { required: true, message: "Please select an organization!" },
+              ]}
             >
               <Select
                 showSearch
@@ -641,7 +701,9 @@ const UserManager: React.FC = () => {
             <Form.Item
               name="fullName"
               label="Full Name"
-              rules={[{ required: true, message: "Please enter your full name!" }]}
+              rules={[
+                { required: true, message: "Please enter your full name!" },
+              ]}
             >
               <Input />
             </Form.Item>
@@ -649,12 +711,18 @@ const UserManager: React.FC = () => {
             <Form.Item
               name="email"
               label="Email"
-              rules={[{ required: true, type: "email", message: "Please enter a valid email!" }]}
+              rules={[
+                {
+                  required: true,
+                  type: "email",
+                  message: "Please enter a valid email!",
+                },
+              ]}
             >
               <Input />
             </Form.Item>
 
-            <Form.Item name="phone" label="Phone">
+            {/* <Form.Item name="phone" label="Phone">
               <Input />
             </Form.Item>
 
@@ -664,7 +732,7 @@ const UserManager: React.FC = () => {
 
             <Form.Item name="address" label="Address">
               <Input />
-            </Form.Item>
+            </Form.Item> */}
 
             <Form.Item
               name="password"
@@ -686,7 +754,11 @@ const UserManager: React.FC = () => {
               />
             </Form.Item>
 
-            <Button type="primary" onClick={handleCreateOrgAdmin} loading={loading}>
+            <Button
+              type="primary"
+              onClick={handleCreateOrgAdmin}
+              loading={loading}
+            >
               Create Organization Admin
             </Button>
           </Form>

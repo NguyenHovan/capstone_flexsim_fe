@@ -8,7 +8,7 @@ import HomePage from "../pages/Home/Home";
 import Contact from "../pages/Contact/Contact";
 import NewPasswordPage from "../pages/NewPassword/NewPassword";
 import InstructorLayout from "../layouts/Instructor/InstructorLayout";
-import Overview from "../pages/Instructor/Overview";
+// import Overview from "../pages/Instructor/Overview";
 import CourseManagement from "../pages/Instructor/Course-manage/Course-manage";
 import ManageClass from "../pages/Instructor/Class-manage/Class-manage";
 import TopicManagement from "../pages/Instructor/Topic-manage/TopicManagement";
@@ -58,6 +58,8 @@ import AdminProfile from "../pages/Admin/Settings/Profile/AdminProfile";
 import OrgAdminProfile from "../pages/OrganizationAdmin/Settings/Profile/OrgAdminProfile";
 import ResetPasswordPage from "../pages/ResetPassword/ResetPassword";
 import AboutLogisimEdu from "../pages/About/About";
+import InstructorDashboardPage from "../pages/Instructor/Dashboard";
+import QuizLayout from "../pages/Ai-quiz";
 
 const MainRoute = () => {
   return (
@@ -65,7 +67,7 @@ const MainRoute = () => {
       {/* Auth routes */}
       <Route path="/login" element={<LoginPage />} />
       {/* <Route path="/signup" element={<SignUpPage />} /> */}
-      
+
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/verify-code" element={<VerifyCodePage />} />
@@ -75,6 +77,7 @@ const MainRoute = () => {
       {/* Guest/Student layout */}
       <Route element={<LayoutMain />}>
         <Route path="/" element={<HomePage />} />
+        <Route path="/ai-quiz" element={<QuizLayout />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/about" element={<AboutLogisimEdu />} />
         <Route path="/new-password" element={<NewPasswordPage />} />
@@ -190,7 +193,7 @@ const MainRoute = () => {
       {/* Instructor routes */}
       <Route element={<PrivateRoute allowedRoles={["instructor", "admin"]} />}>
         <Route element={<InstructorLayout />}>
-          <Route path="/instructor" element={<CourseManagement />} />
+          {/* <Route path="/instructor" element={<Overview />} /> */}
           <Route path="/instructor-course" element={<CourseManagement />} />
           <Route
             path="/instructor-course/detail/:id"
@@ -202,6 +205,10 @@ const MainRoute = () => {
             element={<AddStudentPage />}
           />
           <Route path="/instructor-topic" element={<TopicManagement />} />
+          <Route
+            path="/instructor-dashboard"
+            element={<InstructorDashboardPage />}
+          />
           <Route path="/instructor-profile" element={<ProfilePage />} />
           <Route path="/instructor-scene" element={<SceneManagement />} />
           <Route path="/instructor-scenario" element={<ScenarioManager />} />

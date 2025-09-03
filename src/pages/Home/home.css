@@ -1,125 +1,146 @@
-.container {
-  padding: 40px;
+.home-wrapper {
   max-width: 1400px;
   margin: 0 auto;
+  padding: 32px 16px;
 }
 
-.sub-heading {
-  font-size: 2rem;
-  font-weight: bold;
-  margin-bottom: 20px;
+.text-gradient {
+  background: linear-gradient(90deg, #6366f1, #22c55e);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
-.description {
-  font-size: 1.1rem;
-  color: #666;
-  margin-bottom: 20px;
+.btn-gradient {
+  background: linear-gradient(90deg, #6366f1, #22c55e);
+  border: none;
+}
+.btn-gradient:hover {
+  filter: brightness(0.95);
 }
 
-.get-started-btn {
-  background-color: #f5a623 !important;
-  border-color: #f5a623 !important;
-  font-size: 1.1rem;
-  padding: 10px 20px;
-  height: auto;
+.hero-section {
+  position: relative;
+  padding: 24px 0 8px;
+  background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
 }
-
-.features-row {
-  margin-top: 30px;
+.hero-blob {
+  position: absolute;
+  filter: blur(60px);
+  opacity: 0.35;
+  z-index: 0;
 }
-
-.feature-box {
-  text-align: center;
-  padding: 20px;
-  background-color: #f9f9f9;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+.hero-blob--1 {
+  width: 320px;
+  height: 320px;
+  background: #a78bfa;
+  top: -40px;
+  left: -40px;
+  border-radius: 50%;
 }
-
-.feature-box h3 {
-  font-size: 1.2rem;
-  font-weight: bold;
-  margin-bottom: 10px;
-}
-
-.feature-image {
-  width: 100px;
-  height: 100px;
-  margin-bottom: 10px;
-}
-
-.main-image {
-  width: 100%;
-  height: auto;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.section-spacing {
-  margin-top: 60px;
-}
-
-@media (max-width: 768px) {
-  .heading,
-  .sub-heading {
-    font-size: 1.8rem;
-  }
-
-  .description {
-    font-size: 1rem;
-  }
-
-  .feature-box {
-    padding: 15px;
-  }
-
-  .feature-box h3 {
-    font-size: 1rem;
-  }
-}
-
-.testimonials-section {
-  margin-bottom: 40px;
-}
-
-.testimonials .ant-card {
-  background: #f0f0f0;
-  text-align: center;
-}
-
-.testimonials .ant-card-cover img {
-  margin: 0 auto;
+.hero-blob--2 {
+  width: 380px;
+  height: 380px;
+  background: #34d399;
+  bottom: -60px;
+  right: -60px;
   border-radius: 50%;
 }
 
+.hero-card {
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+}
+.main-image {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.hero-carousel .carousel-slide {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+}
+.hero-carousel img {
+  height: 56px;
+  object-fit: contain;
+}
+
+.section-spacing {
+  margin-top: 56px;
+}
+.secondary-image {
+  width: 100%;
+  max-height: 420px;
+  object-fit: contain;
+  filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.08));
+}
+
+.feature-card {
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.05);
+}
+.mini-card {
+  border-radius: 16px;
+  overflow: hidden;
+}
+.mini-card .ant-card-cover img {
+  height: 160px;
+  object-fit: cover;
+}
+
+.testimonials-section {
+  background: linear-gradient(180deg, #ffffff, #f9fafb);
+  padding: 16px;
+  border-radius: 20px;
+}
+.testimonial-card {
+  border-radius: 16px;
+  min-height: 260px;
+}
+.avatar-img {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 50%;
+  margin: 16px auto 0;
+}
 .rating {
-  color: #f4a261;
-  font-size: 16px;
+  color: #f59e0b;
   margin: 8px 0;
+  font-size: 18px;
+  letter-spacing: 2px;
 }
 
 .cta-section {
-  display: flex;
-  background: #2a6f97;
-  color: white;
-  padding: 40px;
-  text-align: center;
-  border-radius: 8px;
-  position: relative;
+  margin-top: 56px;
+  padding: 24px;
+  background: #f9fafb;
+  border-radius: 20px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
 }
-
-.cta-section .ant-typography {
-  color: white;
-}
-
-.cta-buttons {
-  margin: 20px 0;
-}
-
 .cta-image {
-  margin-top: 20px;
+  width: 100%;
+  max-width: 420px;
+  object-fit: contain;
+  filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.12));
 }
 
-.cta-image img {
-  max-width: 200px;
+@media (max-width: 768px) {
+  .hero-blob--1,
+  .hero-blob--2 {
+    display: none;
+  }
+  .home-wrapper {
+    padding: 20px 12px;
+  }
+  .section-spacing {
+    margin-top: 40px;
+  }
 }

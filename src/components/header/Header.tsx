@@ -52,6 +52,7 @@ const Header = () => {
   const navLinks = [
     { name: "Home", to: "/" },
     { name: "Category", to: "/course-list" },
+    { name: "AI Quiz", to: "/ai-quiz" },
     { name: "About", to: "/about" },
     { name: "Contact", to: "/contact" },
   ];
