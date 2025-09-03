@@ -70,49 +70,49 @@ const ClassSubmissionsTable = () => {
         setCurrentSubmission(null);
       }
     } catch (error) {
-      console.log("Lỗi khi chấm điểm:", error);
+      console.log("Error in scoring:", error);
     }
   };
 
   return (
     <div>
-      <h2>Danh sách học sinh đã nộp bài</h2>
+      <h2>List of students who have submitted their work</h2>
       <Table dataSource={submissions} rowKey="submissionId" pagination={false}>
-        <Table.Column title="Tên học sinh" dataIndex="studentName" key="name" />
+        <Table.Column title="Student Name" dataIndex="studentName" key="name" />
         <Table.Column
-          title="File nộp"
+          title="File submitted"
           dataIndex="fileUrl"
           key="file"
           render={(fileUrl: string) =>
             fileUrl ? (
               <Button type="link" href={fileUrl} target="_blank">
-                Xem file
+                View file
               </Button>
             ) : (
-              <Text type="secondary">Chưa nộp</Text>
+              <Text type="secondary">Not submitted</Text>
             )
           }
         />
         <Table.Column
-          title="Thời gian nộp"
+          title="Submission time"
           dataIndex="submitTime"
           key="time"
           render={(time: string) => new Date(time).toLocaleString()}
         />
         <Table.Column
-          title="Điểm"
+          title="Score"
           dataIndex="totalScore"
           key="score"
           render={(score: number | null) =>
-            score !== null ? score : <Text type="warning">Chưa chấm</Text>
+            score !== null ? score : <Text type="warning">Not yet marked</Text>
           }
         />
         <Table.Column
-          title="Hành động"
+          title="Action"
           key="action"
           render={(_, record: Submission) => (
             <Button type="primary" onClick={() => handleGrade(record)}>
-              Chấm điểm
+              Scoring
             </Button>
           )}
         />
@@ -123,13 +123,13 @@ const ClassSubmissionsTable = () => {
         title={currentSubmission?.studentName}
         onOk={handleOk}
         onCancel={() => setVisible(false)}
-        okText="Lưu điểm"
+        okText="Save score"
       >
         <Form form={form} layout="vertical">
           <Form.Item
-            label="Điểm"
+            label="Score"
             name="totalScore"
-            rules={[{ required: true, message: "Vui lòng nhập điểm" }]}
+            rules={[{ required: true, message: "Please enter score" }]}
           >
             <InputNumber min={0} max={10} style={{ width: "100%" }} />
           </Form.Item>

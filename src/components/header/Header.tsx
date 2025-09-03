@@ -1,9 +1,6 @@
-import { Avatar, Dropdown, Menu } from "antd";
-import {
-  UserAddOutlined,
-  UserOutlined,
-  LogoutOutlined,
-} from "@ant-design/icons";
+import { Avatar, Dropdown } from "antd";
+import type { MenuProps } from "antd";
+import { UserAddOutlined, UserOutlined, LogoutOutlined } from "@ant-design/icons";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { useEffect, useState } from "react";
@@ -11,15 +8,14 @@ import { AccountService } from "../../services/account.service";
 
 const Header = () => {
   const navigate = useNavigate();
-  const location = useLocation(); // 👈 lấy pathname
+  const location = useLocation();
   const { user, isLoggedIn } = useAuth();
   const [avatar, setAvatar] = useState<string | null>(null);
 
   const fetchUserCurrent = async () => {
-    if (user) {
-      const response = await AccountService.getAccountById(user.id);
-      setAvatar(response?.avtUrl || null);
-    }
+    if (!user?.id) return;
+    const response = await AccountService.getAccountById(user.id);
+    setAvatar(response?.avtUrl || null);
   };
 
   const handleLogout = () => {
@@ -31,36 +27,28 @@ const Header = () => {
 
   useEffect(() => {
     fetchUserCurrent();
-  }, []);
+    // re-fetch if user id changes (login/logout)
+  }, [user?.id]);
 
-  const menu = (
-    <Menu
-      style={{
-        borderRadius: 10,
-        padding: "8px 0",
-        boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-      }}
-    >
-      <Menu.Item
-        key="profile"
-        icon={<UserOutlined />}
-        onClick={() => navigate("/profile")}
-        style={{ transition: "all 0.3s" }}
-      >
-        Thông tin cá nhân
-      </Menu.Item>
-      <Menu.Item
-        key="logout"
-        icon={<LogoutOutlined />}
-        onClick={handleLogout}
-        style={{ transition: "all 0.3s" }}
-      >
-        Đăng xuất
-      </Menu.Item>
-    </Menu>
-  );
+  // AntD v5: dùng menu.items thay cho overlay/Menu cũ
+  const menuItems: MenuProps["items"] = [
+    {
+      key: "profile",
+      icon: <UserOutlined />,
+      label: "Profile",
+      onClick: () => navigate("/profile"),
+    },
+    {
+      type: "divider",
+    },
+    {
+      key: "logout",
+      icon: <LogoutOutlined />,
+      label: "Log out",
+      onClick: handleLogout,
+    },
+  ];
 
-  // Menu links
   const navLinks = [
     { name: "Home", to: "/" },
     { name: "Category", to: "/course-list" },
@@ -79,22 +67,10 @@ const Header = () => {
       }}
     >
       <div
-        style={{
-          fontSize: 22,
-          padding: "12px 32px",
-          fontWeight: "bold",
-          cursor: "pointer",
-        }}
+        style={{ fontSize: 22, padding: "12px 32px", fontWeight: "bold", cursor: "pointer" }}
         onClick={() => navigate("/")}
       >
-        <span
-          style={{
-            color: "#fff",
-            textShadow: "1px 1px 4px rgba(0,0,0,0.3)",
-          }}
-        >
-          LOGISIM
-        </span>
+        <span style={{ color: "#fff", textShadow: "1px 1px 4px rgba(0,0,0,0.3)" }}>LOGISIM</span>
         <span
           style={{
             color: "#222",
@@ -133,49 +109,35 @@ const Header = () => {
         })}
       </nav>
 
-      {/* Avatar / Login */}
-
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 12,
-          padding: "12px 32px",
-        }}
-      >
+      <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 32px" }}>
         {isLoggedIn ? (
-          <Dropdown overlay={menu} placement="bottomRight" arrow>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                cursor: "pointer",
-              }}
-            >
+          <Dropdown menu={{ items: menuItems }} placement="bottomRight" arrow>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
               <Avatar
-                src={avatar}
-                style={{
-                  backgroundColor: "#1890ff",
-                  marginRight: 8,
-                  border: "2px solid #fff",
-                }}
+                size={40}
+                className="header-avatar"
+                src={
+                  avatar ? (
+                    <img
+                      src={avatar}
+                      alt="avatar"
+                      style={{ width: "100%", height: "100%", objectFit: "contain" }}
+                    />
+                  ) : undefined
+                }
+                style={{ border: "2px solid #fff", background: "#fff" }}
               >
                 {(!avatar && user?.userName?.[0]?.toUpperCase()) || "U"}
               </Avatar>
-              <span style={{ color: "#fff", fontWeight: "500" }}>
-                {user?.userName}
-              </span>
+              <span style={{ color: "#fff", fontWeight: 400 }}>{user?.userName}</span>
             </div>
           </Dropdown>
         ) : (
           <Avatar
+            size={40}
             icon={<UserAddOutlined />}
             onClick={() => navigate("/login")}
-            style={{
-              backgroundColor: "#ff5722",
-              cursor: "pointer",
-              border: "2px solid #fff",
-            }}
+            style={{ backgroundColor: "#ff5722", cursor: "pointer", border: "2px solid #fff" }}
           />
         )}
       </div>

@@ -69,7 +69,7 @@ const AdminChangePassword: React.FC = () => {
 
   return (
     <div className="cp-wrapper">
-      <Card className="cp-card" bordered={false}>
+      <Card className="cp-card" variant="outlined">
         <Title level={3} className="cp-title">Change Password</Title>
 
         <Form layout="vertical" form={form} onFinish={onFinish}>

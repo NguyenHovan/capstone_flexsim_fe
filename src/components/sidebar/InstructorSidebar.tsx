@@ -1,5 +1,5 @@
 import {
-  HomeOutlined,
+ 
   BookOutlined,
   DollarOutlined,
   InfoCircleOutlined,
@@ -11,12 +11,12 @@ import "./instructorSidebar.css";
 import { useNavigate } from "react-router-dom";
 
 const sidebarItems = [
-  {
-    key: "Overview",
-    icon: <HomeOutlined />,
-    label: "Overview",
-    url: "/instructor",
-  },
+  // {
+  //   key: "Overview",
+  //   icon: <HomeOutlined />,
+  //   label: "Overview",
+  //   url: "/instructor",
+  // },
   {
     key: "Courses",
     icon: <BookOutlined />,

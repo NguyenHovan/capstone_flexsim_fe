@@ -37,7 +37,7 @@ const ReviewManagement = () => {
       const res = await ReviewService.getAllReviews();
       setData(res);
     } catch (err) {
-      toast.error("Lỗi khi lấy dữ liệu review");
+      toast.error("Error when fetch review data");
     } finally {
       setLoading(false);
     }
@@ -74,28 +74,28 @@ const ReviewManagement = () => {
       const values = await form.validateFields();
       if (isEditing && selectedId) {
         await ReviewService.updateReview(selectedId, values);
-        toast.success("Cập nhật review thành công!");
+        toast.success("Review updated successfully!");
       } else {
         await ReviewService.createReview(values);
-        toast.success("Tạo review thành công!");
+        toast.success("Review created successfully!");
       }
       setIsModalVisible(false);
       fetchData();
     } catch (err) {
-      toast.error("Lỗi khi lưu review");
+      toast.error("Error saving review");
     }
   };
 
   const handleDelete = async (id: string) => {
     Modal.confirm({
-      title: "Bạn có chắc chắn muốn xóa review này?",
+      title: "Are you sure you want to delete this review?",
       onOk: async () => {
         try {
           await ReviewService.deleteReview(id);
-          toast.success("Xóa thành công!");
+          toast.success("Deleted successfully!");
           fetchData();
         } catch {
-          toast.error("Xóa thất bại!");
+          toast.error("Delete failed!");
         }
       },
     });
@@ -103,30 +103,30 @@ const ReviewManagement = () => {
 
   const columns = [
     {
-      title: "Người đánh giá",
+      title: "Reviewer",
       dataIndex: ["account", "fullName"],
     },
     {
-      title: "Khóa học",
+      title: "Course",
       dataIndex: ["course", "courseName"],
     },
     {
-      title: "Mô tả",
+      title: "Description",
       dataIndex: "description",
     },
     {
-      title: "Đánh giá",
+      title: "Rating",
       dataIndex: "rating",
       render: (val: number) => <Rate disabled defaultValue={val} />,
     },
     {
-      title: "Hành động",
+      title: "Action",
       render: (_: any, record: any) => (
         <Space>
-          <Tooltip title="Sửa">
+          <Tooltip title="Edit">
             <EditOutlined onClick={() => openModal(record)} />
           </Tooltip>
-          <Tooltip title="Xóa">
+          <Tooltip title="Delete">
             <DeleteOutlined
               style={{ color: "red" }}
               onClick={() => handleDelete(record.id)}
@@ -146,13 +146,13 @@ const ReviewManagement = () => {
           justifyContent: "space-between",
         }}
       >
-        <h2>Quản lý đánh giá</h2>
+        <h2>Review Management</h2>
         <Button
           type="primary"
           icon={<PlusOutlined />}
           onClick={() => openModal()}
         >
-          Thêm đánh giá
+          Add new review
         </Button>
       </div>
 
@@ -166,19 +166,19 @@ const ReviewManagement = () => {
       />
 
       <Modal
-        title={isEditing ? "Cập nhật đánh giá" : "Tạo đánh giá"}
+        title={isEditing ? "Update review" : "Create review"}
         open={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
         onOk={handleSubmit}
-        okText={isEditing ? "Cập nhật" : "Tạo mới"}
+        okText={isEditing ? "Edit" : "Create new review"}
       >
         <Form layout="vertical" form={form}>
           <Form.Item
-            label="Người dùng"
+            label="User"
             name="accountId"
-            rules={[{ required: true, message: "Bắt buộc" }]}
+            rules={[{ required: true, message: "Required" }]}
           >
-            <Select placeholder="Chọn người dùng">
+            <Select placeholder="Select user">
               {users.map((user: any) => (
                 <Select.Option key={user.id} value={user.id}>
                   {user.fullName}
@@ -188,11 +188,11 @@ const ReviewManagement = () => {
           </Form.Item>
 
           <Form.Item
-            label="Khóa học"
+            label="Course"
             name="courseId"
-            rules={[{ required: true, message: "Bắt buộc" }]}
+            rules={[{ required: true, message: "Required" }]}
           >
-            <Select placeholder="Chọn khóa học">
+            <Select placeholder="Select Course">
               {courses.map((course: any) => (
                 <Select.Option key={course.id} value={course.id}>
                   {course.courseName}
@@ -202,17 +202,17 @@ const ReviewManagement = () => {
           </Form.Item>
 
           <Form.Item
-            label="Nội dung đánh giá"
+            label="Review content"
             name="description"
-            rules={[{ required: true, message: "Vui lòng nhập nội dung" }]}
+            rules={[{ required: true, message: "Please enter content" }]}
           >
             <Input.TextArea rows={3} />
           </Form.Item>
 
           <Form.Item
-            label="Số sao"
+            label="Rating"
             name="rating"
-            rules={[{ required: true, message: "Vui lòng chọn sao" }]}
+            rules={[{ required: true, message: "Olease select rating" }]}
           >
             <Rate allowHalf />
           </Form.Item>

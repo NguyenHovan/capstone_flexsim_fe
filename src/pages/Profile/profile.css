@@ -1,5 +1,8 @@
 .profile-container {
-  max-width: 600px;
+  max-width: 1000px;
   margin: 40px auto;
   padding: 16px;
+}
+.profile-avatar.ant-avatar-image img {
+  object-fit: contain;
 }

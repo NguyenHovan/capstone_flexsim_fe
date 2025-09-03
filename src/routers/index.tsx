@@ -24,7 +24,6 @@ import ProfileLayout from "../pages/Profile";
 import MyCourse from "../pages/Profile/MyCourse";
 import MyClass from "../pages/Profile/MyClass";
 import Setting from "../pages/Profile/Setting";
-import About from "../pages/Profile/About";
 import CourseList from "../pages/CourseList/CourseList";
 import CourseDetail from "../pages/CourseDetail/CourseDetail";
 import OrganizationAdminLayout from "../layouts/Organization Admin/OragnizarionAdminLayout";
@@ -88,7 +87,7 @@ const MainRoute = () => {
           path="/profile"
           element={
             <ProfileLayout>
-              <About />
+              <ProfilePage/>
             </ProfileLayout>
           }
         />
@@ -191,7 +190,7 @@ const MainRoute = () => {
       {/* Instructor routes */}
       <Route element={<PrivateRoute allowedRoles={["instructor", "admin"]} />}>
         <Route element={<InstructorLayout />}>
-          <Route path="/instructor" element={<Overview />} />
+          <Route path="/instructor" element={<CourseManagement />} />
           <Route path="/instructor-course" element={<CourseManagement />} />
           <Route
             path="/instructor-course/detail/:id"

@@ -120,10 +120,10 @@ const CourseManagement = () => {
     try {
       setLoading(true);
       await CourseService.deleteCourse(id);
-      toast.success("Xóa thành công!");
+      toast.success("Deleted successfully!");
       fetchCourses();
     } catch (error) {
-      toast.error("Xóa thất bại!");
+      toast.error("Delete failed!");
     } finally {
       setLoading(false);
     }
@@ -172,16 +172,16 @@ const CourseManagement = () => {
 
       if (isEditing && selectedCourseId) {
         await CourseService.updateCourse(selectedCourseId, formData);
-        toast.success("Cập nhật thành công!");
+        toast.success("Update Course successful!");
       } else {
         await CourseService.createCourse(formData);
-        toast.success("Tạo mới thành công!");
+        toast.success("Create Course successful!");
       }
 
       setIsModalVisible(false);
       fetchCourses();
     } catch (error) {
-      toast.error("Đã có lỗi xảy ra!");
+      toast.error("Something went wrong!");
     } finally {
       setLoading(false);
     }
@@ -240,9 +240,9 @@ const CourseManagement = () => {
           <Form.Item
             label="Category"
             name="categoryId"
-            rules={[{ required: true, message: "Bắt buộc" }]}
+            rules={[{ required: true, message: "Require" }]}
           >
-            <Select placeholder="Chọn category">
+            <Select placeholder="Select Category">
               {categories.map((cat: Category) => (
                 <Select.Option key={cat.id} value={cat.id}>
                   {cat.categoryName}
@@ -254,9 +254,9 @@ const CourseManagement = () => {
           <Form.Item
             label="Workspace"
             name="workSpaceId"
-            rules={[{ required: true, message: "Bắt buộc" }]}
+            rules={[{ required: true, message: "Require" }]}
           >
-            <Select placeholder="Chọn workspace">
+            <Select placeholder="Select Workspace">
               {workspaces.map((ws: Workspace) => (
                 <Select.Option key={ws.id} value={ws.id}>
                   {ws.workSpaceName}

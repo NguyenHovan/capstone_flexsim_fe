@@ -310,7 +310,6 @@ const AdminProfile: React.FC = () => {
               >
                 <Select
                   options={GENDER_OPTIONS}
-                  // đảm bảo value luôn là number 1..3
                   onChange={(val) =>
                     form.setFieldValue("gender", asNum(val, 1))
                   }

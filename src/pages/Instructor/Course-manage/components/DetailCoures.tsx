@@ -147,10 +147,10 @@ const DetailCoures = () => {
 
       if (editingTopic) {
         await TopicService.updateTopic(editingTopic.id, formData);
-        toast.success("Cập nhật topic thành công!");
+        toast.success("Topic updated successfully!");
       } else {
         await TopicService.createTopic(formData);
-        toast.success("Tạo topic thành công!");
+        toast.success("Topic created successfully!");
       }
 
       setIsModalVisible(false);
@@ -158,18 +158,18 @@ const DetailCoures = () => {
       fetchDataTopic();
     } catch (e) {
       toast.error(
-        editingTopic ? "Có lỗi khi cập nhật topic!" : "Có lỗi khi tạo topic!"
+        editingTopic ? "Error updating topic!" : "Error creating topic!"
       );
     }
   };
 
   const handleDeleteLesson = async (lessonId: string, topicId: string) => {
-    const isConfirmed = window.confirm("Bạn có chắc muốn xóa lesson này?");
+    const isConfirmed = window.confirm("Are you sure you want to delete this lesson?");
     if (!isConfirmed) return;
 
     try {
       await LessonService.deleteLesson(lessonId);
-      toast.success("Xóa lesson thành công");
+      toast.success("Delete lesson successfully");
 
       setLessonsByTopic((prev) => ({
         ...prev,
@@ -177,7 +177,7 @@ const DetailCoures = () => {
       }));
     } catch (error) {
       console.log(error);
-      toast.error("Xóa lesson thất bại");
+      toast.error("Delete failed lesson");
     }
   };
 
@@ -208,10 +208,10 @@ const DetailCoures = () => {
 
       if (editingLesson) {
         await LessonService.updateLesson(editingLesson.id, fd);
-        toast.success("Cập nhật lesson thành công");
+        toast.success("Lesson updated successfully");
       } else {
         await LessonService.createLesson(fd);
-        toast.success("Tạo bài học thành công");
+        toast.success("Create successful lessons");
       }
 
       fetchLessons(selectedTopic);
@@ -221,7 +221,7 @@ const DetailCoures = () => {
       setSelectedTopic(null);
     } catch (err) {
       console.error(err);
-      toast.error(editingLesson ? "Cập nhật thất bại" : "Tạo thất bại");
+      toast.error(editingLesson ? "Update failed" : "Create failed");
     } finally {
       setLoading(false);
     }
@@ -465,7 +465,7 @@ const DetailCoures = () => {
                                       color: "#1890ff",
                                     }}
                                   >
-                                    📂 Xem file Scenario
+                                    📂 View Scenario file
                                   </a>
                                 )}
                               </Flex>
@@ -568,7 +568,7 @@ const DetailCoures = () => {
                           dataSource={lesson.quizzes}
                           columns={[
                             {
-                              title: "Câu hỏi",
+                              title: "Quizi",
                               dataIndex: "quizName",
                               key: "quizName",
                             },
@@ -614,26 +614,26 @@ const DetailCoures = () => {
       >
         <Form layout="vertical" form={form}>
           <Form.Item
-            label="Tên Topic"
+            label="Topic Name"
             name="topicName"
-            rules={[{ required: true, message: "Vui lòng nhập tên topic" }]}
+            rules={[{ required: true, message: "Please enter topic name" }]}
           >
             <Input />
           </Form.Item>
 
           <Form.Item
-            label="Mô tả"
+            label="Description"
             name="description"
-            rules={[{ required: true, message: "Vui lòng nhập mô tả" }]}
+            rules={[{ required: true, message: "Please enter description" }]}
           >
             <Input.TextArea rows={3} />
           </Form.Item>
 
           <Form.Item
-            label="Thứ tự"
+            label="Order Index"
             name="orderIndex"
             rules={[
-              { required: true, message: "Vui lòng nhập thứ tự bài giảng" },
+              { required: true, message: "Please enter the order index of the lecture" },
             ]}
           >
             <InputNumber min={1} />
@@ -651,7 +651,7 @@ const DetailCoures = () => {
         style={{ marginBottom: 24 }}
         footer={null}
         width={1000}
-        destroyOnClose
+        destroyOnHidden
       >
         <Form
           form={form}
@@ -660,23 +660,23 @@ const DetailCoures = () => {
           initialValues={mappedInitialValues}
         >
           <Form.Item
-            label="Tên bài học"
+            label="Lesson Name"
             name="lessonName"
-            rules={[{ required: true, message: "Nhập tên bài học" }]}
+            rules={[{ required: true, message: "Please enter the lesson name" }]}
           >
             <Input placeholder="VD: Bài học 1" />
           </Form.Item>
 
           <Form.Item
-            label="Tiêu đề"
+            label="Title"
             name="title"
-            rules={[{ required: true, message: "Nhập tiêu đề" }]}
+            rules={[{ required: true, message: "Please enter the title" }]}
           >
-            <Input placeholder="VD: Giới thiệu bài học" />
+            <Input placeholder="Ex: Introduction Course" />
           </Form.Item>
 
           <Form.Item label="Scenario" name="scenarioId">
-            <Select placeholder="Chọn scenarioId">
+            <Select placeholder="Choose ScenarioId">
               {scenarios.map((scene) => (
                 <Select.Option key={scene.id} value={scene.id}>
                   {scene.scenarioName}
@@ -686,7 +686,7 @@ const DetailCoures = () => {
           </Form.Item>
 
           <Form.Item
-            label="Video bài học (không bắt buộc)"
+            label="Video Lesson (optional)"
             name="fileUrl"
             valuePropName="fileList"
             getValueFromEvent={(e) => {
@@ -695,29 +695,29 @@ const DetailCoures = () => {
             }}
           >
             <Upload accept="video/*" maxCount={1} beforeUpload={() => false}>
-              <Button icon={<UploadOutlined />}>Chọn video (tuỳ chọn)</Button>
+              <Button icon={<UploadOutlined />}>Select video (optional)</Button>
             </Upload>
           </Form.Item>
 
           <Form.Item
-            label="Mô tả"
+            label="Description"
             name="description"
-            rules={[{ required: true, message: "Nhập mô tả" }]}
+            rules={[{ required: true, message: "Please enter the lesson description" }]}
           >
-            <Input.TextArea rows={6} placeholder="Nhập mô tả bài học" />
+            <Input.TextArea rows={6} placeholder="Enter the lesson description" />
           </Form.Item>
 
           <Form.Item
-            label="Thứ tự bài giảng"
+            label="Order index"
             name="orderIndex"
-            rules={[{ required: true, message: "Thứ tự bài giảng" }]}
+            rules={[{ required: true, message: "Order index" }]}
           >
-            <InputNumber placeholder="Thứ tự bài giảng" />
+            <InputNumber placeholder="Order index" />
           </Form.Item>
 
           <Form.Item>
             <Button type="primary" htmlType="submit" loading={loading}>
-              {editingLesson ? "Lưu thay đổi" : "Tạo bài học"}
+              {editingLesson ? "Save change" : "Create new Lesson"}
             </Button>
           </Form.Item>
         </Form>

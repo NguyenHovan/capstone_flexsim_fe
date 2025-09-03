@@ -22,7 +22,7 @@ const SceneManagement = () => {
       const res = await SceneService.getAllScenes();
       setDataSource(res);
     } catch (e) {
-      toast.error("Lỗi khi tải scene");
+      toast.error("Error loading scene");
     } finally {
       setLoading(false);
     }
@@ -40,28 +40,21 @@ const SceneManagement = () => {
     form.setFieldsValue({
       sceneName: record.sceneName,
       description: record.description,
-      imgUrl: [
-        {
-          uid: "-1",
-          name: "image.png",
-          status: "done",
-          url: record.imgUrl,
-        },
-      ],
+      
     });
     setIsModalVisible(true);
   };
 
   const handleDelete = async (id: string) => {
     Modal.confirm({
-      title: "Bạn có chắc chắn muốn xóa scene này?",
+      title: "Are you sure you want to delete this scene?",
       onOk: async () => {
         try {
           await SceneService.deleteScene(id);
-          toast.success("Xóa thành công!");
+          toast.success("Deleted successfully!");
           fetchScenes();
         } catch (err) {
-          toast.error("Xóa thất bại!");
+          toast.error("Delete failed!");
         }
       },
     });
@@ -73,57 +66,57 @@ const SceneManagement = () => {
       formData.append("sceneName", values.sceneName);
       formData.append("description", values.description);
 
-      const imageFile = values.imgUrl?.[0];
-      if (imageFile?.originFileObj) {
-        // Nếu là ảnh mới
-        formData.append("imgUrl", imageFile.originFileObj);
-      } else if (imageFile?.url) {
-        // Nếu là ảnh cũ → fetch ảnh từ URL về dạng blob
-        const response = await fetch(imageFile.url);
-        const blob = await response.blob();
-        const filename = imageFile.name || "existing-image.jpg";
-        const file = new File([blob], filename, { type: blob.type });
-        formData.append("imgUrl", file);
-      }
+      // const imageFile = values.imgUrl?.[0];
+      // if (imageFile?.originFileObj) {
+      //   // Nếu là ảnh mới
+      //   formData.append("imgUrl", imageFile.originFileObj);
+      // } else if (imageFile?.url) {
+      //   // Nếu là ảnh cũ → fetch ảnh từ URL về dạng blob
+      //   const response = await fetch(imageFile.url);
+      //   const blob = await response.blob();
+      //   const filename = imageFile.name || "existing-image.jpg";
+      //   const file = new File([blob], filename, { type: blob.type });
+      //   formData.append("imgUrl", file);
+      // }
 
       if (isEditing && selectedSceneId) {
         await SceneService.updateScene(selectedSceneId, formData);
-        toast.success("Cập nhật scene thành công!");
+        toast.success("Scene update successful!");
       } else {
         await SceneService.createScene(formData);
-        toast.success("Tạo scene thành công!");
+        toast.success("Scene creation successful!");
       }
       setIsModalVisible(false);
       fetchScenes();
     } catch (e) {
-      toast.error("Có lỗi xảy ra khi lưu scene!");
+      toast.error("An error occurred while saving the scene!");
     }
   };
 
   const columns = [
     {
-      title: "Tên Scene",
+      title: "Scene Name",
       dataIndex: "sceneName",
     },
     {
-      title: "Mô tả",
+      title: "Description",
       dataIndex: "description",
     },
+    // {
+    //   title: "Ảnh",
+    //   dataIndex: "imgUrl",
+    //   render: (url: string) => (
+    //     <img src={url} alt="scene" width={50} height={50} />
+    //   ),
+    // },
     {
-      title: "Ảnh",
-      dataIndex: "imgUrl",
-      render: (url: string) => (
-        <img src={url} alt="scene" width={50} height={50} />
-      ),
-    },
-    {
-      title: "Hành động",
+      title: "Action",
       render: (_: any, record: any) => (
         <Space>
-          <Tooltip title="Sửa">
+          <Tooltip title="Edit">
             <EditOutlined onClick={() => handleEdit(record)} />
           </Tooltip>
-          <Tooltip title="Xóa">
+          <Tooltip title="Delete">
             <DeleteOutlined
               style={{ color: "red" }}
               onClick={() => handleDelete(record.id)}
@@ -139,9 +132,9 @@ const SceneManagement = () => {
   return (
     <div>
       <div className="header-section" style={{ marginBottom: 16 }}>
-        <Input.Search placeholder="Tìm scene" style={{ width: 250 }} />
+        <Input.Search placeholder="Search Scene" style={{ width: 250 }} />
         <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
-          Thêm Scene
+          Add Scene
         </Button>
       </div>
 
@@ -156,24 +149,24 @@ const SceneManagement = () => {
 
       <Modal
         open={isModalVisible}
-        title={isEditing ? "Cập nhật Scene" : "Tạo Scene"}
+        title={isEditing ? "Edit Scene" : "Add Scene"}
         onCancel={() => setIsModalVisible(false)}
         onOk={handleSubmit}
-        okText={isEditing ? "Cập nhật" : "Tạo mới"}
+        okText={isEditing ? "Edit" : "Create New Scene"}
       >
         <Form layout="vertical" form={form}>
           <Form.Item
-            label="Tên Scene"
+            label="Scene Name"
             name="sceneName"
-            rules={[{ required: true, message: "Vui lòng nhập tên scene" }]}
+            rules={[{ required: true, message: "Please enter Scene Name" }]}
           >
             <Input />
           </Form.Item>
 
           <Form.Item
-            label="Mô tả"
+            label="Description"
             name="description"
-            rules={[{ required: true, message: "Vui lòng nhập mô tả" }]}
+            rules={[{ required: true, message: "Please enter Discription" }]}
           >
             <Input.TextArea rows={3} />
           </Form.Item>
