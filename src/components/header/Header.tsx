@@ -81,6 +81,8 @@ const Header = () => {
     >
       <div
         style={{
+          display: "flex",
+          alignItems: "center",
           fontSize: 22,
           padding: "12px 32px",
           fontWeight: "bold",
@@ -88,26 +90,32 @@ const Header = () => {
         }}
         onClick={() => navigate("/")}
       >
-        <span
-          style={{
-            color: "#fff",
-            textShadow: "1px 1px 4px rgba(0,0,0,0.3)",
-          }}
-        >
-          LOGISIM
-        </span>
-        <span
-          style={{
-            color: "#222",
-            background: "#fff",
-            padding: "2px 8px",
-            borderRadius: 6,
-            marginLeft: 4,
-            fontWeight: "bold",
-          }}
-        >
-          EDU
-        </span>
+        <img
+          src="https://res.cloudinary.com/dsfrqevvg/image/upload/v1756926674/d2477089b0b74afdaf66e73fe2c218f4-free_ewplwi.png"
+          style={{ width: 50, height: 50, marginRight: 12 }}
+        />
+        <div>
+          <span
+            style={{
+              color: "#fff",
+              textShadow: "1px 1px 4px rgba(0,0,0,0.3)",
+            }}
+          >
+            LOGISIM
+          </span>
+          <span
+            style={{
+              color: "#222",
+              background: "#fff",
+              padding: "2px 8px",
+              borderRadius: 6,
+              marginLeft: 4,
+              fontWeight: "bold",
+            }}
+          >
+            EDU
+          </span>
+        </div>
       </div>
 
       <nav style={{ display: "flex", gap: 68 }}>
