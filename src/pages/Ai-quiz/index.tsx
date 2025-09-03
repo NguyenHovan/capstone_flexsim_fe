@@ -24,13 +24,25 @@ import { FlexsimService } from "../../services/flexsim.service";
 
 const { Title, Text, Paragraph } = Typography;
 
+type Difficulty = "easy" | "medium" | "hard" | string;
+
+type QuizQuestion = {
+  id: string;
+  stem: string;
+  options: string[];
+  correctIndex: number;
+  topic?: string;
+  difficulty?: Difficulty;
+  explanation?: string;
+};
+
 const DIFF_COLOR: Record<string, string> = {
   easy: "green",
   medium: "orange",
   hard: "red",
 };
 
-function QuizView({ questions }: { questions: any[] }) {
+function QuizView({ questions }: { questions: QuizQuestion[] }) {
   const [answers, setAnswers] = useState<Record<string, number | undefined>>(
     {}
   );
@@ -129,11 +141,11 @@ function QuizView({ questions }: { questions: any[] }) {
           >
             <Radio.Group
               value={chosen}
-              onChange={(e) => onPick(q.id, e.target.value)}
+              onChange={(e: any) => onPick(q.id, Number(e.target.value))}
               disabled={done}
               style={{ display: "grid", gap: 10 }}
             >
-              {q.options.map((opt, idx) => {
+              {q.options.map((opt: string, idx: number) => {
                 const isCorrect = idx === q.correctIndex;
                 const isChosen = chosen === idx;
                 return (
@@ -196,10 +208,10 @@ function QuizView({ questions }: { questions: any[] }) {
 }
 
 export default function QuizUploadPage() {
-  const [fileList, setFileList] = useState<any[]>([]);
+  const [fileList, setFileList] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [questions, setQuestions] = useState<any[] | null>(null);
+  const [questions, setQuestions] = useState<QuizQuestion[] | null>(null);
 
   const beforeUpload = (file: File) => {
     const okType =
@@ -231,7 +243,7 @@ export default function QuizUploadPage() {
       if (!res?.questions || !Array.isArray(res.questions)) {
         throw new Error("Phản hồi không đúng định dạng { questions: [...] }");
       }
-      setQuestions(res.questions);
+      setQuestions(res.questions as QuizQuestion[]);
       message.success(`Tải lên thành công • ${res.questions.length} câu hỏi`);
     } catch (e: any) {
       console.error(e);
@@ -290,7 +302,7 @@ export default function QuizUploadPage() {
           multiple={false}
           accept=".xlsx,.xls,.csv,.json"
           beforeUpload={beforeUpload}
-          fileList={fileList as any}
+          fileList={fileList as any} // giữ nguyên hành vi hiện tại
           onRemove={() => {
             setFileList([]);
             return true;
