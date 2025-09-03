@@ -722,7 +722,7 @@ const UserManager: React.FC = () => {
               <Input />
             </Form.Item>
 
-            <Form.Item name="phone" label="Phone">
+            {/* <Form.Item name="phone" label="Phone">
               <Input />
             </Form.Item>
 
@@ -732,7 +732,7 @@ const UserManager: React.FC = () => {
 
             <Form.Item name="address" label="Address">
               <Input />
-            </Form.Item>
+            </Form.Item> */}
 
             <Form.Item
               name="password"

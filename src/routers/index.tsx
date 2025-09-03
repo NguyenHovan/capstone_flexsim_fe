@@ -60,6 +60,7 @@ import OrgAdminProfile from "../pages/OrganizationAdmin/Settings/Profile/OrgAdmi
 import ResetPasswordPage from "../pages/ResetPassword/ResetPassword";
 import AboutLogisimEdu from "../pages/About/About";
 import InstructorDashboardPage from "../pages/Instructor/Dashboard";
+import QuizLayout from "../pages/Ai-quiz";
 
 const MainRoute = () => {
   return (
@@ -77,6 +78,7 @@ const MainRoute = () => {
       {/* Guest/Student layout */}
       <Route element={<LayoutMain />}>
         <Route path="/" element={<HomePage />} />
+        <Route path="/ai-quiz" element={<QuizLayout />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/about" element={<AboutLogisimEdu />} />
         <Route path="/new-password" element={<NewPasswordPage />} />
