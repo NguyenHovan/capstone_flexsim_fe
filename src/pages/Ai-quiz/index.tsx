@@ -329,21 +329,6 @@ export default function QuizFromPresetsPage() {
             ))}
           </Radio.Group>
 
-          <Row gutter={[12, 12]}>
-            <Col xs={24} sm={12} md={8}>
-              <Text style={{ display: "block", marginBottom: 4 }}>
-                Max questions
-              </Text>
-              <InputNumber
-                min={0}
-                placeholder="0 = để BE quyết"
-                style={{ width: "100%" }}
-                value={maxQuestions as any}
-                onChange={(v) => setMaxQuestions(v as number | null)}
-              />
-            </Col>
-          </Row>
-
           <Space style={{ marginTop: 8 }}>
             <Button
               type="primary"
