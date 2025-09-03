@@ -1,4 +1,4 @@
-import { Row, Col, Card, List, Button } from "antd";
+import { Row, Col, Card, List, Button, Avatar, Flex } from "antd";
 import { useNavigate, useParams } from "react-router-dom";
 import { EnrollmentRequestService } from "../../../services/enrollment-request.service";
 import { useEffect, useState } from "react";
@@ -59,7 +59,22 @@ const AddStudentPage = () => {
             <List
               dataSource={studentEnroll}
               renderItem={(student: any) => (
-                <List.Item>{student?.fullName}</List.Item>
+                <List.Item>
+                  <Flex align="center" gap={24}>
+                    <Avatar
+                      size={64}
+                      src={
+                        student.avtUrl ||
+                        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTU7ukgfgh3h397fTWEGFf9ZtmU7jY6wbDY1Q&s"
+                      }
+                      alt={student.name}
+                    />
+                    <span style={{ fontSize: 24 }}>
+                      {" "}
+                      {student?.fullName} - {student?.email}
+                    </span>
+                  </Flex>
+                </List.Item>
               )}
             />
           </Card>

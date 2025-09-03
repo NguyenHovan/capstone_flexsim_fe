@@ -60,6 +60,9 @@ interface LessonItem {
   lessonSubmissions?: LessonSubmissionItem[];
   quizzes?: Quiz[];
   lessonProgresses: LessonProgress[];
+  orderIndex: number;
+  scenarioId: string;
+  topic: any;
 }
 
 interface MyLessonSubmit {
@@ -223,8 +226,9 @@ const TopicDetail = () => {
 
       await LessonSubmission.submitLesson(formData);
       toast.success("Upload file thành công!");
-      fetchTopicDetail();
+      // fetchTopicDetail();
       setSelectedFile(null);
+      setSelectedLesson(selectedLesson);
       setNote("");
     } catch (error: any) {
       toast.error(error?.response?.data?.message || "Upload thất bại!");
@@ -285,12 +289,24 @@ const TopicDetail = () => {
   const getDisabled = () => {
     const fileUrlTruthy = !!selectedLesson?.fileUrl;
     const total = Number(myLessonSubmit?.totalScore ?? 0);
-    const allConditions =
-      quizMaxScore > 8 && total > 5 && fileUrlTruthy && isCompleted;
+
+    let allConditions = true;
+
+    if (quizMaxScore || selectedLesson?.quizzes?.length) {
+      allConditions = allConditions && quizMaxScore > 8;
+    }
+
+    if (total || selectedLesson?.scenarioId) {
+      allConditions = allConditions && total > 5;
+    }
+
+    if (fileUrlTruthy) {
+      allConditions = allConditions && isCompleted;
+    }
 
     return !allConditions;
   };
-
+  console.log({ selectedLesson });
   return (
     <div
       style={{
@@ -311,7 +327,7 @@ const TopicDetail = () => {
         }}
       >
         <Typography.Title level={4} style={{ marginBottom: "16px" }}>
-          Lessons
+          {data?.[0]?.topic?.topicName}
         </Typography.Title>
         <List
           itemLayout="horizontal"
@@ -362,7 +378,7 @@ const TopicDetail = () => {
                 onClick={() => !disabled && setSelectedLesson(lesson)}
               >
                 <span role="img" aria-label="lesson">
-                  {progress ? "✅" : "📘"}
+                  {progress ? "✅" : "📘"} #{lesson.orderIndex}
                 </span>
                 <Typography.Text strong>{lesson.lessonName}</Typography.Text>
               </List.Item>

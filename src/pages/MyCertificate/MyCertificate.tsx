@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Card, Col, Row, Tag, Typography, Empty, Button } from "antd";
+import { Card, Col, Row, Typography, Empty, Button } from "antd";
 import { CertificateService } from "../../services/certificate.service";
 import { DownloadOutlined, FilePdfOutlined } from "@ant-design/icons";
 
