@@ -10,7 +10,6 @@ import {
   Radio,
   Tag,
   Alert,
-  Progress,
   InputNumber,
 } from "antd";
 import {
@@ -112,8 +111,6 @@ function QuizView({ questions }: { questions: any[] }) {
     }),
   } as const;
 
-  const onPick = (qid: string, idx: number) =>
-    setAnswers((p) => ({ ...p, [qid]: idx }));
   const onCheck = (qid: string) => setLocked((p) => ({ ...p, [qid]: true }));
 
   return (
@@ -233,9 +230,9 @@ function QuizView({ questions }: { questions: any[] }) {
 export default function QuizFromPresetsPage() {
   const [selectedUrl, setSelectedUrl] = useState<string>(PRESETS[0].url);
   const [maxQuestions, setMaxQuestions] = useState<number | null>(10);
-  const [lang, setLang] = useState<string>("vi");
+  const [lang] = useState<string>("vi");
   const [uploading, setUploading] = useState(false);
-  const [percent, setPercent] = useState(0);
+  const [, setPercent] = useState(0);
   const [questions, setQuestions] = useState<any[] | null>(null);
 
   const resetAll = () => {
@@ -356,11 +353,6 @@ export default function QuizFromPresetsPage() {
             >
               Generate from preset
             </Button>
-            {uploading && (
-              <div style={{ minWidth: 220 }}>
-                <Progress percent={percent} status="active" />
-              </div>
-            )}
           </Space>
         </Space>
       </Card>
