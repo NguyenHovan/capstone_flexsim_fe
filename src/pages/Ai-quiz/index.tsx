@@ -11,6 +11,8 @@ import {
   Tag,
   Alert,
   InputNumber,
+  Modal,
+  Flex,
 } from "antd";
 import {
   CheckCircleTwoTone,
@@ -25,11 +27,11 @@ const { Title, Text, Paragraph } = Typography;
 
 const PRESETS = [
   {
-    label: "Content.csv",
+    label: "Bài 1",
     url: "https://res.cloudinary.com/dsfrqevvg/raw/upload/v1756923749/LogiSimEdu_File/Content.csv",
   },
   {
-    label: "Output.csv",
+    label: "Bài 2",
     url: "https://res.cloudinary.com/dsfrqevvg/raw/upload/v1756923781/LogiSimEdu_File/Output.csv",
   },
 ];
@@ -74,16 +76,27 @@ function QuizView({ questions }: { questions: any[] }) {
   const [answers, setAnswers] = useState<Record<string, number | undefined>>(
     {}
   );
-  const [locked, setLocked] = useState<Record<string, boolean>>({});
+  const [checked, setChecked] = useState(false);
+  const [resultOpen, setResultOpen] = useState(false); // ⬅️ modal kết quả
+
+  const totalAnswered = useMemo(
+    () =>
+      questions.reduce((n, q) => n + (answers[q.id] !== undefined ? 1 : 0), 0),
+    [answers, questions]
+  );
 
   const score = useMemo(
     () =>
       questions.reduce(
-        (s, q) =>
-          s + (locked[q.id] && answers[q.id] === q.correctIndex ? 1 : 0),
+        (s, q) => s + (checked && answers[q.id] === q.correctIndex ? 1 : 0),
         0
       ),
-    [answers, locked, questions]
+    [answers, checked, questions]
+  );
+
+  const percent = useMemo(
+    () => (questions.length ? Math.round((score / questions.length) * 100) : 0),
+    [score, questions.length]
   );
 
   const styles = {
@@ -111,125 +124,188 @@ function QuizView({ questions }: { questions: any[] }) {
     }),
   } as const;
 
-  const onCheck = (qid: string) => setLocked((p) => ({ ...p, [qid]: true }));
+  const onPick = (qid: string, idx: number) =>
+    setAnswers((p) => ({ ...p, [qid]: idx }));
+
+  const onCheckAll = () => {
+    if (!checked) {
+      setChecked(true);
+      setResultOpen(true);
+    }
+  };
+
+  const resetLocal = () => {
+    setAnswers({});
+    setChecked(false);
+    setResultOpen(false);
+  };
 
   return (
-    <Space direction="vertical" style={{ width: "100%" }} size={16}>
-      <Card style={{ ...styles.card }} bodyStyle={{ padding: 16 }}>
-        <Space style={{ width: "100%", justifyContent: "space-between" }}>
-          <Text strong>Questions: {questions.length}</Text>
-          <Text strong>
-            Score: {score}/{questions.length}
-          </Text>
-        </Space>
-      </Card>
-
-      {questions.map((q, i) => {
-        const chosen = answers[q.id];
-        const done = !!locked[q.id];
-        const correct = done && chosen === q.correctIndex;
-
-        return (
-          <Card
-            key={q.id}
-            style={styles.card}
-            title={
-              <Space wrap>
-                <Text>Q{i + 1}.</Text>
-                <Text style={styles.stem as any}>{q.stem}</Text>
-                {q.topic && <Tag color="blue">{q.topic}</Tag>}
-                {q.difficulty && (
-                  <Tag color={DIFF_COLOR[q.difficulty] || "default"}>
-                    {q.difficulty}
-                  </Tag>
-                )}
-              </Space>
-            }
-            extra={
-              done ? (
-                correct ? (
-                  <Space>
-                    <CheckCircleTwoTone twoToneColor="#22c55e" />
-                    <Text strong style={{ color: "#16a34a" }}>
-                      Correct
-                    </Text>
-                  </Space>
-                ) : (
-                  <Space>
-                    <CloseCircleTwoTone twoToneColor="#ef4444" />
-                    <Text strong style={{ color: "#ef4444" }}>
-                      Incorrect
-                    </Text>
-                  </Space>
-                )
-              ) : null
-            }
-          >
-            <Radio.Group
-              value={chosen}
-              onChange={(e) =>
-                setAnswers((p) => ({ ...p, [q.id]: e.target.value }))
-              }
-              disabled={done}
-              style={{ display: "grid", gap: 10 }}
-            >
-              {q.options.map((opt: any, idx: number) => {
-                const ok = idx === q.correctIndex;
-                const isChosen = chosen === idx;
-                return (
-                  <div key={idx} style={styles.option(isChosen, ok, done)}>
-                    <Radio value={idx}>
-                      <Text
-                        style={{
-                          fontWeight: done && ok ? 700 : isChosen ? 600 : 400,
-                        }}
-                      >
-                        {opt}
-                      </Text>
-                    </Radio>
-                    {done &&
-                      (ok ? (
-                        <CheckCircleTwoTone twoToneColor="#22c55e" />
-                      ) : isChosen ? (
-                        <CloseCircleTwoTone twoToneColor="#ef4444" />
-                      ) : (
-                        <span />
-                      ))}
-                  </div>
-                );
-              })}
-            </Radio.Group>
-
-            <Space style={{ marginTop: 12 }}>
-              {!done ? (
-                <Button
-                  type="primary"
-                  onClick={() => onCheck(q.id)}
-                  disabled={chosen === undefined}
-                >
-                  Check
-                </Button>
-              ) : q.explanation ? (
-                <Alert
-                  type={correct ? "success" : "error"}
-                  showIcon
-                  message={<Text strong>Giải thích</Text>}
-                  description={
-                    <Paragraph style={{ margin: 0 }}>{q.explanation}</Paragraph>
-                  }
-                />
-              ) : null}
+    <>
+      <Space direction="vertical" style={{ width: "100%" }} size={16}>
+        <Card style={{ ...styles.card }} bodyStyle={{ padding: 16 }}>
+          <Space style={{ width: "100%", justifyContent: "space-between" }}>
+            <Space>
+              <Text strong>Questions: {questions.length}</Text>
+              <Text type="secondary">
+                • Answered: {totalAnswered}/{questions.length}
+              </Text>
             </Space>
-          </Card>
-        );
-      })}
-    </Space>
+            <Space>
+              <Text strong>
+                Score: {score}/{questions.length}
+              </Text>
+            </Space>
+          </Space>
+        </Card>
+
+        {questions.map((q, i) => {
+          const chosen = answers[q.id];
+          const done = checked;
+          const correct = done && chosen === q.correctIndex;
+
+          return (
+            <Card
+              key={q.id}
+              style={styles.card}
+              title={
+                <Space wrap>
+                  <Text>Q{i + 1}.</Text>
+                  <Text style={styles.stem as any}>{q.stem}</Text>
+                  {q.topic && <Tag color="blue">{q.topic}</Tag>}
+                  {q.difficulty && (
+                    <Tag color={DIFF_COLOR[q.difficulty] || "default"}>
+                      {q.difficulty}
+                    </Tag>
+                  )}
+                </Space>
+              }
+              extra={
+                done ? (
+                  correct ? (
+                    <Space>
+                      <CheckCircleTwoTone twoToneColor="#22c55e" />
+                      <Text strong style={{ color: "#16a34a" }}>
+                        Correct
+                      </Text>
+                    </Space>
+                  ) : (
+                    <Space>
+                      <CloseCircleTwoTone twoToneColor="#ef4444" />
+                      <Text strong style={{ color: "#ef4444" }}>
+                        Incorrect
+                      </Text>
+                    </Space>
+                  )
+                ) : null
+              }
+            >
+              <Radio.Group
+                value={chosen}
+                onChange={(e) => onPick(q.id, e.target.value)}
+                disabled={done}
+                style={{ display: "grid", gap: 10 }}
+              >
+                {q.options.map((opt: any, idx: number) => {
+                  const ok = idx === q.correctIndex;
+                  const isChosen = chosen === idx;
+                  return (
+                    <div key={idx} style={styles.option(isChosen, ok, done)}>
+                      <Radio value={idx}>
+                        <Text
+                          style={{
+                            fontWeight: done && ok ? 700 : isChosen ? 600 : 400,
+                          }}
+                        >
+                          {opt}
+                        </Text>
+                      </Radio>
+                      {done &&
+                        (ok ? (
+                          <CheckCircleTwoTone twoToneColor="#22c55e" />
+                        ) : isChosen ? (
+                          <CloseCircleTwoTone twoToneColor="#ef4444" />
+                        ) : (
+                          <span />
+                        ))}
+                    </div>
+                  );
+                })}
+              </Radio.Group>
+
+              {done && q.explanation && (
+                <div style={{ marginTop: 12 }}>
+                  <Alert
+                    type={correct ? "success" : "error"}
+                    showIcon
+                    message={<Text strong>Giải thích</Text>}
+                    description={
+                      <Paragraph style={{ margin: 0 }}>
+                        {q.explanation}
+                      </Paragraph>
+                    }
+                  />
+                </div>
+              )}
+            </Card>
+          );
+        })}
+      </Space>
+      <Flex justify="center">
+        <Button
+          style={{ marginTop: 12 }}
+          type="primary"
+          onClick={onCheckAll}
+          disabled={checked || questions.length === 0}
+        >
+          Check All
+        </Button>
+      </Flex>
+
+      <Modal
+        title="Kết quả bài làm"
+        open={resultOpen}
+        onCancel={() => setResultOpen(false)}
+        footer={[
+          <Button key="close" onClick={() => setResultOpen(false)}>
+            Đóng
+          </Button>,
+          <Button key="retry" type="primary" onClick={resetLocal}>
+            Làm lại
+          </Button>,
+        ]}
+      >
+        <Space direction="vertical" style={{ width: "100%" }}>
+          <Text>
+            <b>Điểm:</b> {score}/{questions.length}
+          </Text>
+          <Text type="secondary">
+            Đã chọn: {totalAnswered}/{questions.length}
+          </Text>
+          <div style={{ marginTop: 8 }}>
+            <Alert
+              type={
+                percent === 100 ? "success" : percent >= 50 ? "info" : "warning"
+              }
+              showIcon
+              message={
+                percent === 100
+                  ? "Tuyệt vời! Bạn đạt điểm tối đa"
+                  : percent >= 50
+                  ? "Khá tốt! Hãy xem lại những câu sai nhé."
+                  : "Bạn có thể làm tốt hơn, thử lại nào!"
+              }
+            />
+          </div>
+        </Space>
+      </Modal>
+    </>
   );
 }
 
 export default function QuizFromPresetsPage() {
   const [selectedUrl, setSelectedUrl] = useState<string>(PRESETS[0].url);
-  const [maxQuestions, setMaxQuestions] = useState<number | null>(10);
+  const [maxQuestions] = useState<number | null>(10);
   const [lang] = useState<string>("vi");
   const [uploading, setUploading] = useState(false);
   const [, setPercent] = useState(0);
