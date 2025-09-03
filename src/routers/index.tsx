@@ -8,7 +8,7 @@ import HomePage from "../pages/Home/Home";
 import Contact from "../pages/Contact/Contact";
 import NewPasswordPage from "../pages/NewPassword/NewPassword";
 import InstructorLayout from "../layouts/Instructor/InstructorLayout";
-import Overview from "../pages/Instructor/Overview";
+// import Overview from "../pages/Instructor/Overview";
 import CourseManagement from "../pages/Instructor/Course-manage/Course-manage";
 import ManageClass from "../pages/Instructor/Class-manage/Class-manage";
 import TopicManagement from "../pages/Instructor/Topic-manage/TopicManagement";
@@ -188,7 +188,7 @@ const MainRoute = () => {
       {/* Instructor routes */}
       <Route element={<PrivateRoute allowedRoles={["instructor", "admin"]} />}>
         <Route element={<InstructorLayout />}>
-          <Route path="/instructor" element={<Overview />} />
+          {/* <Route path="/instructor" element={<Overview />} /> */}
           <Route path="/instructor-course" element={<CourseManagement />} />
           <Route
             path="/instructor-course/detail/:id"

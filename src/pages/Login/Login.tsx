@@ -20,15 +20,17 @@ const getServerMessage = (err: any) => {
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
+
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false); 
+  const [loading, setLoading] = useState(false);
   const logoutTimerRef = useRef<number | null>(null);
 
   const redirectByRole = (roleId: number) => {
     if (roleId === 1) navigate("/admin");
     else if (roleId === 2) navigate("/organizationAdmin");
-    else if (roleId === 3) navigate("/instructor");
+    else if (roleId === 3) navigate("/instructor-course");
     else navigate("/");
   };
 
@@ -72,7 +74,7 @@ const LoginPage = () => {
       }
     }
 
-    return clearLogoutTimer; 
+    return clearLogoutTimer;
   }, []);
 
   const goVerify = (uName: string) => {
@@ -82,7 +84,7 @@ const LoginPage = () => {
   };
 
   const handleLogin = async () => {
-    if (loading) return; 
+    if (loading) return;
     if (!userName || !password) {
       toast.warning("Please enter both username and password.");
       return;
@@ -156,13 +158,41 @@ const LoginPage = () => {
             autoFocus
           />
 
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-          />
+          <div className="password-field">
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+              autoComplete="current-password"
+            />
+            <button
+              type="button"
+              className="password-toggle"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              aria-pressed={showPassword}
+              title={showPassword ? "Hide password" : "Show password"}
+              onMouseDown={(e) => e.preventDefault()}   // tránh mất focus input
+              onClick={() => setShowPassword(v => !v)}
+            >
+              {showPassword ? (
+                /* eye-off */
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M3 3l18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                  <path d="M10.6 10.6A2 2 0 0012 14a2 2 0 001.4-.6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                  <path d="M17.9 17.9C16.2 19 14.2 19.7 12 19.7 6.5 19.7 2.3 16 1 12c.6-1.7 1.7-3.3 3.1-4.5M12 4.3c5.5 0 9.7 3.7 11 7.7-.5 1.4-1.2 2.6-2.2 3.7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+              ) : (
+                /* eye */
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M1 12s4.5-7 11-7 11 7 11 7-4.5 7-11 7S1 12 1 12z" stroke="currentColor" strokeWidth="2" />
+                  <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2" />
+                </svg>
+              )}
+            </button>
+          </div>
+
 
           <div className="forgot-password" onClick={() => navigate("/forgot-password")}>
             Forgot password?
