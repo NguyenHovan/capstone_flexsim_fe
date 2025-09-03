@@ -1,29 +1,29 @@
 import {
-
   BookOutlined,
   DollarOutlined,
   InfoCircleOutlined,
   SettingOutlined,
   UserOutlined,
   LogoutOutlined,
+  AppstoreOutlined,
 } from "@ant-design/icons";
 import "./instructorSidebar.css";
 import { useNavigate } from "react-router-dom";
 
 const sidebarItems = [
-
+  {
+    key: "Dashboard",
+    icon: <AppstoreOutlined />,
+    label: "Dashboard",
+    url: "/instructor-dashboard",
+  },
   {
     key: "Courses",
     icon: <BookOutlined />,
     label: "Courses",
     url: "/instructor-course",
   },
-  // {
-  //   key: "Lessons",
-  //   icon: <AppstoreOutlined />,
-  //   label: "Lessons",
-  //   url: "/instructor-lesson",
-  // },
+
   // {
   //   key: "Enroll Request",
   //   icon: <AppstoreOutlined />,

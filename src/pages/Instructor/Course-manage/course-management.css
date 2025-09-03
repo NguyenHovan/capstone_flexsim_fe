@@ -10,3 +10,66 @@
   align-items: center;
   margin-bottom: 16px;
 }
+
+.course-tabs-wrap {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
+  padding: 16px 20px;
+}
+
+.course-tabs .ant-tabs-nav {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #fff;
+  border-radius: 12px;
+}
+
+.course-tabs .ant-tabs-tab {
+  padding: 10px 14px;
+  border-radius: 999px;
+  transition: all 0.2s ease;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.course-tabs .ant-tabs-tab:hover {
+  background: #f5f7fb;
+  color: #111827;
+  transform: translateY(-1px);
+}
+
+.course-tabs .ant-tabs-tab .anticon {
+  margin-right: 8px;
+  font-size: 16px;
+}
+
+.course-tabs .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: #111827;
+  font-weight: 600;
+}
+
+.course-tabs .ant-tabs-ink-bar {
+  height: 3px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #3b82f6, #22c55e);
+}
+
+.course-tabs .ant-tabs-nav-list {
+  gap: 6px;
+}
+
+.course-tabs .ant-tabs-content-holder {
+  border-radius: 12px;
+}
+
+@media (max-width: 640px) {
+  .course-tabs .ant-tabs-nav .ant-tabs-tab {
+    padding: 8px 10px;
+    font-size: 14px;
+  }
+  .course-tabs-wrap {
+    padding: 12px;
+  }
+}

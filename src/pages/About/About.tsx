@@ -11,7 +11,6 @@ import {
   Button,
   Space,
   Badge,
-  
 } from "antd";
 import {
   CompassOutlined,
@@ -120,11 +119,11 @@ const reasons: Feature[] = [
   },
 ];
 
-const Stat: React.FC<{ icon: React.ReactNode; value: string; label: string }> = ({
-  icon,
-  value,
-  label,
-}) => (
+const Stat: React.FC<{
+  icon: React.ReactNode;
+  value: string;
+  label: string;
+}> = ({ icon, value, label }) => (
   <div className="about-stat">
     <div className="about-stat__icon">{icon}</div>
     <div>
@@ -137,18 +136,22 @@ const Stat: React.FC<{ icon: React.ReactNode; value: string; label: string }> = 
 const AboutLogisimEdu: React.FC = () => {
   return (
     <Layout className="about-layout" aria-label="About LogiSimEdu">
-      {/* HERO */}
       <Header className="about-hero" role="banner">
         <div className="about-hero__bg" />
         <div className="about-hero__glow" />
         <div className="about-hero__content glass">
           <Badge.Ribbon text="FlexSim-Powered" color="cyan">
             <div>
-              <Title level={1} className="about-hero__title gradient-text">
+              <Title
+                level={1}
+                className="about-hero__title gradient-text"
+                style={{ color: "white" }}
+              >
                 LogiSimEdu
               </Title>
               <Paragraph className="about-hero__subtitle">
-                A Logistics Training Platform Using <b>FlexSim-Based Interactive Scenarios</b>.
+                A Logistics Training Platform Using{" "}
+                <b>FlexSim-Based Interactive Scenarios</b>.
               </Paragraph>
               <Space size="middle" wrap>
                 <Button type="primary" size="large" className="btn-shadow">
@@ -163,7 +166,11 @@ const AboutLogisimEdu: React.FC = () => {
 
           <div className="about-stats">
             <Stat icon={<TeamOutlined />} value="10k+" label="Learners" />
-            <Stat icon={<DeploymentUnitOutlined />} value="250+" label="Workspaces" />
+            <Stat
+              icon={<DeploymentUnitOutlined />}
+              value="250+"
+              label="Workspaces"
+            />
             <Stat icon={<BarChartOutlined />} value="400+" label="Scenarios" />
           </div>
         </div>
@@ -176,8 +183,9 @@ const AboutLogisimEdu: React.FC = () => {
             <Col xs={24} md={12}>
               <Title level={2}>Our Mission</Title>
               <Paragraph type="secondary">
-                LogiSimEdu enables organizations and learners to “learn by doing” with simulation-based training for
-                warehousing and supply chain operations.
+                LogiSimEdu enables organizations and learners to “learn by
+                doing” with simulation-based training for warehousing and supply
+                chain operations.
               </Paragraph>
               <ul className="about-bullets" aria-label="Mission highlights">
                 {missionBullets.map((b, i) => (
@@ -237,14 +245,18 @@ const AboutLogisimEdu: React.FC = () => {
             <Col xs={24} md={10}>
               <Title level={2}>Who Uses LogiSimEdu?</Title>
               <Paragraph>
-                The platform serves formal education, enterprise training, and professional development providers.
+                The platform serves formal education, enterprise training, and
+                professional development providers.
               </Paragraph>
               <Timeline
                 className="about-timeline"
                 items={[
                   { color: "blue", children: "Pilot rollout in 2–4 weeks" },
                   { color: "green", children: "Secure SSO/LMS integration" },
-                  { color: "gray", children: "Expand scenario library to fit your curriculum" },
+                  {
+                    color: "gray",
+                    children: "Expand scenario library to fit your curriculum",
+                  },
                 ]}
               />
             </Col>
@@ -252,12 +264,17 @@ const AboutLogisimEdu: React.FC = () => {
               <Row gutter={[24, 24]}>
                 {audiences.map((a, i) => (
                   <Col key={i} xs={24} sm={12}>
-                    <Card className="about-card about-card--soft lift" hoverable>
+                    <Card
+                      className="about-card about-card--soft lift"
+                      hoverable
+                    >
                       <div className="about-card__icon">{a.icon}</div>
                       <Title level={4} className="about-card__title">
                         {a.title}
                       </Title>
-                      <Paragraph className="about-card__desc">{a.desc}</Paragraph>
+                      <Paragraph className="about-card__desc">
+                        {a.desc}
+                      </Paragraph>
                     </Card>
                   </Col>
                 ))}
@@ -270,7 +287,9 @@ const AboutLogisimEdu: React.FC = () => {
 
         {/* WHY CHOOSE US */}
         <section className="about-section">
-          <Title level={2} className="section-title">Why Choose Us?</Title>
+          <Title level={2} className="section-title">
+            Why Choose Us?
+          </Title>
           <Row gutter={[24, 24]}>
             {reasons.map((r, i) => (
               <Col key={i} xs={24} md={8}>
@@ -292,7 +311,8 @@ const AboutLogisimEdu: React.FC = () => {
                   Ready to transform your logistics training?
                 </Title>
                 <Text type="secondary">
-                  Book a personalized demo and see how LogiSimEdu fits your curriculum or operations.
+                  Book a personalized demo and see how LogiSimEdu fits your
+                  curriculum or operations.
                 </Text>
               </Col>
               <Col xs={24} md={8} style={{ textAlign: "right" }}>
@@ -301,7 +321,9 @@ const AboutLogisimEdu: React.FC = () => {
                     Talk to Us
                   </Button>
                   <Button size="large" className="btn-ghost">
-                    <Link href="mailto:hello@logisimedu.example">Send Email</Link>
+                    <Link href="mailto:hello@logisimedu.example">
+                      Send Email
+                    </Link>
                   </Button>
                 </Space>
               </Col>
@@ -310,8 +332,7 @@ const AboutLogisimEdu: React.FC = () => {
         </section>
       </Content>
 
-      <Footer className="about-footer">
-      </Footer>
+      <Footer className="about-footer"></Footer>
     </Layout>
   );
 };

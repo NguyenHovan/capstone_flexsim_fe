@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Card, Col, Row, Typography, Empty, Button } from "antd";
 import { CertificateService } from "../../services/certificate.service";
-import { DownloadOutlined, FilePdfOutlined } from "@ant-design/icons";
+import { DownloadOutlined } from "@ant-design/icons";
 
 const { Title, Text } = Typography;
 
@@ -51,14 +51,18 @@ const MyCertificate: React.FC = () => {
               cover={
                 <div
                   style={{
-                    height: 120,
+                    height: 300,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     background: "#f0f2f5",
                   }}
                 >
-                  <FilePdfOutlined style={{ fontSize: 48, color: "#cf1322" }} />
+                  <iframe
+                    src={cert.fileUrl}
+                    style={{ width: "100%", height: "100%", border: "0" }}
+                    frameBorder="0"
+                  ></iframe>
                 </div>
               }
             >
@@ -78,9 +82,6 @@ const MyCertificate: React.FC = () => {
               <Text type="secondary">Ngày cấp: </Text>
               <Text>{new Date(cert.createdAt).toLocaleDateString()}</Text>
               <br />
-
-              <Text type="secondary">Điểm số: </Text>
-              <Text strong>{cert.score ?? "-"}</Text>
 
               <Button
                 type="primary"

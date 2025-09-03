@@ -47,7 +47,10 @@ const roleNameMap: Record<number, string> = { 3: "Instructor", 4: "Student" };
 
 const prettyGender = (g: unknown) => {
   const num = Number(g);
-  return ({ 1: "Male", 2: "Female", 3: "Other" } as Record<number, string>)[num] ?? "—";
+  return (
+    ({ 1: "Male", 2: "Female", 3: "Other" } as Record<number, string>)[num] ??
+    "—"
+  );
 };
 const VISIBLE_ROLE_IDS = new Set<number>([3, 4]);
 
@@ -261,8 +264,8 @@ const UserOrganization: React.FC = () => {
   const [formEdit] = Form.useForm();
 
   const [, setShowUpdatedToast] = useState(false);
-  const toastFlagRef = useRef(false); 
-  const prevOpenRef = useRef(false); 
+  const toastFlagRef = useRef(false);
+  const prevOpenRef = useRef(false);
 
   const [instrError, setInstrError] = useState<string | null>(null);
   const [studError, setStudError] = useState<string | null>(null);
@@ -437,8 +440,11 @@ const UserOrganization: React.FC = () => {
       const newAvt = (trim(v.avtUrl) as string) || "";
       if (newAvt !== (editingUser.avtUrl || "")) diff.avtUrl = newAvt;
       const nextGender = Number(v.gender);
-      if ([1, 2, 3].includes(nextGender) && nextGender !== Number(editingUser.gender)) {
-      diff.gender = nextGender; // <-- CHANGED
+      if (
+        [1, 2, 3].includes(nextGender) &&
+        nextGender !== Number(editingUser.gender)
+      ) {
+        diff.gender = nextGender; // <-- CHANGED
       }
       if (Object.keys(diff).length === 0) {
         setSavingEdit(false);
@@ -789,7 +795,14 @@ const UserOrganization: React.FC = () => {
       ),
     },
   ];
-
+  function downloadBlob(blob: Blob, filename: string) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
   return (
     <Layout>
       <Content style={{ padding: 24 }}>
@@ -830,6 +843,27 @@ const UserOrganization: React.FC = () => {
                 }}
               >
                 Create Student
+              </Button>
+              <Button
+                onClick={async () => {
+                  const res = await AccountService.exportData();
+                  const blob: Blob = res.data;
+
+                  const cd =
+                    res.headers?.["content-disposition"] ||
+                    res.headers?.["Content-Disposition"] ||
+                    "";
+                  const match = cd.match(
+                    /filename\*?=(?:UTF-8'')?\"?([^\";]+)/i
+                  );
+                  const filename = match
+                    ? decodeURIComponent(match[1])
+                    : `export_${Date.now()}.xlsx`;
+
+                  downloadBlob(blob, filename);
+                }}
+              >
+                Export Data
               </Button>
             </Space>
           </Col>
@@ -933,7 +967,9 @@ const UserOrganization: React.FC = () => {
                   {roleNameMap[Number(viewingUser.roleId)] ||
                     viewingUser.roleId}
                 </p>
-                <p><b>Gender:</b> {prettyGender(viewingUser.gender)}</p> 
+                <p>
+                  <b>Gender:</b> {prettyGender(viewingUser.gender)}
+                </p>
 
                 <p>
                   <b>Status:</b>{" "}

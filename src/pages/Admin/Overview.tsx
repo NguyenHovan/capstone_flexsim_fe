@@ -1,49 +1,81 @@
 // src/pages/admin/Overview.tsx
 import {
-  Layout, Card, Row, Col, Typography, Spin, Tag,
-  DatePicker, Segmented, Button, Space, Table
-} from 'antd';
+  Layout,
+  Card,
+  Row,
+  Col,
+  Typography,
+  Spin,
+  Tag,
+  DatePicker,
+  Segmented,
+  Button,
+  Space,
+  Table,
+} from "antd";
 import {
-  AppstoreOutlined, TeamOutlined, CheckCircleOutlined,
-  ShoppingCartOutlined, AimOutlined, DownloadOutlined,
-  ReloadOutlined, FilterOutlined
-} from '@ant-design/icons';
-import { useEffect, useMemo, useState } from 'react';
-import { Bar, Doughnut } from 'react-chartjs-2';
+  AppstoreOutlined,
+  TeamOutlined,
+  CheckCircleOutlined,
+  ShoppingCartOutlined,
+  AimOutlined,
+  DownloadOutlined,
+  ReloadOutlined,
+  FilterOutlined,
+} from "@ant-design/icons";
+import { useEffect, useMemo, useState } from "react";
+import { Bar, Doughnut } from "react-chartjs-2";
 import {
-  Chart as ChartJS, Tooltip, Legend, BarElement, ArcElement,
-  CategoryScale, LinearScale
-} from 'chart.js';
-import type { ChartOptions } from 'chart.js'; 
-import dayjs from 'dayjs';
-import type { Dayjs } from 'dayjs';
-import weekOfYear from 'dayjs/plugin/weekOfYear';
-import isoWeek from 'dayjs/plugin/isoWeek';
+  Chart as ChartJS,
+  Tooltip,
+  Legend,
+  BarElement,
+  ArcElement,
+  CategoryScale,
+  LinearScale,
+} from "chart.js";
+import type { ChartOptions } from "chart.js";
+import dayjs from "dayjs";
+import type { Dayjs } from "dayjs";
+import weekOfYear from "dayjs/plugin/weekOfYear";
+import isoWeek from "dayjs/plugin/isoWeek";
 
-import { toast } from 'sonner';
-import axiosInstance from '../../api/axiosInstance';
-import { API } from '../../api';
+import { toast } from "sonner";
+import axiosInstance from "../../api/axiosInstance";
+import { API } from "../../api";
 
-import { OrderService } from '../../services/order.service';
-import './overview.css';
+import { OrderService } from "../../services/order.service";
+import "./overview.css";
 dayjs.extend(weekOfYear);
 dayjs.extend(isoWeek);
-ChartJS.register(Tooltip, Legend, BarElement, ArcElement, CategoryScale, LinearScale);
+ChartJS.register(
+  Tooltip,
+  Legend,
+  BarElement,
+  ArcElement,
+  CategoryScale,
+  LinearScale
+);
 
 const { Content } = Layout;
 const { Title } = Typography;
 
 type AnyItem = Record<string, any>;
-type Counters = { users: number; organizations: number; workspaces: number; orders: number; };
+type Counters = {
+  users: number;
+  organizations: number;
+  workspaces: number;
+  orders: number;
+};
 type DailyStats = Record<string, Counters>;
-type Granularity = 'week' | 'month' | 'year';
+type Granularity = "week" | "month" | "year";
 
 interface DashboardStats {
   totalOrganizations: number;
   totalUsers: number;
   totalWorkspaces: number;
   totalOrders: number;
-  dailyStats: DailyStats; 
+  dailyStats: DailyStats;
 }
 
 type OrderRow = {
@@ -54,66 +86,96 @@ type OrderRow = {
   orderTime?: string;
   price?: number;
   totalPrice?: number;
-  subscriptionPlanId?: string;   
-  subscriptionPlanName?: string; 
+  subscriptionPlanId?: string;
+  subscriptionPlanName?: string;
 };
 
-const EMPTY: Counters = { users: 0, organizations: 0, workspaces: 0, orders: 0 };
+const EMPTY: Counters = {
+  users: 0,
+  organizations: 0,
+  workspaces: 0,
+  orders: 0,
+};
 
 const getCreatedDate = (it: AnyItem): string | null => {
   const raw =
-    it?.createdAt ?? it?.created_at ?? it?.createdDate ?? it?.created_date ??
-    it?.created_on ?? it?.createdOn ?? null;
+    it?.createdAt ??
+    it?.created_at ??
+    it?.createdDate ??
+    it?.created_date ??
+    it?.created_on ??
+    it?.createdOn ??
+    null;
   if (!raw) return null;
   const d = new Date(raw);
   if (Number.isNaN(+d)) return null;
-  return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+  return new Date(d.getTime() - d.getTimezoneOffset() * 60000)
+    .toISOString()
+    .slice(0, 10);
 };
 const safeList = (d: any): AnyItem[] =>
-  Array.isArray(d) ? d : Array.isArray(d?.items) ? d.items : Array.isArray(d?.data) ? d.data : [];
+  Array.isArray(d)
+    ? d
+    : Array.isArray(d?.items)
+    ? d.items
+    : Array.isArray(d?.data)
+    ? d.data
+    : [];
 const safeCount = (d: any): number =>
-  Array.isArray(d) ? d.length
-    : Array.isArray(d?.items) ? d.items.length
-    : Array.isArray(d?.data) ? d.data.length
-    : (typeof d?.total === 'number' ? d.total : 0);
+  Array.isArray(d)
+    ? d.length
+    : Array.isArray(d?.items)
+    ? d.items.length
+    : Array.isArray(d?.data)
+    ? d.data.length
+    : typeof d?.total === "number"
+    ? d.total
+    : 0;
 
 const addDaily = (daily: DailyStats, list: AnyItem[], key: keyof Counters) => {
   list.forEach((it) => {
-    const date = getCreatedDate(it); if (!date) return;
+    const date = getCreatedDate(it);
+    if (!date) return;
     if (!daily[date]) daily[date] = { ...EMPTY };
     daily[date][key] += 1;
   });
 };
 const sum = (arr: number[]) => arr.reduce((a, b) => a + b, 0);
 const pct = (curr: number, prev: number) =>
-  (prev === 0 ? (curr > 0 ? 100 : 0) : Math.round(((curr - prev) / prev) * 100));
+  prev === 0 ? (curr > 0 ? 100 : 0) : Math.round(((curr - prev) / prev) * 100);
 const buildDateRange = (start: Dayjs, end: Dayjs) => {
   const out: string[] = [];
-  let d = start.startOf('day');
-  const last = end.startOf('day');
-  while (d.isBefore(last) || d.isSame(last, 'day')) {
-    out.push(d.format('YYYY-MM-DD'));
-    d = d.add(1, 'day');
+  let d = start.startOf("day");
+  const last = end.startOf("day");
+  while (d.isBefore(last) || d.isSame(last, "day")) {
+    out.push(d.format("YYYY-MM-DD"));
+    d = d.add(1, "day");
   }
   return out;
 };
 const monthsInYear = (y: number) =>
-  Array.from({ length: 12 }, (_, i) => dayjs().year(y).month(i).format('YYYY-MM'));
+  Array.from({ length: 12 }, (_, i) =>
+    dayjs().year(y).month(i).format("YYYY-MM")
+  );
 const COLORS = {
-  teal: '#2ED3C6',   // Users
-  navy: '#223A54',   // Organizations
-  gray: '#E3E7EF',   // Workspaces
-  cyan: '#7AD6E0',   // Orders
+  teal: "#2ED3C6", // Users
+  navy: "#223A54", // Organizations
+  gray: "#E3E7EF", // Workspaces
+  cyan: "#7AD6E0", // Orders
 };
 
 const AdminOverview: React.FC = () => {
   const [stats, setStats] = useState<DashboardStats>({
-    totalOrganizations: 0, totalUsers: 0, totalWorkspaces: 0, totalOrders: 0, dailyStats: {}
+    totalOrganizations: 0,
+    totalUsers: 0,
+    totalWorkspaces: 0,
+    totalOrders: 0,
+    dailyStats: {},
   });
   const [loading, setLoading] = useState(false);
 
   // filters
-  const [granularity, setGranularity] = useState<Granularity>('week'); // default giống mẫu
+  const [granularity, setGranularity] = useState<Granularity>("week"); // default giống mẫu
   const [anchorDate, setAnchorDate] = useState<Dayjs>(dayjs());
 
   // recent orders
@@ -141,10 +203,10 @@ const AdminOverview: React.FC = () => {
         const orderList = safeList(orderRes.data);
 
         const daily: DailyStats = {};
-        addDaily(daily, userList, 'users');
-        addDaily(daily, orgList, 'organizations');
-        addDaily(daily, wsList, 'workspaces');
-        addDaily(daily, orderList, 'orders');
+        addDaily(daily, userList, "users");
+        addDaily(daily, orgList, "organizations");
+        addDaily(daily, wsList, "workspaces");
+        addDaily(daily, orderList, "orders");
 
         const sorted = Object.fromEntries(
           Object.entries(daily).sort(([a], [b]) => (a < b ? -1 : 1))
@@ -156,11 +218,11 @@ const AdminOverview: React.FC = () => {
           totalUsers: safeCount(userRes.data),
           totalWorkspaces: safeCount(wsRes.data),
           totalOrders: safeCount(orderRes.data),
-          dailyStats: sorted
+          dailyStats: sorted,
         });
       } catch (e) {
         console.error(e);
-        toast.error('Không tải được dữ liệu dashboard');
+        toast.error("Không tải được dữ liệu dashboard");
       } finally {
         if (mounted) setLoading(false);
       }
@@ -181,15 +243,25 @@ const AdminOverview: React.FC = () => {
           : [];
         const planMap: Record<string, string> = {};
         plans.forEach((p: any) => {
-          const pid = String(p?.id ?? p?.planId ?? p?._id ?? '');
-          const pname = String(p?.name ?? p?.planName ?? p?.title ?? p?.displayName ?? p?.code ?? '');
+          const pid = String(p?.id ?? p?.planId ?? p?._id ?? "");
+          const pname = String(
+            p?.name ??
+              p?.planName ??
+              p?.title ??
+              p?.displayName ??
+              p?.code ??
+              ""
+          );
           if (pid) planMap[pid] = pname;
         });
         if (mounted) setPlanNameById(planMap);
 
         const rows: OrderRow[] = (orders ?? []).map((o: any) => {
           const pid =
-            o?.subscriptionId ?? o?.subscriptionPlanId ?? o?.subcriptionPlanId ?? null;
+            o?.subscriptionId ??
+            o?.subscriptionPlanId ??
+            o?.subcriptionPlanId ??
+            null;
           return {
             id: o.id,
             orderCode: o.orderCode ?? null,
@@ -199,7 +271,8 @@ const AdminOverview: React.FC = () => {
             price: o.price,
             totalPrice: o.totalPrice ?? o.price,
             subscriptionPlanId: pid ?? undefined,
-            subscriptionPlanName: (pid && planMap[String(pid)]) || o.subscriptionPlanName,
+            subscriptionPlanName:
+              (pid && planMap[String(pid)]) || o.subscriptionPlanName,
           };
         });
 
@@ -211,108 +284,177 @@ const AdminOverview: React.FC = () => {
         if (mounted) setRecentOrders(rows.slice(0, 8));
       } catch (e) {
         console.error(e);
-        toast.error('Không tải được danh sách đơn hàng');
+        toast.error("Không tải được danh sách đơn hàng");
       } finally {
         if (mounted) setLoadingOrders(false);
       }
     })();
 
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, []);
 
-  const dayLabelsAll = useMemo(() => Object.keys(stats.dailyStats), [stats.dailyStats]);
+  const dayLabelsAll = useMemo(
+    () => Object.keys(stats.dailyStats),
+    [stats.dailyStats]
+  );
   const last7IdxStart = Math.max(0, dayLabelsAll.length - 7);
   const prev7IdxStart = Math.max(0, dayLabelsAll.length - 14);
-  const last7 = dayLabelsAll.slice(last7IdxStart).map(d => stats.dailyStats[d]);
-  const prev7 = dayLabelsAll.slice(prev7IdxStart, last7IdxStart).map(d => stats.dailyStats[d]);
+  const last7 = dayLabelsAll
+    .slice(last7IdxStart)
+    .map((d) => stats.dailyStats[d]);
+  const prev7 = dayLabelsAll
+    .slice(prev7IdxStart, last7IdxStart)
+    .map((d) => stats.dailyStats[d]);
   const wow = {
-    users: pct(sum(last7.map(x => x.users)), sum(prev7.map(x => x.users))),
-    organizations: pct(sum(last7.map(x => x.organizations)), sum(prev7.map(x => x.organizations))),
-    workspaces: pct(sum(last7.map(x => x.workspaces)), sum(prev7.map(x => x.workspaces))),
-    orders: pct(sum(last7.map(x => x.orders)), sum(prev7.map(x => x.orders))),
+    users: pct(sum(last7.map((x) => x.users)), sum(prev7.map((x) => x.users))),
+    organizations: pct(
+      sum(last7.map((x) => x.organizations)),
+      sum(prev7.map((x) => x.organizations))
+    ),
+    workspaces: pct(
+      sum(last7.map((x) => x.workspaces)),
+      sum(prev7.map((x) => x.workspaces))
+    ),
+    orders: pct(
+      sum(last7.map((x) => x.orders)),
+      sum(prev7.map((x) => x.orders))
+    ),
   };
 
   const cards = [
-    { key: 'users',          title: 'Total Users',         icon: <TeamOutlined />,         value: stats.totalUsers,         percent: wow.users,         className: 'metric--tealSolid' },
-    { key: 'organizations',  title: 'Total Organizations', icon: <AppstoreOutlined />,    value: stats.totalOrganizations, percent: wow.organizations, className: 'metric--navySolid' },
-    { key: 'workspaces',     title: 'Total Workspaces',    icon: <CheckCircleOutlined />, value: stats.totalWorkspaces,    percent: wow.workspaces,    className: 'metric--graySolid' },
-    { key: 'orders',         title: 'Total Orders',        icon: <ShoppingCartOutlined />,value: stats.totalOrders,        percent: wow.orders,        className: 'metric--cyanSolid' },
+    {
+      key: "users",
+      title: "Total Users",
+      icon: <TeamOutlined />,
+      value: stats.totalUsers,
+      percent: wow.users,
+      className: "metric--tealSolid",
+    },
+    {
+      key: "organizations",
+      title: "Total Organizations",
+      icon: <AppstoreOutlined />,
+      value: stats.totalOrganizations,
+      percent: wow.organizations,
+      className: "metric--navySolid",
+    },
+    {
+      key: "workspaces",
+      title: "Total Workspaces",
+      icon: <CheckCircleOutlined />,
+      value: stats.totalWorkspaces,
+      percent: wow.workspaces,
+      className: "metric--graySolid",
+    },
+    {
+      key: "orders",
+      title: "Total Orders",
+      icon: <ShoppingCartOutlined />,
+      value: stats.totalOrders,
+      percent: wow.orders,
+      className: "metric--cyanSolid",
+    },
   ] as const;
 
   const PRUNE_EMPTY = true;
 
   const filtered = useMemo(() => {
     const prune = (rows: Array<{ label: string } & Counters>) =>
-      PRUNE_EMPTY ? rows.filter(r => r.users || r.organizations || r.workspaces || r.orders) : rows;
+      PRUNE_EMPTY
+        ? rows.filter(
+            (r) => r.users || r.organizations || r.workspaces || r.orders
+          )
+        : rows;
 
     if (dayLabelsAll.length === 0) {
       return {
-        labelText: 'N/A',
+        labelText: "N/A",
         barLabels: [] as string[],
-        barSeries: { Users: [] as number[], Organizations: [] as number[], Workspaces: [] as number[], Orders: [] as number[] },
+        barSeries: {
+          Users: [] as number[],
+          Organizations: [] as number[],
+          Workspaces: [] as number[],
+          Orders: [] as number[],
+        },
         share: { users: 0, organizations: 0, workspaces: 0, orders: 0 },
         tableRows: [] as Array<{ label: string } & Counters>,
         dailyTotals: [] as number[],
       };
     }
 
-    if (granularity === 'week') {
-      const start = anchorDate.startOf('isoWeek');
-      const end = anchorDate.endOf('isoWeek');
+    if (granularity === "week") {
+      const start = anchorDate.startOf("isoWeek");
+      const end = anchorDate.endOf("isoWeek");
       const range = buildDateRange(start, end);
 
       const rawRows = range.map((d) => ({
-        label: dayjs(d).format('dddd'), 
-        ...(stats.dailyStats[d] ?? { ...EMPTY })
+        label: dayjs(d).format("dddd"),
+        ...(stats.dailyStats[d] ?? { ...EMPTY }),
       }));
       const rows = prune(rawRows);
-      const sums = rows.reduce((a, r) => ({
-        users: a.users + r.users, organizations: a.organizations + r.organizations,
-        workspaces: a.workspaces + r.workspaces, orders: a.orders + r.orders
-      }), { ...EMPTY });
+      const sums = rows.reduce(
+        (a, r) => ({
+          users: a.users + r.users,
+          organizations: a.organizations + r.organizations,
+          workspaces: a.workspaces + r.workspaces,
+          orders: a.orders + r.orders,
+        }),
+        { ...EMPTY }
+      );
 
       return {
         labelText: `ISO Week ${anchorDate.isoWeek()}, ${anchorDate.year()}`,
-        barLabels: rows.map(r => r.label),
+        barLabels: rows.map((r) => r.label),
         barSeries: {
-          Users: rows.map(r => r.users),
-          Organizations: rows.map(r => r.organizations),
-          Workspaces: rows.map(r => r.workspaces),
-          Orders: rows.map(r => r.orders),
+          Users: rows.map((r) => r.users),
+          Organizations: rows.map((r) => r.organizations),
+          Workspaces: rows.map((r) => r.workspaces),
+          Orders: rows.map((r) => r.orders),
         },
         share: sums,
         tableRows: rows,
-        dailyTotals: rows.map(r => r.users + r.organizations + r.workspaces + r.orders),
+        dailyTotals: rows.map(
+          (r) => r.users + r.organizations + r.workspaces + r.orders
+        ),
       };
     }
 
-    if (granularity === 'month') {
-      const start = anchorDate.startOf('month');
-      const end = anchorDate.endOf('month');
+    if (granularity === "month") {
+      const start = anchorDate.startOf("month");
+      const end = anchorDate.endOf("month");
       const range = buildDateRange(start, end);
 
       const rawRows = range.map((d) => ({
-        label: dayjs(d).format('D'),
-        ...(stats.dailyStats[d] ?? { ...EMPTY })
+        label: dayjs(d).format("D"),
+        ...(stats.dailyStats[d] ?? { ...EMPTY }),
       }));
       const rows = prune(rawRows);
-      const sums = rows.reduce((a, r) => ({
-        users: a.users + r.users, organizations: a.organizations + r.organizations,
-        workspaces: a.workspaces + r.workspaces, orders: a.orders + r.orders
-      }), { ...EMPTY });
+      const sums = rows.reduce(
+        (a, r) => ({
+          users: a.users + r.users,
+          organizations: a.organizations + r.organizations,
+          workspaces: a.workspaces + r.workspaces,
+          orders: a.orders + r.orders,
+        }),
+        { ...EMPTY }
+      );
 
       return {
-        labelText: anchorDate.format('MMMM YYYY'),
-        barLabels: rows.map(r => r.label),
+        labelText: anchorDate.format("MMMM YYYY"),
+        barLabels: rows.map((r) => r.label),
         barSeries: {
-          Users: rows.map(r => r.users),
-          Organizations: rows.map(r => r.organizations),
-          Workspaces: rows.map(r => r.workspaces),
-          Orders: rows.map(r => r.orders),
+          Users: rows.map((r) => r.users),
+          Organizations: rows.map((r) => r.organizations),
+          Workspaces: rows.map((r) => r.workspaces),
+          Orders: rows.map((r) => r.orders),
         },
         share: sums,
         tableRows: rows,
-        dailyTotals: rows.map(r => r.users + r.organizations + r.workspaces + r.orders),
+        dailyTotals: rows.map(
+          (r) => r.users + r.organizations + r.workspaces + r.orders
+        ),
       };
     }
 
@@ -323,163 +465,210 @@ const AdminOverview: React.FC = () => {
       const acc = { ...EMPTY };
       Object.entries(stats.dailyStats).forEach(([date, c]) => {
         if (date.startsWith(m)) {
-          acc.users += c.users; acc.organizations += c.organizations; acc.workspaces += c.workspaces; acc.orders += c.orders;
+          acc.users += c.users;
+          acc.organizations += c.organizations;
+          acc.workspaces += c.workspaces;
+          acc.orders += c.orders;
         }
       });
       return { label: m.slice(5), ...acc }; // "01".."12"
     });
-    const rows = PRUNE_EMPTY ? rawRows.filter(r => r.users || r.organizations || r.workspaces || r.orders) : rawRows;
+    const rows = PRUNE_EMPTY
+      ? rawRows.filter(
+          (r) => r.users || r.organizations || r.workspaces || r.orders
+        )
+      : rawRows;
 
-    const sums = rows.reduce((a, r) => ({
-      users: a.users + r.users, organizations: a.organizations + r.organizations,
-      workspaces: a.workspaces + r.workspaces, orders: a.orders + r.orders
-    }), { ...EMPTY });
+    const sums = rows.reduce(
+      (a, r) => ({
+        users: a.users + r.users,
+        organizations: a.organizations + r.organizations,
+        workspaces: a.workspaces + r.workspaces,
+        orders: a.orders + r.orders,
+      }),
+      { ...EMPTY }
+    );
 
     return {
       labelText: `${year}`,
-      barLabels: rows.map(r => r.label),
+      barLabels: rows.map((r) => r.label),
       barSeries: {
-        Users: rows.map(r => r.users),
-        Organizations: rows.map(r => r.organizations),
-        Workspaces: rows.map(r => r.workspaces),
-        Orders: rows.map(r => r.orders),
+        Users: rows.map((r) => r.users),
+        Organizations: rows.map((r) => r.organizations),
+        Workspaces: rows.map((r) => r.workspaces),
+        Orders: rows.map((r) => r.orders),
       },
       share: sums,
       tableRows: rows,
-      dailyTotals: rows.map(r => r.users + r.organizations + r.workspaces + r.orders),
+      dailyTotals: rows.map(
+        (r) => r.users + r.organizations + r.workspaces + r.orders
+      ),
     };
   }, [stats.dailyStats, dayLabelsAll.length, granularity, anchorDate]);
 
-  const barData = useMemo(() => ({
-    labels: filtered.barLabels,
-    datasets: [
-      {
-        label: 'Users',
-        data: filtered.barSeries.Users,
-        backgroundColor: COLORS.teal,
-        borderWidth: 0,
-        borderSkipped: false,
-        borderRadius: 0,            
-        barThickness: 24,
-        maxBarThickness: 30,
-        categoryPercentage: 0.64,
-        barPercentage: 0.72,
-      },
-      {
-        label: 'Organizations',
-        data: filtered.barSeries.Organizations,
-        backgroundColor: COLORS.navy,
-        borderWidth: 0,
-        borderSkipped: false,
-        borderRadius: 0,
-        barThickness: 24,
-        maxBarThickness: 30,
-        categoryPercentage: 0.64,
-        barPercentage: 0.72,
-      },
-      {
-        label: 'Workspaces',
-        data: filtered.barSeries.Workspaces,
-        backgroundColor: COLORS.gray,
-        borderWidth: 0,
-        borderSkipped: false,
-        borderRadius: 0,
-        barThickness: 24,
-        maxBarThickness: 30,
-        categoryPercentage: 0.64,
-        barPercentage: 0.72,
-      },
-      {
-        label: 'Orders',
-        data: filtered.barSeries.Orders,
-        backgroundColor: COLORS.cyan,
-        borderWidth: 0,
-        borderSkipped: false,
-        borderRadius: 0,
-        barThickness: 24,
-        maxBarThickness: 30,
-        categoryPercentage: 0.64,
-        barPercentage: 0.72,
-      },
-    ]
-  }), [filtered.barLabels.join(','), filtered.barSeries]);
+  const barData = useMemo(
+    () => ({
+      labels: filtered.barLabels,
+      datasets: [
+        {
+          label: "Users",
+          data: filtered.barSeries.Users,
+          backgroundColor: COLORS.teal,
+          borderWidth: 0,
+          borderSkipped: false,
+          borderRadius: 0,
+          barThickness: 24,
+          maxBarThickness: 30,
+          categoryPercentage: 0.64,
+          barPercentage: 0.72,
+        },
+        {
+          label: "Organizations",
+          data: filtered.barSeries.Organizations,
+          backgroundColor: COLORS.navy,
+          borderWidth: 0,
+          borderSkipped: false,
+          borderRadius: 0,
+          barThickness: 24,
+          maxBarThickness: 30,
+          categoryPercentage: 0.64,
+          barPercentage: 0.72,
+        },
+        {
+          label: "Workspaces",
+          data: filtered.barSeries.Workspaces,
+          backgroundColor: COLORS.gray,
+          borderWidth: 0,
+          borderSkipped: false,
+          borderRadius: 0,
+          barThickness: 24,
+          maxBarThickness: 30,
+          categoryPercentage: 0.64,
+          barPercentage: 0.72,
+        },
+        {
+          label: "Orders",
+          data: filtered.barSeries.Orders,
+          backgroundColor: COLORS.cyan,
+          borderWidth: 0,
+          borderSkipped: false,
+          borderRadius: 0,
+          barThickness: 24,
+          maxBarThickness: 30,
+          categoryPercentage: 0.64,
+          barPercentage: 0.72,
+        },
+      ],
+    }),
+    [filtered.barLabels.join(","), filtered.barSeries]
+  );
 
-  const barOpts: ChartOptions<'bar'> = {
+  const barOpts: ChartOptions<"bar"> = {
     responsive: true,
     maintainAspectRatio: false,
     layout: { padding: { left: 6, right: 6 } },
-    interaction: { mode: 'index', intersect: false },
+    interaction: { mode: "index", intersect: false },
     plugins: {
-      legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 10 } },
+      legend: {
+        position: "top",
+        labels: { usePointStyle: true, boxWidth: 10 },
+      },
       tooltip: {
-        backgroundColor: 'rgba(15,23,42,0.92)', padding: 12, cornerRadius: 8,
-        callbacks: { label: (ctx) => ` ${ctx.dataset.label}: ${ctx.parsed.y?.toLocaleString()}` }
-      }
+        backgroundColor: "rgba(15,23,42,0.92)",
+        padding: 12,
+        cornerRadius: 8,
+        callbacks: {
+          label: (ctx) =>
+            ` ${ctx.dataset.label}: ${ctx.parsed.y?.toLocaleString()}`,
+        },
+      },
     },
     scales: {
       x: {
         offset: true,
-        grid: { display: false},
-        ticks: { maxRotation: 0, autoSkip: true, autoSkipPadding: 10, padding: 6 }
+        grid: { display: false },
+        ticks: {
+          maxRotation: 0,
+          autoSkip: true,
+          autoSkipPadding: 10,
+          padding: 6,
+        },
       },
       y: {
         beginAtZero: true,
         ticks: { precision: 0 },
-        grid: { color: 'rgba(148,163,184,.18)' }
-      }
-    }
+        grid: { color: "rgba(148,163,184,.18)" },
+      },
+    },
   };
 
   const totalShare =
-    (filtered.share.users + filtered.share.organizations + filtered.share.workspaces + filtered.share.orders) || 1;
+    filtered.share.users +
+      filtered.share.organizations +
+      filtered.share.workspaces +
+      filtered.share.orders || 1;
 
-  const shareData = useMemo(() => ({
-    labels: ['Users', 'Organizations', 'Workspaces', 'Orders'],
-    datasets: [{
-      data: [
-        filtered.share.users,
-        filtered.share.organizations,
-        filtered.share.workspaces,
-        filtered.share.orders
+  const shareData = useMemo(
+    () => ({
+      labels: ["Users", "Organizations", "Workspaces", "Orders"],
+      datasets: [
+        {
+          data: [
+            filtered.share.users,
+            filtered.share.organizations,
+            filtered.share.workspaces,
+            filtered.share.orders,
+          ],
+          backgroundColor: [COLORS.teal, COLORS.navy, COLORS.gray, COLORS.cyan],
+          borderColor: "#ffffff",
+          borderWidth: 3,
+          hoverOffset: 4,
+          cutout: "65%",
+        },
       ],
-      backgroundColor: [COLORS.teal, COLORS.navy, COLORS.gray, COLORS.cyan],
-      borderColor: '#ffffff',
-      borderWidth: 3,
-      hoverOffset: 4,
-      cutout: '65%',
-    }]
-  }), [filtered.share]);
+    }),
+    [filtered.share]
+  );
 
-  const shareOpts: ChartOptions<'doughnut'> = {
+  const shareOpts: ChartOptions<"doughnut"> = {
     responsive: true,
     maintainAspectRatio: false,
     animation: { duration: 0 },
     plugins: {
-      legend: { display: true, position: 'bottom' },
+      legend: { display: true, position: "bottom" },
       tooltip: {
         callbacks: {
           label: (ctx) => {
             const val = ctx.parsed as number;
             const percent = Math.round((val / totalShare) * 100);
             return ` ${ctx.label}: ${val.toLocaleString()} (${percent}%)`;
-          }
-        }
-      }
-    }
+          },
+        },
+      },
+    },
   };
 
   const handleExportCSV = () => {
-    const header = ['label', 'users', 'organizations', 'workspaces', 'orders'];
-    const rows = filtered.tableRows.map(r =>
-      [r.label, r.users, r.organizations, r.workspaces, r.orders].join(',')
+    const header = [
+      granularity,
+      "users",
+      "organizations",
+      "workspaces",
+      "orders",
+    ];
+    const rows = filtered.tableRows.map((r) =>
+      [r.label, r.users, r.organizations, r.workspaces, r.orders].join(",")
     );
-    const csv = [header.join(','), ...rows].join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const csv = [header.join(","), ...rows].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    const prefix = granularity === 'week' ? `week-${anchorDate.isoWeek()}-${anchorDate.year()}`
-      : granularity === 'month' ? anchorDate.format('YYYY-MM')
-      : `${anchorDate.year()}`;
+    const a = document.createElement("a");
+    const prefix =
+      granularity === "week"
+        ? `week-${anchorDate.isoWeek()}-${anchorDate.year()}`
+        : granularity === "month"
+        ? anchorDate.format("YYYY-MM")
+        : `${anchorDate.year()}`;
     a.href = url;
     a.download = `dashboard-${granularity}-${prefix}.csv`;
     a.click();
@@ -490,42 +679,47 @@ const AdminOverview: React.FC = () => {
 
   const columns = [
     {
-      title: 'Order Code',
-      dataIndex: 'orderCode',
-      key: 'orderCode',
-      render: (_: any, r: OrderRow) => r.orderCode ?? r.id?.slice(-6)?.toUpperCase() ?? '—',
-    },
-    {
-      title: 'Subscription Plan',
-      dataIndex: 'subscriptionPlanName',
-      key: 'plan',
+      title: "Order Code",
+      dataIndex: "orderCode",
+      key: "orderCode",
       render: (_: any, r: OrderRow) =>
-        r.subscriptionPlanName || (r.subscriptionPlanId ? planNameById[r.subscriptionPlanId] : '') || '—',
+        r.orderCode ?? r.id?.slice(-6)?.toUpperCase() ?? "—",
     },
     {
-      title: 'Price',
-      dataIndex: 'totalPrice',
-      key: 'price',
+      title: "Subscription Plan",
+      dataIndex: "subscriptionPlanName",
+      key: "plan",
       render: (_: any, r: OrderRow) =>
-        typeof r.totalPrice === 'number' ? `${r.totalPrice.toLocaleString('vi-VN')} ₫` : '—',
+        r.subscriptionPlanName ||
+        (r.subscriptionPlanId ? planNameById[r.subscriptionPlanId] : "") ||
+        "—",
     },
     {
-      title: 'Status',
-      dataIndex: 'status',
-      key: 'status',
-      render: (s: OrderRow['status']) => {
-        const label = s === 1 ? 'PAID' : s === 2 ? 'CANCELLED' : 'PENDING';
-        const color = s === 1 ? 'green' : s === 2 ? 'red' : 'gold';
+      title: "Price",
+      dataIndex: "totalPrice",
+      key: "price",
+      render: (_: any, r: OrderRow) =>
+        typeof r.totalPrice === "number"
+          ? `${r.totalPrice.toLocaleString("vi-VN")} ₫`
+          : "—",
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      render: (s: OrderRow["status"]) => {
+        const label = s === 1 ? "PAID" : s === 2 ? "CANCELLED" : "PENDING";
+        const color = s === 1 ? "green" : s === 2 ? "red" : "gold";
         return <Tag color={color}>{label}</Tag>;
       },
     },
     {
-      title: 'Created',
-      dataIndex: 'createdAt',
-      key: 'createdAt',
+      title: "Created",
+      dataIndex: "createdAt",
+      key: "createdAt",
       render: (_: any, r: OrderRow) => {
         const t = r.createdAt ?? r.orderTime ?? null;
-        return t ? dayjs(t).format('YYYY-MM-DD HH:mm') : '—';
+        return t ? dayjs(t).format("YYYY-MM-DD HH:mm") : "—";
       },
     },
   ];
@@ -534,34 +728,54 @@ const AdminOverview: React.FC = () => {
     <Layout className="purple-root">
       <Content className="purple-container">
         <div className="purple-header">
-          <Title level={4} className="purple-title"><AimOutlined /> Dashboard</Title>
+          <Title level={4} className="purple-title">
+            <AimOutlined /> Dashboard
+          </Title>
           <span className="purple-overview">Overview</span>
         </div>
 
         <Spin spinning={loading}>
           {/* FILTER BAR */}
-          <Row justify="space-between" align="middle" style={{ marginBottom: 12 }}>
+          <Row
+            justify="space-between"
+            align="middle"
+            style={{ marginBottom: 12 }}
+          >
             <Col flex="auto">
               <Space size="middle" wrap>
                 <Segmented
                   value={granularity}
                   onChange={(v) => setGranularity(v as Granularity)}
                   options={[
-                    { label: 'Week', value: 'week' },
-                    { label: 'Month', value: 'month' },
-                    { label: 'Year', value: 'year' },
+                    { label: "Week", value: "week" },
+                    { label: "Month", value: "month" },
+                    { label: "Year", value: "year" },
                   ]}
                 />
-                {granularity === 'week' && (
-                  <DatePicker picker="week" value={anchorDate} onChange={(d) => d && setAnchorDate(d)} />
+                {granularity === "week" && (
+                  <DatePicker
+                    picker="week"
+                    value={anchorDate}
+                    onChange={(d) => d && setAnchorDate(d)}
+                  />
                 )}
-                {granularity === 'month' && (
-                  <DatePicker picker="month" value={anchorDate} onChange={(d) => d && setAnchorDate(d)} />
+                {granularity === "month" && (
+                  <DatePicker
+                    picker="month"
+                    value={anchorDate}
+                    onChange={(d) => d && setAnchorDate(d)}
+                  />
                 )}
-                {granularity === 'year' && (
-                  <DatePicker picker="year" value={anchorDate} onChange={(d) => d && setAnchorDate(d)} />
+                {granularity === "year" && (
+                  <DatePicker
+                    picker="year"
+                    value={anchorDate}
+                    onChange={(d) => d && setAnchorDate(d)}
+                  />
                 )}
-                <Button icon={<ReloadOutlined />} onClick={resetToday}>Today</Button>
+                <Button icon={<ReloadOutlined />} onClick={resetToday}>
+                  Today
+                </Button>
               </Space>
             </Col>
             <Col>
@@ -569,7 +783,11 @@ const AdminOverview: React.FC = () => {
                 <Button icon={<FilterOutlined />} disabled>
                   {filtered.labelText}
                 </Button>
-                <Button icon={<DownloadOutlined />} type="primary" onClick={handleExportCSV}>
+                <Button
+                  icon={<DownloadOutlined />}
+                  type="primary"
+                  onClick={handleExportCSV}
+                >
                   Export CSV
                 </Button>
               </Space>
@@ -587,8 +805,9 @@ const AdminOverview: React.FC = () => {
                   </div>
                   <div className="metric-value">{c.value.toLocaleString()}</div>
                   <div className="metric-trend">
-                    <Tag color={c.percent >= 0 ? 'green' : 'red'}>
-                      WoW: {c.percent >= 0 ? 'Up' : 'Down'} {Math.abs(c.percent)}%
+                    <Tag color={c.percent >= 0 ? "green" : "red"}>
+                      WoW: {c.percent >= 0 ? "Up" : "Down"}{" "}
+                      {Math.abs(c.percent)}%
                     </Tag>
                   </div>
                 </Card>
@@ -601,9 +820,9 @@ const AdminOverview: React.FC = () => {
             <Col xs={24} lg={16}>
               <Card className="panel-card">
                 <div className="panel-title">
-                  {granularity === 'week' && 'WEEKLY SALES REPORT'}
-                  {granularity === 'month' && 'MONTHLY REPORT'}
-                  {granularity === 'year' && 'YEARLY REPORT'}
+                  {granularity === "week" && "WEEKLY SALES REPORT"}
+                  {granularity === "month" && "MONTHLY REPORT"}
+                  {granularity === "year" && "YEARLY REPORT"}
                 </div>
                 <div className="panel-chart" style={{ height: 420 }}>
                   <Bar data={barData} options={barOpts} />
@@ -613,7 +832,9 @@ const AdminOverview: React.FC = () => {
 
             <Col xs={24} lg={8}>
               <Card className="panel-card">
-                <div className="panel-title">Entity Share — {filtered.labelText}</div>
+                <div className="panel-title">
+                  Entity Share — {filtered.labelText}
+                </div>
                 <div className="panel-chart donut" style={{ height: 360 }}>
                   <Doughnut data={shareData} options={shareOpts} />
                 </div>

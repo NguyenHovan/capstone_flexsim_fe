@@ -59,6 +59,7 @@ import AdminProfile from "../pages/Admin/Settings/Profile/AdminProfile";
 import OrgAdminProfile from "../pages/OrganizationAdmin/Settings/Profile/OrgAdminProfile";
 import ResetPasswordPage from "../pages/ResetPassword/ResetPassword";
 import AboutLogisimEdu from "../pages/About/About";
+import InstructorDashboardPage from "../pages/Instructor/Dashboard";
 
 const MainRoute = () => {
   return (
@@ -66,7 +67,7 @@ const MainRoute = () => {
       {/* Auth routes */}
       <Route path="/login" element={<LoginPage />} />
       {/* <Route path="/signup" element={<SignUpPage />} /> */}
-      
+
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/verify-code" element={<VerifyCodePage />} />
@@ -203,6 +204,10 @@ const MainRoute = () => {
             element={<AddStudentPage />}
           />
           <Route path="/instructor-topic" element={<TopicManagement />} />
+          <Route
+            path="/instructor-dashboard"
+            element={<InstructorDashboardPage />}
+          />
           <Route path="/instructor-profile" element={<ProfilePage />} />
           <Route path="/instructor-scene" element={<SceneManagement />} />
           <Route path="/instructor-scenario" element={<ScenarioManager />} />
