@@ -183,7 +183,7 @@ const DetailCoures = () => {
 
   const onFinish = async (values: any) => {
     if (!selectedTopic) return;
-
+    setLoading(true);
     try {
       const fd = new FormData();
       fd.append("topicId", String(selectedTopic));
@@ -191,8 +191,10 @@ const DetailCoures = () => {
       fd.append("description", values.description);
       fd.append("lessonName", values.lessonName);
       fd.append("title", values.title);
+      if (values.scenarioId !== undefined && values.scenarioId !== null) {
+        fd.append("scenarioId", values.scenarioId);
+      }
 
-      // Chỉ append orderIndex nếu có (tránh undefined khi tạo mới)
       if (values.orderIndex !== undefined && values.orderIndex !== null) {
         fd.append("orderIndex", String(values.orderIndex));
       }
@@ -200,7 +202,6 @@ const DetailCoures = () => {
       const fileList = Array.isArray(values.fileUrl) ? values.fileUrl : [];
       const fileObj: File | undefined = fileList[0]?.originFileObj;
 
-      // Video là tùy chọn: chỉ append khi người dùng chọn
       if (fileObj) {
         fd.append("fileUrl", fileObj);
       }
@@ -213,6 +214,7 @@ const DetailCoures = () => {
         toast.success("Tạo bài học thành công");
       }
 
+      fetchLessons(selectedTopic);
       form.resetFields();
       setIsModalVisibleLesson(false);
       setEditingLesson(null);
@@ -220,6 +222,8 @@ const DetailCoures = () => {
     } catch (err) {
       console.error(err);
       toast.error(editingLesson ? "Cập nhật thất bại" : "Tạo thất bại");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -283,7 +287,7 @@ const DetailCoures = () => {
                       color: "#333",
                     }}
                   >
-                    📚 {tp?.topicName}
+                    #{tp.orderIndex}. {tp?.topicName}
                   </Typography>
                   <Flex gap={12}>
                     <Button
@@ -375,7 +379,6 @@ const DetailCoures = () => {
                     >
                       {/* Header: lesson info + actions */}
                       <Flex justify="space-between" align="start">
-                        {/* Lesson info */}
                         <div style={{ maxWidth: "75%" }}>
                           <Typography
                             style={{
@@ -388,7 +391,7 @@ const DetailCoures = () => {
                               marginBottom: "6px",
                             }}
                           >
-                            🎯 {lesson.lessonName}
+                            #{lesson.orderIndex}. {lesson.lessonName}
                           </Typography>
                           <Typography
                             style={{
@@ -682,7 +685,6 @@ const DetailCoures = () => {
             </Select>
           </Form.Item>
 
-          {/* Video tùy chọn */}
           <Form.Item
             label="Video bài học (không bắt buộc)"
             name="fileUrl"
@@ -705,18 +707,16 @@ const DetailCoures = () => {
             <Input.TextArea rows={6} placeholder="Nhập mô tả bài học" />
           </Form.Item>
 
-          {editingLesson && (
-            <Form.Item
-              label="Thứ tự bài giảng"
-              name="orderIndex"
-              rules={[{ required: true, message: "Thứ tự bài giảng" }]}
-            >
-              <InputNumber placeholder="Thứ tự bài giảng" />
-            </Form.Item>
-          )}
+          <Form.Item
+            label="Thứ tự bài giảng"
+            name="orderIndex"
+            rules={[{ required: true, message: "Thứ tự bài giảng" }]}
+          >
+            <InputNumber placeholder="Thứ tự bài giảng" />
+          </Form.Item>
 
           <Form.Item>
-            <Button type="primary" htmlType="submit">
+            <Button type="primary" htmlType="submit" loading={loading}>
               {editingLesson ? "Lưu thay đổi" : "Tạo bài học"}
             </Button>
           </Form.Item>
