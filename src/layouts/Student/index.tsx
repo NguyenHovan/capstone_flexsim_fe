@@ -4,12 +4,13 @@ import Footer from "../../components/footer/Footer";
 import FloatingDualChat from "../../components/chatbox";
 
 const LayoutMain = () => {
+  const accessToken = localStorage.getItem("accessToken");
   return (
     <div>
       <Header />
       <Outlet />
       <Footer />
-      <FloatingDualChat />
+      {accessToken && <FloatingDualChat />}
     </div>
   );
 };

@@ -61,11 +61,6 @@ const GENDER_MAP: Record<number, string> = {
   3: "Other",
 };
 
-const GENDER_OPTIONS = [
-  { label: "Male", value: 1 },
-  { label: "Female", value: 2 },
-  { label: "Other", value: 3 },
-];
 
 const avatarFallback = (name?: string) =>
   `https://ui-avatars.com/api/?name=${encodeURIComponent(name || "U")}`;
