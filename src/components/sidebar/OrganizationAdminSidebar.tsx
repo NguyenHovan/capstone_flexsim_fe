@@ -6,7 +6,6 @@ import {
   AppstoreOutlined,
   CrownOutlined,
   ShoppingCartOutlined,
-  QuestionCircleOutlined,
   SettingOutlined,
   UserOutlined,
   KeyOutlined,

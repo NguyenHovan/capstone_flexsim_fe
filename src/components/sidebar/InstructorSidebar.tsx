@@ -3,7 +3,6 @@ import {
   DollarOutlined,
   InfoCircleOutlined,
   SettingOutlined,
-  UserOutlined,
   LogoutOutlined,
   AppstoreOutlined,
 } from "@ant-design/icons";
