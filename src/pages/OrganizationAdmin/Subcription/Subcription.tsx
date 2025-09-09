@@ -32,7 +32,8 @@ const fmtCurrency = (n: number, currency = "VND") =>
     minimumFractionDigits: 0,
     currency,
   }).format(n);
-const months = (m: number) => `${m} month${m > 1 ? "s" : ""}`;
+
+const months = (m: number) => `${m} tháng`;
 const fmtDate = (v?: string) => (v ? dayjs(v).format("DD/MM/YYYY") : "—");
 
 type PlanView = SubscriptionPlan & {
@@ -50,6 +51,7 @@ function pickVariant(name: string, idx: number): PlanView["_variant"] {
   if (n.includes("basic") || n.includes("starter")) return "basic";
   return (["basic", "standard", "business", "premium"] as const)[idx % 4];
 }
+
 function splitTextBenefits(desc?: string): string[] {
   const d = (desc || "").trim();
   if (!d) return [];
@@ -58,6 +60,7 @@ function splitTextBenefits(desc?: string): string[] {
     .map((s) => s.replace(/^[-•\s]+/, "").trim())
     .filter(Boolean);
 }
+
 function extractSections(plan: SubscriptionPlan): {
   sections: PlanView["_sections"];
   all: string[];
@@ -67,12 +70,8 @@ function extractSections(plan: SubscriptionPlan): {
     try {
       const j = JSON.parse(raw);
       if (j && (Array.isArray(j.primary) || Array.isArray(j.extra))) {
-        const primary = (j.primary || [])
-          .map((x: any) => String(x))
-          .filter(Boolean);
-        const extra = (j.extra || [])
-          .map((x: any) => String(x))
-          .filter(Boolean);
+        const primary = (j.primary || []).map((x: any) => String(x)).filter(Boolean);
+        const extra = (j.extra || []).map((x: any) => String(x)).filter(Boolean);
         return { sections: { primary, extra }, all: [...primary, ...extra] };
       }
     } catch {}
@@ -80,6 +79,7 @@ function extractSections(plan: SubscriptionPlan): {
   const all = splitTextBenefits(plan.description);
   return { sections: null, all };
 }
+
 const getCurrentUserLite = () => {
   try {
     const raw = localStorage.getItem("currentUser");
@@ -121,8 +121,7 @@ const PlanGrid: React.FC<PlanGridProps> = ({
         return {
           ...p,
           _variant: pickVariant(p.name, i),
-          _pricePerMonth:
-            p.durationInMonths > 0 ? p.price / p.durationInMonths : p.price,
+          _pricePerMonth: p.durationInMonths > 0 ? p.price / p.durationInMonths : p.price,
           _sections: sections,
           _allBenefits: all,
         };
@@ -143,13 +142,9 @@ const PlanGrid: React.FC<PlanGridProps> = ({
       </Row>
     );
   }
+
   if (!items.length)
-    return (
-      <Empty
-        description="Không có gói nào."
-        image={Empty.PRESENTED_IMAGE_SIMPLE}
-      />
-    );
+    return <Empty description="Không có gói nào." image={Empty.PRESENTED_IMAGE_SIMPLE} />;
 
   return (
     <Row gutter={[16, 16]}>
@@ -158,28 +153,24 @@ const PlanGrid: React.FC<PlanGridProps> = ({
           <Card className={`pp-card variant-${p._variant}`} hoverable>
             <div className="pp-head">
               <div className="pp-name">{p.name}</div>
-              <Space
-                direction="vertical"
-                size={0}
-                style={{ alignItems: "flex-end" }}
-              >
+              <Space direction="vertical" size={0} style={{ alignItems: "flex-end" }}>
                 {extraHeader?.(p)}
                 <Tag color={p.isActive ? "green" : "red"} className="pp-state">
-                  {p.isActive ? "Active" : "Inactive"}
+                  {p.isActive ? "Đang hoạt động" : "Ngừng hoạt động"}
                 </Tag>
               </Space>
             </div>
 
             <div className="pp-price">
               <div className="pp-price-main">{fmtCurrency(p.price)}</div>
-              <div className="pp-price-sub">monthly</div>
+              <div className="pp-price-sub">theo tháng</div>
             </div>
 
             {p._sections ? (
               <>
                 {p._sections.primary.length > 0 && (
                   <div className="pp-section">
-                    <div className="pp-section-title">Highlights</div>
+                    <div className="pp-section-title">Nổi bật</div>
                     <ul className="pp-benefits">
                       {p._sections.primary.map((b, idx) => (
                         <li key={`p-${idx}`}>
@@ -192,7 +183,7 @@ const PlanGrid: React.FC<PlanGridProps> = ({
                 )}
                 {p._sections.extra.length > 0 && (
                   <div className="pp-section">
-                    <div className="pp-section-title">All features</div>
+                    <div className="pp-section-title">Tất cả tính năng</div>
                     <ul className="pp-benefits">
                       {p._sections.extra.map((b, idx) => (
                         <li key={`e-${idx}`}>
@@ -206,27 +197,14 @@ const PlanGrid: React.FC<PlanGridProps> = ({
               </>
             ) : (
               <div className="pp-section">
-                <div className="pp-section-title">All benefits</div>
+                <div className="pp-section-title">Quyền lợi</div>
                 {(() => {
                   const base = p._allBenefits.length ? [...p._allBenefits] : [];
-                  const ensure = (
-                    label: string,
-                    test: RegExp,
-                    value: string
-                  ) => {
-                    if (!base.some((b) => test.test(b)))
-                      base.push(`${label} ${value}`);
+                  const ensure = (label: string, test: RegExp, value: string) => {
+                    if (!base.some((b) => test.test(b))) base.push(`${label} ${value}`);
                   };
-                  ensure(
-                    "Max workspaces:",
-                    /max\s*workspaces?/i,
-                    String(p.maxWorkSpaces)
-                  );
-                  ensure(
-                    "Duration:",
-                    /^duration:/i,
-                    `${months(p.durationInMonths)}`
-                  );
+                  ensure("Số workspace tối đa:", /max\s*workspaces?/i, String(p.maxWorkSpaces));
+                  ensure("Thời hạn:", /^duration:/i, `${months(p.durationInMonths)}`);
                   return (
                     <ul className="pp-benefits">
                       {base.map((b, idx) => (
@@ -253,7 +231,7 @@ const PlanGrid: React.FC<PlanGridProps> = ({
                   }}
                   loading={creatingPlanId === p.id}
                 >
-                  Create Order
+                  Tạo đơn hàng
                 </Button>
               </div>
             )}
@@ -267,9 +245,7 @@ const PlanGrid: React.FC<PlanGridProps> = ({
 const OrgAdminSubscriptions: React.FC = () => {
   const [msg, contextHolder] = message.useMessage();
 
-  const [me, setMe] = useState<{ id: string; organizationId?: string } | null>(
-    null
-  );
+  const [me, setMe] = useState<{ id: string; organizationId?: string } | null>(null);
   const [activePlans, setActivePlans] = useState<SubscriptionPlan[]>([]);
   const [myPlans, setMyPlans] = useState<SubscriptionPlan[]>([]);
   const [ordersByPlan, setOrdersByPlan] = useState<Record<string, Order[]>>({});
@@ -292,15 +268,13 @@ const OrgAdminSubscriptions: React.FC = () => {
     (async () => {
       setLoadingActive(true);
       try {
-        const data = await SubscriptionPlanService.getAllActive().catch(
-          async () => {
-            const all = await SubscriptionPlanService.getAll();
-            return all.filter((p) => p.isActive);
-          }
-        );
+        const data = await SubscriptionPlanService.getAllActive().catch(async () => {
+          const all = await SubscriptionPlanService.getAll();
+          return all.filter((p) => p.isActive);
+        });
         setActivePlans(Array.isArray(data) ? data : []);
       } catch {
-        msg.error("Tải danh sách gói (Active) thất bại.");
+        msg.error("Tải danh sách gói (đang hoạt động) thất bại.");
       } finally {
         setLoadingActive(false);
       }
@@ -315,14 +289,11 @@ const OrgAdminSubscriptions: React.FC = () => {
         SubscriptionPlanService.getAll(),
       ]);
 
-      const mine = orders.filter(
-        (o) => o.accountId === accountId && o.status === 1
-      );
+      const mine = orders.filter((o) => o.accountId === accountId && o.status === 1);
 
       const grouped = new Map<string, Order[]>();
       for (const o of mine) {
-        const pid =
-          (o as any).subscriptionPlanId ?? (o as any).subcriptionPlanId;
+        const pid = (o as any).subscriptionPlanId ?? (o as any).subcriptionPlanId;
         if (!pid) continue;
         const arr = grouped.get(pid) || [];
         arr.push(o);
@@ -348,13 +319,11 @@ const OrgAdminSubscriptions: React.FC = () => {
         }
       });
 
-      const uniq = Array.from(
-        new Map(activePlanList.map((p) => [p.id, p])).values()
-      );
+      const uniq = Array.from(new Map(activePlanList.map((p) => [p.id, p])).values());
       setMyPlans(uniq);
       setOrdersByPlan(ordersByPlanObj);
     } catch {
-      msg.error("Tải gói đã mua thất bại.");
+      msg.error("Tải các gói đã mua thất bại.");
     } finally {
       setLoadingMine(false);
     }
@@ -371,7 +340,7 @@ const OrgAdminSubscriptions: React.FC = () => {
     const key = `create-order-${plan.id}`;
     try {
       setCreatingPlanId(plan.id);
-      msg.loading({ content: "Đang tạo order…", key, duration: 0 });
+      msg.loading({ content: "Đang tạo đơn hàng…", key, duration: 0 });
 
       const created = await OrderService.create({
         organizationId: me.organizationId,
@@ -380,18 +349,16 @@ const OrgAdminSubscriptions: React.FC = () => {
       });
 
       if (!created || !(created as any).id) {
-        throw new Error("Tạo order không thành công.");
+        throw new Error("Tạo đơn hàng không thành công.");
       }
 
-      msg.success({ content: "Tạo order thành công!!!", key, duration: 2.5 });
+      msg.success({ content: "Tạo đơn hàng thành công!", key, duration: 2.5 });
 
       await loadMine(me.id);
       return created;
     } catch (e: any) {
       msg.destroy(key);
-      msg.error(
-        e?.response?.data?.message || e?.message || "Tạo order thất bại"
-      );
+      msg.error(e?.response?.data?.message || e?.message || "Tạo đơn hàng thất bại");
     } finally {
       setCreatingPlanId(null);
     }
@@ -403,7 +370,7 @@ const OrgAdminSubscriptions: React.FC = () => {
 
       <div className="pricing-pro__heading">
         <Title level={3} className="pricing-pro__title">
-          Subscription Plans
+          Gói đăng ký
         </Title>
       </div>
 
@@ -412,7 +379,7 @@ const OrgAdminSubscriptions: React.FC = () => {
         items={[
           {
             key: "active",
-            label: "All Active Plans",
+            label: "Tất cả gói đang hoạt động",
             children: (
               <PlanGrid
                 plans={activePlans}
@@ -424,7 +391,7 @@ const OrgAdminSubscriptions: React.FC = () => {
           },
           {
             key: "mine",
-            label: "My Subscription Plans",
+            label: "Gói của tôi",
             children: (
               <>
                 <PlanGrid
@@ -435,17 +402,12 @@ const OrgAdminSubscriptions: React.FC = () => {
                     if (!list.length) return null;
                     const latest = list[0];
                     return (
-                      <Space
-                        direction="vertical"
-                        size={0}
-                        style={{ alignItems: "flex-end" }}
-                      >
+                      <Space direction="vertical" size={0} style={{ alignItems: "flex-end" }}>
                         <Text type="secondary" style={{ fontSize: 12 }}>
-                          {fmtDate((latest as any).startDate)} →{" "}
-                          {fmtDate((latest as any).endDate)}
+                          {fmtDate((latest as any).startDate)} → {fmtDate((latest as any).endDate)}
                         </Text>
                         <Text type="secondary" style={{ fontSize: 12 }}>
-                          {list.length} orders
+                          {list.length} đơn hàng
                         </Text>
                       </Space>
                     );
@@ -455,7 +417,7 @@ const OrgAdminSubscriptions: React.FC = () => {
                     if (!list.length) return null;
                     return (
                       <div className="pp-section" style={{ marginTop: 10 }}>
-                        <div className="pp-section-title">Your Orders</div>
+                        <div className="pp-section-title">Đơn hàng của bạn</div>
                         <div style={{ display: "grid", gap: 8 }}>
                           {list.map((o) => (
                             <div
@@ -471,8 +433,7 @@ const OrgAdminSubscriptions: React.FC = () => {
                                 {o.id}
                               </Text>
                               <Text type="secondary" style={{ fontSize: 12 }}>
-                                {fmtDate((o as any).startDate)} →{" "}
-                                {fmtDate((o as any).endDate)}
+                                {fmtDate((o as any).startDate)} → {fmtDate((o as any).endDate)}
                               </Text>
                             </div>
                           ))}
@@ -482,10 +443,7 @@ const OrgAdminSubscriptions: React.FC = () => {
                   }}
                 />
                 {!loadingMine && myPlans.length === 0 && (
-                  <Empty
-                    description="Bạn chưa mua gói nào."
-                    image={Empty.PRESENTED_IMAGE_SIMPLE}
-                  />
+                  <Empty description="Bạn chưa mua gói nào." image={Empty.PRESENTED_IMAGE_SIMPLE} />
                 )}
               </>
             ),

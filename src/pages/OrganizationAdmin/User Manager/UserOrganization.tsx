@@ -43,44 +43,44 @@ import "./userOrganization.css";
 const { Content } = Layout;
 const { Title } = Typography;
 
-const roleNameMap: Record<number, string> = { 3: "Instructor", 4: "Student" };
+/* ===== VIETNAMESE LABELS ===== */
+
+const roleNameMap: Record<number, string> = { 3: "Giảng viên", 4: "Học viên" };
 
 const prettyGender = (g: unknown) => {
   const num = Number(g);
-  return (
-    ({ 1: "Male", 2: "Female", 3: "Other" } as Record<number, string>)[num] ??
-    "—"
-  );
+  return ({ 1: "Nam", 2: "Nữ", 3: "Khác" } as Record<number, string>)[num] ?? "—";
 };
+
 const VISIBLE_ROLE_IDS = new Set<number>([3, 4]);
 
 const roleOptions = [
-  { label: "All roles", value: "" },
-  { label: "Instructor", value: 3 },
-  { label: "Student", value: 4 },
+  { label: "Tất cả vai trò", value: "" },
+  { label: "Giảng viên", value: 3 },
+  { label: "Học viên", value: 4 },
 ] as const;
 
 const statusOptions = [
-  { label: "All status", value: "" },
-  { label: "Active", value: "active" },
-  { label: "Not active", value: "inactive" },
+  { label: "Tất cả trạng thái", value: "" },
+  { label: "Đang hoạt động", value: "active" },
+  { label: "Ngừng hoạt động", value: "inactive" },
 ] as const;
 
 const sortByOptions = [
-  { label: "Username", value: "userName" },
-  { label: "Full name", value: "fullName" },
-  { label: "Created At", value: "createdAt" },
+  { label: "Tên đăng nhập", value: "userName" },
+  { label: "Họ tên", value: "fullName" },
+  { label: "Ngày tạo", value: "createdAt" },
 ] as const;
 
 const sortDirOptions = [
-  { label: "Ascending", value: "asc" },
-  { label: "Descending", value: "desc" },
+  { label: "Tăng dần", value: "asc" },
+  { label: "Giảm dần", value: "desc" },
 ] as const;
 
 const genderOptions = [
-  { label: "Male", value: 1 },
-  { label: "Female", value: 2 },
-  { label: "Other", value: 3 },
+  { label: "Nam", value: 1 },
+  { label: "Nữ", value: 2 },
+  { label: "Khác", value: 3 },
 ] as const;
 
 const getOrganizationId = (): string => {
@@ -116,9 +116,7 @@ const setEmailDuplicateError = (form: any, err: any) => {
       lower.includes("tồn tại");
 
     if ((msg && /email/i.test(msg)) || looksDup) {
-      form.setFields([
-        { name: "email", errors: [msg || "Email already exists"] },
-      ]);
+      form.setFields([{ name: "email", errors: [msg || "Email đã tồn tại"] }]);
       return true;
     }
   } catch {}
@@ -140,63 +138,19 @@ const getBEMessage = (err: any, fallback?: string) => {
   }
 };
 
-// const downloadBlob = (blob: Blob, filename: string) => {
-//   const url = URL.createObjectURL(blob);
-//   const a = document.createElement("a");
-//   a.href = url;
-//   a.download = filename;
-//   a.click();
-//   URL.revokeObjectURL(url);
-// };
-
-// const buildExcelTemplateBlob = (kind: "student" | "instructor") => {
-//   const headers = [
-//     "userName",
-//     "fullName",
-//     "email",
-//     "password",
-//     "gender",
-//     "phone",
-//     "address",
-//   ];
-//   const example = [
-//     kind === "student" ? "student_a" : "instructor_a",
-//     kind === "student" ? "Student A" : "Instructor A",
-//     kind === "student" ? "student.a@example.com" : "instructor.a@example.com",
-//     "Abc@123",
-//     "1",
-//     "0901234567",
-//     "Hanoi",
-//   ];
-//   const tableRows =
-//     `<tr>${headers
-//       .map(
-//         (h) =>
-//           `<th style="border:1px solid #ddd;padding:6px;background:#fafbff">${h}</th>`
-//       )
-//       .join("")}</tr>` +
-//     `<tr>${example
-//       .map((v) => `<td style="border:1px solid #ddd;padding:6px">${v}</td>`)
-//       .join("")}</tr>`;
-//   const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body>
-//       <table border="1" style="border-collapse:collapse">${tableRows}</table>
-//     </body></html>`;
-//   return new Blob([html], { type: "application/vnd.ms-excel" });
-// };
-
 /* =================== TEMPLATE BOX =================== */
 type TmplRow = { name: string; required: boolean; example: string };
 
 const TMPL_COLS: ColumnsType<TmplRow> = [
-  { title: "Column", dataIndex: "name", key: "name", width: 180 },
+  { title: "Cột", dataIndex: "name", key: "name", width: 180 },
   {
-    title: "Required",
+    title: "Bắt buộc",
     dataIndex: "required",
     key: "required",
     width: 110,
-    render: (v) => (v ? <Tag color="red">Yes</Tag> : <Tag>Optional</Tag>),
+    render: (v) => (v ? <Tag color="red">Có</Tag> : <Tag>Không</Tag>),
   },
-  { title: "Example", dataIndex: "example", key: "example" },
+  { title: "Ví dụ", dataIndex: "example", key: "example" },
 ];
 
 const TEMPLATE_ROWS: TmplRow[] = [
@@ -204,11 +158,7 @@ const TEMPLATE_ROWS: TmplRow[] = [
   { name: "fullName", required: true, example: "Nguyễn Văn A" },
   { name: "email", required: true, example: "a@example.com" },
   { name: "password", required: true, example: "Abc@123" },
-  // {
-  //   name: "gender",
-  //   required: false,
-  //   example: "1 | 2 | 3 (1=Male, 2=Female, 3=Other)",
-  // },
+  // { name: "gender", required: false, example: "1 | 2 | 3 (1=Nam, 2=Nữ, 3=Khác)" },
   // { name: "phone", required: false, example: "0901234567" },
   // { name: "address", required: false, example: "Hà Nội" },
 ];
@@ -220,8 +170,7 @@ const TemplateBox: React.FC<{
   <Card size="small" className="tmpl-card" style={{ marginBottom: 12 }}>
     <div className="tmpl-header">
       <div className="tmpl-title">
-        <InfoCircleOutlined /> Template columns —{" "}
-        {kind === "student" ? "Student" : "Instructor"}
+        <InfoCircleOutlined /> Cột dữ liệu — {kind === "student" ? "Học viên" : "Giảng viên"}
       </div>
       <Button icon={<DownloadOutlined />} onClick={onDownload}>
         Tải file mẫu (.xls)
@@ -236,12 +185,10 @@ const TemplateBox: React.FC<{
     />
     <div className="tmpl-note">
       <div>
-        • <b>Bắt buộc:</b> <code>userName</code>, <code>fullName</code>,{" "}
-        <code>email</code>, <code>password</code>
+        • <b>Bắt buộc:</b> <code>userName</code>, <code>fullName</code>, <code>email</code>, <code>password</code>
       </div>
       <div>
-        • Chấp nhận import: <b>.xlsx/.xls</b>. Nếu dùng <code>gender</code>:
-        1=Male, 2=Female, 3=Other.
+        • Chấp nhận import: <b>.xlsx/.xls</b>. Nếu dùng <code>gender</code>: 1=Nam, 2=Nữ, 3=Khác.
       </div>
     </div>
   </Card>
@@ -274,12 +221,8 @@ const UserOrganization: React.FC = () => {
   const [searchText, setSearchText] = useState("");
   const [debounced, setDebounced] = useState("");
   const [roleFilter, setRoleFilter] = useState<number | "">("");
-  const [statusFilter, setStatusFilter] = useState<"" | "active" | "inactive">(
-    ""
-  );
-  const [sortBy, setSortBy] = useState<"userName" | "fullName" | "createdAt">(
-    "createdAt"
-  );
+  const [statusFilter, setStatusFilter] = useState<"" | "active" | "inactive">("");
+  const [sortBy, setSortBy] = useState<"userName" | "fullName" | "createdAt">("createdAt");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
   const [tabInstr, setTabInstr] = useState<"manual" | "import">("manual");
@@ -309,7 +252,7 @@ const UserOrganization: React.FC = () => {
       );
       setUsers(filtered);
     } catch (err) {
-      message.error(getBEMessage(err, "Failed to load users"));
+      message.error(getBEMessage(err, "Tải danh sách người dùng thất bại"));
     } finally {
       setLoading(false);
     }
@@ -317,7 +260,7 @@ const UserOrganization: React.FC = () => {
 
   useEffect(() => {
     if (!orgId) {
-      message.error("Organization not found");
+      message.error("Không tìm thấy tổ chức");
       return;
     }
     load();
@@ -327,8 +270,7 @@ const UserOrganization: React.FC = () => {
   useEffect(() => {
     const onMsg = (e: MessageEvent) => {
       const msg = e.data as { type: string; organizationId?: string };
-      if (msg?.type?.startsWith("account:") && msg.organizationId === orgId)
-        load();
+      if (msg?.type?.startsWith("account:") && msg.organizationId === orgId) load();
     };
     bc.addEventListener("message", onMsg);
     return () => bc.close();
@@ -343,9 +285,7 @@ const UserOrganization: React.FC = () => {
     prevOpenRef.current = isEditModal;
   }, [isEditModal]);
 
-  const loadUsser = async (opts?: {
-    close?: "edit" | "instr" | "stud" | "all";
-  }) => {
+  const loadUsser = async (opts?: { close?: "edit" | "instr" | "stud" | "all" }) => {
     await load();
     switch (opts?.close) {
       case "edit":
@@ -423,28 +363,20 @@ const UserOrganization: React.FC = () => {
       const diff: UpdateAccountPayload = {};
       const trim = (x?: string) => (typeof x === "string" ? x.trim() : x);
 
-      if (
-        trim(v.fullName) &&
-        trim(v.fullName) !== (editingUser.fullName ?? "")
-      ) {
+      if (trim(v.fullName) && trim(v.fullName) !== (editingUser.fullName ?? "")) {
         diff.fullName = trim(v.fullName) as string;
       }
       if (v.gender !== undefined) {
         const normalized = Number(v.gender) ?? Number(v.gender);
         if (normalized !== Number(editingUser.gender)) diff.gender = normalized;
       }
-      if (trim(v.phone) !== (editingUser.phone ?? ""))
-        diff.phone = trim(v.phone) as string | undefined;
-      if (trim(v.address) !== (editingUser.address ?? ""))
-        diff.address = trim(v.address) as string | undefined;
+      if (trim(v.phone) !== (editingUser.phone ?? "")) diff.phone = trim(v.phone) as string | undefined;
+      if (trim(v.address) !== (editingUser.address ?? "")) diff.address = trim(v.address) as string | undefined;
       const newAvt = (trim(v.avtUrl) as string) || "";
       if (newAvt !== (editingUser.avtUrl || "")) diff.avtUrl = newAvt;
       const nextGender = Number(v.gender);
-      if (
-        [1, 2, 3].includes(nextGender) &&
-        nextGender !== Number(editingUser.gender)
-      ) {
-        diff.gender = nextGender; // <-- CHANGED
+      if ([1, 2, 3].includes(nextGender) && nextGender !== Number(editingUser.gender)) {
+        diff.gender = nextGender;
       }
       if (Object.keys(diff).length === 0) {
         setSavingEdit(false);
@@ -457,15 +389,14 @@ const UserOrganization: React.FC = () => {
       setShowUpdatedToast(true);
       toastFlagRef.current = true;
 
-      // đóng form + reset
       setIsEditModal(false);
       formEdit.resetFields();
       setEditingUser(null);
       setEditError(null);
     } catch (err: any) {
       const status = err?.response?.status ?? err?.status;
-      if (status === 400)
-        setEditError(getBEMessage(err, "Yêu cầu không hợp lệ (400)."));
+      if (status === 400) setEditError(getBEMessage(err, "Yêu cầu không hợp lệ (400)."));
+      else setEditError(getBEMessage(err, "Không thể cập nhật tài khoản"));
     } finally {
       setSavingEdit(false);
     }
@@ -486,9 +417,7 @@ const UserOrganization: React.FC = () => {
         bc.postMessage({ type: "account:banned", organizationId: orgId });
       }
       setUsers((curr) =>
-        curr.map((u) =>
-          u.id === updated.id ? { ...u, isActive: updated.isActive } : u
-        )
+        curr.map((u) => (u.id === updated.id ? { ...u, isActive: updated.isActive } : u))
       );
     } catch (err) {
       message.error(getBEMessage(err, "Không thể đổi trạng thái tài khoản"));
@@ -502,13 +431,11 @@ const UserOrganization: React.FC = () => {
     setActionId(rec.id);
     try {
       const updated = await AccountService.banAccount(rec.id);
-      setUsers((curr) =>
-        curr.map((u) => (u.id === updated.id ? { ...u, isActive: false } : u))
-      );
+      setUsers((curr) => curr.map((u) => (u.id === updated.id ? { ...u, isActive: false } : u)));
       bc.postMessage({ type: "account:banned", organizationId: orgId });
       message.success("Đã khoá tài khoản");
     } catch (err) {
-      message.error(getBEMessage(err, "Cannot ban user"));
+      message.error(getBEMessage(err, "Không thể khoá tài khoản"));
     } finally {
       setActionId(null);
     }
@@ -519,13 +446,11 @@ const UserOrganization: React.FC = () => {
     setActionId(rec.id);
     try {
       const updated = await AccountService.unbanAccount(rec.id);
-      setUsers((curr) =>
-        curr.map((u) => (u.id === updated.id ? { ...u, isActive: true } : u))
-      );
+      setUsers((curr) => curr.map((u) => (u.id === updated.id ? { ...u, isActive: true } : u)));
       bc.postMessage({ type: "account:unbanned", organizationId: orgId });
       message.success("Đã mở khoá tài khoản");
     } catch (err) {
-      message.error(getBEMessage(err, "Cannot unban user"));
+      message.error(getBEMessage(err, "Không thể mở khoá tài khoản"));
     } finally {
       setActionId(null);
     }
@@ -546,10 +471,10 @@ const UserOrganization: React.FC = () => {
       setUsers((u) => [c, ...u]);
       bc.postMessage({ type: "account:created", organizationId: orgId });
       await loadUsser({ close: "instr" });
-      message.success("Tạo tài khoản Instructor thành công");
+      message.success("Tạo tài khoản Giảng viên thành công");
     } catch (err: any) {
       if (setEmailDuplicateError(formInstr, err)) return;
-      setInstrError(getBEMessage(err, "Cannot create instructor"));
+      setInstrError(getBEMessage(err, "Không thể tạo tài khoản Giảng viên"));
     } finally {
       setCreatingInstructor(false);
     }
@@ -570,33 +495,27 @@ const UserOrganization: React.FC = () => {
       setUsers((u) => [c, ...u]);
       bc.postMessage({ type: "account:created", organizationId: orgId });
       await loadUsser({ close: "stud" });
-      message.success("Tạo tài khoản Student thành công");
+      message.success("Tạo tài khoản Học viên thành công");
     } catch (err: any) {
       if (setEmailDuplicateError(formStud, err)) return;
-      setStudError(getBEMessage(err, "Cannot create student"));
+      setStudError(getBEMessage(err, "Không thể tạo tài khoản Học viên"));
     } finally {
       setCreatingStudent(false);
     }
   };
 
   const handleDownloadInstructorTemplate = () => {
-    // const blob = buildExcelTemplateBlob("instructor");
-    // downloadBlob(blob, "instructors_template.xls");
-    // message.success("Đã tải file mẫu Instructor (.xls)");
     const a = document.createElement("a");
     a.href = "/files/AccountExcel.xlsx";
-    a.download = "instructor_template.xlsx";
+    a.download = "mau_giang_vien.xlsx";
     document.body.appendChild(a);
     a.click();
     a.remove();
   };
   const handleDownloadStudentTemplate = () => {
-    // const blob = buildExcelTemplateBlob("student");
-    // downloadBlob(blob, "students_template.xls");
-    // message.success("Đã tải file mẫu Student (.xls)");
     const a = document.createElement("a");
     a.href = "/files/AccountExcel.xlsx";
-    a.download = "student_template.xlsx";
+    a.download = "mau_hoc_vien.xlsx";
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -610,10 +529,10 @@ const UserOrganization: React.FC = () => {
     setImportingInstr(true);
     try {
       await AccountService.importInstructors(orgId, instrFile);
-      message.success("Tạo tài khoản từ file (Instructor) thành công");
+      message.success("Tạo tài khoản từ file (Giảng viên) thành công");
       await loadUsser({ close: "instr" });
     } catch (e: any) {
-      message.error(e?.message || "Import instructors failed");
+      message.error(e?.message || "Nhập Giảng viên từ file thất bại");
     } finally {
       setImportingInstr(false);
       setInstrFile(null);
@@ -627,10 +546,10 @@ const UserOrganization: React.FC = () => {
     setImportingStud(true);
     try {
       await AccountService.importStudents(orgId, studFile);
-      message.success("Tạo tài khoản từ file (Student) thành công");
+      message.success("Tạo tài khoản từ file (Học viên) thành công");
       await loadUsser({ close: "stud" });
     } catch (e: any) {
-      message.error(e?.message || "Import students failed");
+      message.error(e?.message || "Nhập Học viên từ file thất bại");
     } finally {
       setImportingStud(false);
       setStudFile(null);
@@ -645,14 +564,9 @@ const UserOrganization: React.FC = () => {
         !q ||
         (u.userName && u.userName.toLowerCase().includes(q)) ||
         (u.fullName && u.fullName.toLowerCase().includes(q));
-      const hitRole =
-        roleFilter === "" ? true : Number(u.roleId) === roleFilter;
+      const hitRole = roleFilter === "" ? true : Number(u.roleId) === roleFilter;
       const hitStatus =
-        statusFilter === ""
-          ? true
-          : statusFilter === "active"
-          ? u.isActive
-          : !u.isActive;
+        statusFilter === "" ? true : statusFilter === "active" ? u.isActive : !u.isActive;
       return hitQ && hitRole && hitStatus;
     });
     list = list.sort((a, b) => {
@@ -674,7 +588,7 @@ const UserOrganization: React.FC = () => {
   const columns: ColumnsType<Account> = [
     { title: "ID", dataIndex: "id", key: "id", width: 220, ellipsis: true },
     {
-      title: "Image",
+      title: "Hình ảnh",
       dataIndex: "avtUrl",
       key: "avtUrl",
       align: "center",
@@ -696,39 +610,33 @@ const UserOrganization: React.FC = () => {
           "—"
         ),
     },
-    { title: "Username", dataIndex: "userName", key: "userName", width: 140 },
-    { title: "Full Name", dataIndex: "fullName", key: "fullName", width: 180 },
+    { title: "Tên đăng nhập", dataIndex: "userName", key: "userName", width: 140 },
+    { title: "Họ tên", dataIndex: "fullName", key: "fullName", width: 180 },
+    { title: "Email", dataIndex: "email", key: "email", width: 220, ellipsis: true },
+    { title: "Điện thoại", dataIndex: "phone", key: "phone", width: 140 },
     {
-      title: "Email",
-      dataIndex: "email",
-      key: "email",
-      width: 220,
-      ellipsis: true,
-    },
-    { title: "Phone", dataIndex: "phone", key: "phone", width: 140 },
-    {
-      title: "Role",
+      title: "Vai trò",
       dataIndex: "roleId",
       key: "roleId",
       width: 120,
       render: (r) => roleNameMap[Number(r)] || r,
     },
     {
-      title: "Gender",
+      title: "Giới tính",
       dataIndex: "gender",
       key: "gender",
       width: 110,
       render: (g) => prettyGender(g),
     },
     {
-      title: "Active",
+      title: "Hoạt động",
       dataIndex: "isActive",
       key: "isActive",
       width: 130,
       render: (_: boolean, rec) => (
         <Switch
-          checkedChildren="On"
-          unCheckedChildren="Off"
+          checkedChildren="Bật"
+          unCheckedChildren="Tắt"
           checked={!!rec.isActive}
           loading={togglingId === rec.id}
           disabled={actionId === rec.id}
@@ -737,38 +645,30 @@ const UserOrganization: React.FC = () => {
       ),
     },
     {
-      title: "Created At",
+      title: "Ngày tạo",
       dataIndex: "createdAt",
       key: "createdAt",
       width: 140,
       render: (d) => (d ? new Date(d).toLocaleDateString() : "–"),
     },
     {
-      title: "Updated At",
+      title: "Ngày cập nhật",
       dataIndex: "updatedAt",
       key: "updatedAt",
       width: 140,
       render: (d) => (d ? new Date(d).toLocaleDateString() : "–"),
     },
     {
-      title: "Actions",
+      title: "Thao tác",
       key: "actions",
       width: 220,
       render: (_, rec) => (
         <Space wrap size="small">
-          <Button
-            icon={<EyeOutlined />}
-            size="small"
-            onClick={() => onView(rec)}
-          >
-            View
+          <Button icon={<EyeOutlined />} size="small" onClick={() => onView(rec)}>
+            Xem
           </Button>
-          <Button
-            icon={<EditOutlined />}
-            size="small"
-            onClick={() => onEdit(rec)}
-          >
-            Edit
+          <Button icon={<EditOutlined />} size="small" onClick={() => onEdit(rec)}>
+            Sửa
           </Button>
           {rec.isActive ? (
             <Button
@@ -778,7 +678,7 @@ const UserOrganization: React.FC = () => {
               loading={actionId === rec.id}
               onClick={() => onBanBtn(rec)}
             >
-              Ban
+              Khoá
             </Button>
           ) : (
             <Button
@@ -788,13 +688,14 @@ const UserOrganization: React.FC = () => {
               loading={actionId === rec.id}
               onClick={() => onUnbanBtn(rec)}
             >
-              Unban
+              Mở khoá
             </Button>
           )}
         </Space>
       ),
     },
   ];
+
   function downloadBlob(blob: Blob, filename: string) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -803,17 +704,14 @@ const UserOrganization: React.FC = () => {
     a.click();
     URL.revokeObjectURL(url);
   }
+
   return (
     <Layout>
       <Content style={{ padding: 24 }}>
-        <Row
-          justify="space-between"
-          align="middle"
-          style={{ marginBottom: 16 }}
-        >
+        <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
           <Col>
             <Title level={3} style={{ margin: 0 }}>
-              User Manager
+              Quản lý người dùng
             </Title>
           </Col>
           <Col>
@@ -829,7 +727,7 @@ const UserOrganization: React.FC = () => {
                   setInstrFile(null);
                 }}
               >
-                Create Instructor
+                Tạo Giảng viên
               </Button>
               <Button
                 icon={<UserOutlined />}
@@ -842,7 +740,7 @@ const UserOrganization: React.FC = () => {
                   setStudFile(null);
                 }}
               >
-                Create Student
+                Tạo Học viên
               </Button>
               <Button
                 onClick={async () => {
@@ -853,9 +751,7 @@ const UserOrganization: React.FC = () => {
                     res.headers?.["content-disposition"] ||
                     res.headers?.["Content-Disposition"] ||
                     "";
-                  const match = cd.match(
-                    /filename\*?=(?:UTF-8'')?\"?([^\";]+)/i
-                  );
+                  const match = cd.match(/filename\*?=(?:UTF-8'')?\"?([^\";]+)/i);
                   const filename = match
                     ? decodeURIComponent(match[1])
                     : `export_${Date.now()}.xlsx`;
@@ -863,7 +759,7 @@ const UserOrganization: React.FC = () => {
                   downloadBlob(blob, filename);
                 }}
               >
-                Export Data
+                Xuất dữ liệu
               </Button>
             </Space>
           </Col>
@@ -875,7 +771,7 @@ const UserOrganization: React.FC = () => {
               <Input
                 allowClear
                 prefix={<SearchOutlined />}
-                placeholder="Search by username or full name…"
+                placeholder="Tìm theo tên đăng nhập hoặc họ tên…"
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
               />
@@ -922,21 +818,18 @@ const UserOrganization: React.FC = () => {
             dataSource={dataView}
             rowKey="id"
             loading={loading}
-            pagination={{
-              pageSize: 10,
-              showSizeChanger: true,
-              pageSizeOptions: [10, 20, 50],
-            }}
+            pagination={{ pageSize: 10, showSizeChanger: true, pageSizeOptions: [10, 20, 50] }}
             scroll={{ x: 1300 }}
           />
         </Card>
 
+        {/* VIEW MODAL */}
         <Modal
-          title="User Details"
+          title="Chi tiết người dùng"
           open={isViewModal}
-          footer={<Button onClick={() => setIsViewModal(false)}>Close</Button>}
+          footer={<Button onClick={() => setIsViewModal(false)}>Đóng</Button>}
           onCancel={() => setIsViewModal(false)}
-          destroyOnHidden
+          destroyOnClose
           width={600}
         >
           {viewingUser && (
@@ -946,13 +839,13 @@ const UserOrganization: React.FC = () => {
                   <b>Id:</b> {viewingUser.id}
                 </p>
                 <p>
-                  <b>Username:</b> {viewingUser.userName}
+                  <b>Tên đăng nhập:</b> {viewingUser.userName}
                 </p>
                 <p>
-                  <b>Full Name:</b> {viewingUser.fullName}
+                  <b>Họ tên:</b> {viewingUser.fullName}
                 </p>
                 <p>
-                  <b>Organization:</b> {viewingUser.organizationId}
+                  <b>Tổ chức:</b> {viewingUser.organizationId}
                 </p>
                 <p>
                   <b>Email:</b> {viewingUser.email}
@@ -960,28 +853,26 @@ const UserOrganization: React.FC = () => {
               </Col>
               <Col span={12}>
                 <p>
-                  <b>Phone:</b> {viewingUser.phone}
+                  <b>Điện thoại:</b> {viewingUser.phone}
                 </p>
                 <p>
-                  <b>Role:</b>{" "}
-                  {roleNameMap[Number(viewingUser.roleId)] ||
-                    viewingUser.roleId}
+                  <b>Vai trò:</b> {roleNameMap[Number(viewingUser.roleId)] || viewingUser.roleId}
                 </p>
                 <p>
-                  <b>Gender:</b> {prettyGender(viewingUser.gender)}
+                  <b>Giới tính:</b> {prettyGender(viewingUser.gender)}
                 </p>
 
                 <p>
-                  <b>Status:</b>{" "}
-                  {viewingUser.isActive ? "Active" : "Not active"}
+                  <b>Trạng thái:</b> {viewingUser.isActive ? "Đang hoạt động" : "Ngừng hoạt động"}
                 </p>
               </Col>
             </Row>
           )}
         </Modal>
 
+        {/* EDIT MODAL */}
         <Modal
-          title="Edit User"
+          title="Sửa người dùng"
           open={isEditModal}
           onOk={submitEdit}
           onCancel={() => {
@@ -991,7 +882,7 @@ const UserOrganization: React.FC = () => {
             setEditError(null);
           }}
           okButtonProps={{ loading: savingEdit, disabled: savingEdit }}
-          destroyOnHidden
+          destroyOnClose
           width={680}
           afterOpenChange={(opened) => {
             if (!opened && toastFlagRef.current) {
@@ -1001,14 +892,7 @@ const UserOrganization: React.FC = () => {
             }
           }}
         >
-          {editError && (
-            <Alert
-              style={{ marginBottom: 12 }}
-              type="error"
-              showIcon
-              message={editError}
-            />
-          )}
+          {editError && <Alert style={{ marginBottom: 12 }} type="error" showIcon message={editError} />}
 
           <Form
             form={formEdit}
@@ -1019,7 +903,7 @@ const UserOrganization: React.FC = () => {
           >
             <Row gutter={16}>
               <Col span={12}>
-                <Form.Item name="fullName" label="Full Name">
+                <Form.Item name="fullName" label="Họ tên">
                   <Input
                     onPressEnter={(e) => {
                       e.preventDefault();
@@ -1032,7 +916,7 @@ const UserOrganization: React.FC = () => {
 
             <Row gutter={16}>
               <Col span={12}>
-                <Form.Item name="gender" label="Gender">
+                <Form.Item name="gender" label="Giới tính">
                   <Select options={genderOptions as any} />
                 </Form.Item>
               </Col>
@@ -1040,7 +924,7 @@ const UserOrganization: React.FC = () => {
 
             <Row gutter={16}>
               <Col span={12}>
-                <Form.Item name="phone" label="Phone">
+                <Form.Item name="phone" label="Điện thoại">
                   <Input
                     onPressEnter={(e) => {
                       e.preventDefault();
@@ -1053,7 +937,7 @@ const UserOrganization: React.FC = () => {
 
             <Row gutter={16}>
               <Col span={12}>
-                <Form.Item name="address" label="Address">
+                <Form.Item name="address" label="Địa chỉ">
                   <Input
                     onPressEnter={(e) => {
                       e.preventDefault();
@@ -1063,11 +947,7 @@ const UserOrganization: React.FC = () => {
                 </Form.Item>
               </Col>
               <Col span={12}>
-                <Form.Item
-                  name="avtUrl"
-                  label="Image (Cloudinary)"
-                  valuePropName="value"
-                >
+                <Form.Item name="avtUrl" label="Ảnh (Cloudinary)" valuePropName="value">
                   <UploadCloudinary
                     value={formEdit.getFieldValue("avtUrl")}
                     onChange={(url) => formEdit.setFieldsValue({ avtUrl: url })}
@@ -1078,14 +958,11 @@ const UserOrganization: React.FC = () => {
           </Form>
         </Modal>
 
+        {/* CREATE INSTRUCTOR */}
         <Modal
-          title="Create New Instructor"
+          title="Tạo Giảng viên"
           open={isCreateInstructor}
-          onOk={() =>
-            tabInstr === "manual"
-              ? submitCreateInstructor()
-              : submitImportInstructor()
-          }
+          onOk={() => (tabInstr === "manual" ? submitCreateInstructor() : submitImportInstructor())}
           onCancel={() => {
             setIsCreateInstructor(false);
             formInstr.resetFields();
@@ -1094,21 +971,14 @@ const UserOrganization: React.FC = () => {
             setInstrFile(null);
           }}
           okButtonProps={{
-            loading:
-              tabInstr === "manual" ? creatingInstructor : importingInstr,
-            disabled:
-              tabInstr === "manual" ? creatingInstructor : importingInstr,
+            loading: tabInstr === "manual" ? creatingInstructor : importingInstr,
+            disabled: tabInstr === "manual" ? creatingInstructor : importingInstr,
           }}
-          destroyOnHidden
+          destroyOnClose
           width={700}
         >
           {instrError && tabInstr === "manual" && (
-            <Alert
-              style={{ marginBottom: 12 }}
-              type="error"
-              showIcon
-              message={instrError}
-            />
+            <Alert style={{ marginBottom: 12 }} type="error" showIcon message={instrError} />
           )}
 
           <Tabs
@@ -1117,7 +987,7 @@ const UserOrganization: React.FC = () => {
             items={[
               {
                 key: "manual",
-                label: "Create manually",
+                label: "Nhập thủ công",
                 children: (
                   <Form
                     form={formInstr}
@@ -1128,12 +998,9 @@ const UserOrganization: React.FC = () => {
                   >
                     <Row gutter={16}>
                       <Col span={12}>
-                        <Form.Item
-                          name="userName"
-                          label="Username"
-                          rules={[{ required: true }]}
-                        >
+                        <Form.Item name="userName" label="Tên đăng nhập" rules={[{ required: true }]}>
                           <Input
+                            placeholder="Ví dụ: giangvien_a"
                             onPressEnter={(e) => {
                               e.preventDefault();
                               submitCreateInstructor();
@@ -1142,12 +1009,9 @@ const UserOrganization: React.FC = () => {
                         </Form.Item>
                       </Col>
                       <Col span={12}>
-                        <Form.Item
-                          name="fullName"
-                          label="Full Name"
-                          rules={[{ required: true }]}
-                        >
+                        <Form.Item name="fullName" label="Họ tên" rules={[{ required: true }]}>
                           <Input
+                            placeholder="Ví dụ: Nguyễn Văn A"
                             onPressEnter={(e) => {
                               e.preventDefault();
                               submitCreateInstructor();
@@ -1158,12 +1022,9 @@ const UserOrganization: React.FC = () => {
                     </Row>
                     <Row gutter={16}>
                       <Col span={12}>
-                        <Form.Item
-                          name="email"
-                          label="Email"
-                          rules={[{ required: true }, { type: "email" }]}
-                        >
+                        <Form.Item name="email" label="Email" rules={[{ required: true }, { type: "email" }]}>
                           <Input
+                            placeholder="name@example.com"
                             onPressEnter={(e) => {
                               e.preventDefault();
                               submitCreateInstructor();
@@ -1172,13 +1033,14 @@ const UserOrganization: React.FC = () => {
                         </Form.Item>
                       </Col>
                       <Col span={12}>
-                        <Form.Item name="gender" label="Gender">
+                        <Form.Item name="gender" label="Giới tính">
                           <Select options={genderOptions as any} allowClear />
                         </Form.Item>
                       </Col>
                     </Row>
-                    <Form.Item name="password" label="Password">
+                    <Form.Item name="password" label="Mật khẩu">
                       <Input.Password
+                        placeholder="Ít nhất 6 ký tự"
                         onPressEnter={(e) => {
                           e.preventDefault();
                           submitCreateInstructor();
@@ -1190,13 +1052,10 @@ const UserOrganization: React.FC = () => {
               },
               {
                 key: "import",
-                label: "Import from Excel",
+                label: "Nhập từ Excel",
                 children: (
                   <>
-                    <TemplateBox
-                      kind="instructor"
-                      onDownload={handleDownloadInstructorTemplate}
-                    />
+                    <TemplateBox kind="instructor" onDownload={handleDownloadInstructorTemplate} />
                     <Upload.Dragger
                       multiple={false}
                       accept=".xlsx,.xls"
@@ -1204,19 +1063,11 @@ const UserOrganization: React.FC = () => {
                       maxCount={1}
                       fileList={
                         instrFile
-                          ? [
-                              {
-                                uid: "-1",
-                                name: instrFile.name,
-                                status: "done",
-                              } as any,
-                            ]
+                          ? [{ uid: "-1", name: instrFile.name, status: "done" } as any]
                           : []
                       }
                       onChange={(info) => {
-                        const f = info.fileList?.[0]?.originFileObj as
-                          | File
-                          | undefined;
+                        const f = info.fileList?.[0]?.originFileObj as File | undefined;
                         setInstrFile(f ?? null);
                       }}
                       onRemove={() => {
@@ -1227,10 +1078,8 @@ const UserOrganization: React.FC = () => {
                       <p className="ant-upload-drag-icon">
                         <InboxOutlined />
                       </p>
-                      <p className="ant-upload-text">
-                        Click or drag Excel file to this area to import
-                      </p>
-                      <p className="ant-upload-hint">Accepted: .xlsx, .xls</p>
+                      <p className="ant-upload-text">Bấm hoặc kéo thả tệp Excel vào đây để nhập</p>
+                      <p className="ant-upload-hint">Chấp nhận: .xlsx, .xls</p>
                     </Upload.Dragger>
                   </>
                 ),
@@ -1239,12 +1088,11 @@ const UserOrganization: React.FC = () => {
           />
         </Modal>
 
+        {/* CREATE STUDENT */}
         <Modal
-          title="Create New Student"
+          title="Tạo Học viên"
           open={isCreateStudent}
-          onOk={() =>
-            tabStud === "manual" ? submitCreateStudent() : submitImportStudent()
-          }
+          onOk={() => (tabStud === "manual" ? submitCreateStudent() : submitImportStudent())}
           onCancel={() => {
             setIsCreateStudent(false);
             formStud.resetFields();
@@ -1256,16 +1104,11 @@ const UserOrganization: React.FC = () => {
             loading: tabStud === "manual" ? creatingStudent : importingStud,
             disabled: tabStud === "manual" ? creatingStudent : importingStud,
           }}
-          destroyOnHidden
+          destroyOnClose
           width={700}
         >
           {studError && tabStud === "manual" && (
-            <Alert
-              style={{ marginBottom: 12 }}
-              type="error"
-              showIcon
-              message={studError}
-            />
+            <Alert style={{ marginBottom: 12 }} type="error" showIcon message={studError} />
           )}
 
           <Tabs
@@ -1274,7 +1117,7 @@ const UserOrganization: React.FC = () => {
             items={[
               {
                 key: "manual",
-                label: "Create manually",
+                label: "Nhập thủ công",
                 children: (
                   <Form
                     form={formStud}
@@ -1285,12 +1128,9 @@ const UserOrganization: React.FC = () => {
                   >
                     <Row gutter={16}>
                       <Col span={12}>
-                        <Form.Item
-                          name="userName"
-                          label="Username"
-                          rules={[{ required: true }]}
-                        >
+                        <Form.Item name="userName" label="Tên đăng nhập" rules={[{ required: true }]}>
                           <Input
+                            placeholder="Ví dụ: hocvien_a"
                             onPressEnter={(e) => {
                               e.preventDefault();
                               submitCreateStudent();
@@ -1299,12 +1139,9 @@ const UserOrganization: React.FC = () => {
                         </Form.Item>
                       </Col>
                       <Col span={12}>
-                        <Form.Item
-                          name="fullName"
-                          label="Full Name"
-                          rules={[{ required: true }]}
-                        >
+                        <Form.Item name="fullName" label="Họ tên" rules={[{ required: true }]}>
                           <Input
+                            placeholder="Ví dụ: Trần Thị B"
                             onPressEnter={(e) => {
                               e.preventDefault();
                               submitCreateStudent();
@@ -1315,12 +1152,9 @@ const UserOrganization: React.FC = () => {
                     </Row>
                     <Row gutter={16}>
                       <Col span={12}>
-                        <Form.Item
-                          name="email"
-                          label="Email"
-                          rules={[{ required: true }, { type: "email" }]}
-                        >
+                        <Form.Item name="email" label="Email" rules={[{ required: true }, { type: "email" }]}>
                           <Input
+                            placeholder="name@example.com"
                             onPressEnter={(e) => {
                               e.preventDefault();
                               submitCreateStudent();
@@ -1329,13 +1163,14 @@ const UserOrganization: React.FC = () => {
                         </Form.Item>
                       </Col>
                       <Col span={12}>
-                        <Form.Item name="gender" label="Gender">
+                        <Form.Item name="gender" label="Giới tính">
                           <Select options={genderOptions as any} allowClear />
                         </Form.Item>
                       </Col>
                     </Row>
-                    <Form.Item name="password" label="Password">
+                    <Form.Item name="password" label="Mật khẩu">
                       <Input.Password
+                        placeholder="Ít nhất 6 ký tự"
                         onPressEnter={(e) => {
                           e.preventDefault();
                           submitCreateStudent();
@@ -1347,33 +1182,20 @@ const UserOrganization: React.FC = () => {
               },
               {
                 key: "import",
-                label: "Import from Excel",
+                label: "Nhập từ Excel",
                 children: (
                   <>
-                    <TemplateBox
-                      kind="student"
-                      onDownload={handleDownloadStudentTemplate}
-                    />
+                    <TemplateBox kind="student" onDownload={handleDownloadStudentTemplate} />
                     <Upload.Dragger
                       multiple={false}
                       accept=".xlsx,.xls"
                       beforeUpload={() => false}
                       maxCount={1}
                       fileList={
-                        studFile
-                          ? [
-                              {
-                                uid: "-1",
-                                name: studFile.name,
-                                status: "done",
-                              } as any,
-                            ]
-                          : []
+                        studFile ? [{ uid: "-1", name: studFile.name, status: "done" } as any] : []
                       }
                       onChange={(info) => {
-                        const f = info.fileList?.[0]?.originFileObj as
-                          | File
-                          | undefined;
+                        const f = info.fileList?.[0]?.originFileObj as File | undefined;
                         setStudFile(f ?? null);
                       }}
                       onRemove={() => {
@@ -1384,10 +1206,8 @@ const UserOrganization: React.FC = () => {
                       <p className="ant-upload-drag-icon">
                         <InboxOutlined />
                       </p>
-                      <p className="ant-upload-text">
-                        Click or drag Excel file to this area to import
-                      </p>
-                      <p className="ant-upload-hint">Accepted: .xlsx, .xls</p>
+                      <p className="ant-upload-text">Bấm hoặc kéo thả tệp Excel vào đây để nhập</p>
+                      <p className="ant-upload-hint">Chấp nhận: .xlsx, .xls</p>
                     </Upload.Dragger>
                   </>
                 ),

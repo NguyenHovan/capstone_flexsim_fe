@@ -33,11 +33,11 @@ const Checklist: React.FC<{ value: string }> = ({ value }) => {
   );
   return (
     <ul className="cp-checklist">
-      {Row(rule.len, "Minimum 8 characters")}
-      {Row(rule.upper, "One uppercase character")}
-      {Row(rule.lower, "One lowercase character")}
-      {Row(rule.special, "One special character")}
-      {Row(rule.num, "One number")}
+      {Row(rule.len, "Tối thiểu 8 ký tự")}
+      {Row(rule.upper, "Ít nhất 1 chữ hoa")}
+      {Row(rule.lower, "Ít nhất 1 chữ thường")}
+      {Row(rule.special, "Ít nhất 1 ký tự đặc biệt")}
+      {Row(rule.num, "Ít nhất 1 chữ số")}
     </ul>
   );
 };
@@ -49,7 +49,7 @@ const AdminChangePassword: React.FC = () => {
 
   const onFinish = async (v: any) => {
     if (v.newPassword !== v.confirmPassword) {
-      message.error("Confirm password does not match");
+      message.error("Xác nhận mật khẩu không khớp");
       return;
     }
     try {
@@ -58,10 +58,10 @@ const AdminChangePassword: React.FC = () => {
         currentPassword: v.currentPassword,
         newPassword: v.newPassword,
       });
-      message.success("Password updated");
+      message.success("Đổi mật khẩu thành công");
       form.resetFields();
     } catch (e: any) {
-      message.error(e?.message || "Change password failed");
+      message.error(e?.message || "Đổi mật khẩu thất bại");
     } finally {
       setLoading(false);
     }
@@ -70,23 +70,23 @@ const AdminChangePassword: React.FC = () => {
   return (
     <div className="cp-wrapper">
       <Card className="cp-card" variant="outlined">
-        <Title level={3} className="cp-title">Change Password</Title>
+        <Title level={3} className="cp-title">Đổi mật khẩu</Title>
 
         <Form layout="vertical" form={form} onFinish={onFinish}>
           <Form.Item
             name="currentPassword"
-            label={<Text strong>Old Password</Text>}
-            rules={[{ required: true, message: "Required" }]}
+            label={<Text strong>Mật khẩu hiện tại</Text>}
+            rules={[{ required: true, message: "Vui lòng nhập mật khẩu hiện tại" }]}
           >
             <Input.Password prefix={<LockOutlined />} autoComplete="current-password" />
           </Form.Item>
 
           <Form.Item
             name="newPassword"
-            label={<Text strong>New Password</Text>}
+            label={<Text strong>Mật khẩu mới</Text>}
             rules={[
-              { required: true, message: "Required" },
-              { min: 8, message: "At least 8 characters" },
+              { required: true, message: "Vui lòng nhập mật khẩu mới" },
+              { min: 8, message: "Ít nhất 8 ký tự" },
             ]}
           >
             <Input.Password prefix={<LockOutlined />} autoComplete="new-password" />
@@ -96,14 +96,14 @@ const AdminChangePassword: React.FC = () => {
 
           <Form.Item
             name="confirmPassword"
-            label={<Text strong>Confirm New Password</Text>}
+            label={<Text strong>Xác nhận mật khẩu mới</Text>}
             dependencies={["newPassword"]}
             rules={[
-              { required: true, message: "Required" },
+              { required: true, message: "Vui lòng xác nhận mật khẩu mới" },
               ({ getFieldValue }) => ({
                 validator(_, value) {
                   if (!value || getFieldValue("newPassword") === value) return Promise.resolve();
-                  return Promise.reject(new Error("Passwords do not match"));
+                  return Promise.reject(new Error("Mật khẩu không khớp"));
                 },
               }),
             ]}
@@ -112,11 +112,11 @@ const AdminChangePassword: React.FC = () => {
           </Form.Item>
 
           <Button type="primary" htmlType="submit" block size="large" loading={loading}>
-            Change Password
+            Đổi mật khẩu
           </Button>
         </Form>
 
-        <Link className="cp-forgot" to="/forgot-password">Forgot Password?</Link>
+        <Link className="cp-forgot" to="/forgot-password">Quên mật khẩu?</Link>
       </Card>
     </div>
   );

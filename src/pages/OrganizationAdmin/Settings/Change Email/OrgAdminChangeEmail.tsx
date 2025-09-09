@@ -27,7 +27,7 @@ const OrgAdminChangeEmail: React.FC = () => {
   const [loadingConfirm, setLoadingConfirm] = React.useState(false);
   const [currentEmail, setCurrentEmail] = React.useState<string>("");
 
-  // show current email từ localStorage để người dùng dễ nhận diện
+  // Hiển thị email hiện tại từ localStorage để người dùng dễ nhận diện
   React.useEffect(() => {
     try {
       const raw = localStorage.getItem("currentUser");
@@ -38,7 +38,7 @@ const OrgAdminChangeEmail: React.FC = () => {
     }
   }, []);
 
-  // đếm ngược nút resend
+  // Đếm ngược nút gửi lại (resend)
   React.useEffect(() => {
     if (!sent || count <= 0) return;
     const t = setInterval(() => setCount((c) => c - 1), 1000);
@@ -49,7 +49,7 @@ const OrgAdminChangeEmail: React.FC = () => {
     try {
       const v = await form.validateFields(["newEmail", "password"]);
       if (!EMAIL_RE.test(v.newEmail)) {
-        message.error("Please enter a valid email.");
+        message.error("Vui lòng nhập email hợp lệ.");
         return;
       }
       setLoadingSend(true);
@@ -57,11 +57,11 @@ const OrgAdminChangeEmail: React.FC = () => {
         newEmail: v.newEmail,
         password: v.password,
       });
-      message.success("Verification code has been sent to your new email.");
+      message.success("Mã xác thực đã được gửi tới email mới của bạn.");
       setSent(true);
-      setCount(60); // cooldown 60s
+      setCount(60); // chờ 60 giây trước khi gửi lại
     } catch (e: any) {
-      message.error(e?.message || "Failed to send verification code.");
+      message.error(e?.message || "Gửi mã xác thực thất bại.");
     } finally {
       setLoadingSend(false);
     }
@@ -72,9 +72,9 @@ const OrgAdminChangeEmail: React.FC = () => {
       const v = await form.validateFields(["code", "newEmail"]);
       setLoadingConfirm(true);
       await AccountService.confirmChangeEmail(v.code);
-      message.success("Email changed successfully!");
+      message.success("Đổi email thành công!");
 
-      // cập nhật localStorage để UI phản chiếu ngay
+      // Cập nhật localStorage để UI phản chiếu ngay
       try {
         const raw = localStorage.getItem("currentUser");
         if (raw) {
@@ -84,12 +84,12 @@ const OrgAdminChangeEmail: React.FC = () => {
         }
       } catch {}
 
-      // reset trạng thái form/code
+      // Reset trạng thái form/code
       form.resetFields(["password", "code"]);
       setSent(false);
       setCount(0);
     } catch (e: any) {
-      message.error(e?.message || "Confirm code failed.");
+      message.error(e?.message || "Xác thực mã thất bại.");
     } finally {
       setLoadingConfirm(false);
     }
@@ -98,41 +98,43 @@ const OrgAdminChangeEmail: React.FC = () => {
   return (
     <div className="ce-wrapper">
       <Card bordered={false} className="ce-card">
-        <Title level={3} className="ce-title">Change Email</Title>
+        <Title level={3} className="ce-title">Đổi email</Title>
 
         {currentEmail && (
           <Descriptions size="small" column={1} className="ce-desc">
-            <Descriptions.Item label="Current email">{currentEmail}</Descriptions.Item>
+            <Descriptions.Item label="Email hiện tại">{currentEmail}</Descriptions.Item>
           </Descriptions>
         )}
 
         <Form<FormValues> form={form} layout="vertical" className="ce-form">
           <Form.Item
             name="newEmail"
-            label={<Text strong>New email</Text>}
+            label={<Text strong>Email mới</Text>}
             rules={[
-              { required: true, message: "Email is required" },
+              { required: true, message: "Vui lòng nhập email" },
               {
                 validator: (_, v) =>
-                  !v || EMAIL_RE.test(v) ? Promise.resolve() : Promise.reject(new Error("Invalid email")),
+                  !v || EMAIL_RE.test(v)
+                    ? Promise.resolve()
+                    : Promise.reject(new Error("Email không hợp lệ")),
               },
             ]}
           >
             <Input
               prefix={<MailOutlined />}
-              placeholder="your.new@email.com"
+              placeholder="ten.moi@domain.com"
               disabled={sent && count > 0}
             />
           </Form.Item>
 
           <Form.Item
             name="password"
-            label={<Text strong>Current password</Text>}
-            rules={[{ required: true, message: "Password is required" }]}
+            label={<Text strong>Mật khẩu hiện tại</Text>}
+            rules={[{ required: true, message: "Vui lòng nhập mật khẩu" }]}
           >
             <Input.Password
               prefix={<LockOutlined />}
-              placeholder="Your current password"
+              placeholder="Nhập mật khẩu hiện tại"
               disabled={sent && count > 0}
             />
           </Form.Item>
@@ -145,11 +147,11 @@ const OrgAdminChangeEmail: React.FC = () => {
               icon={<SafetyCertificateOutlined />}
               disabled={count > 0}
             >
-              {count > 0 ? `Resend in ${count}s` : "Send verification code"}
+              {count > 0 ? `Gửi lại sau ${count}s` : "Gửi mã xác thực"}
             </Button>
             {count > 0 && (
               <Button onClick={() => setCount(0)} icon={<RedoOutlined />}>
-                Enable Resend
+                Cho phép gửi lại
               </Button>
             )}
           </Space>
@@ -158,11 +160,11 @@ const OrgAdminChangeEmail: React.FC = () => {
             <>
               <Form.Item
                 name="code"
-                label={<Text strong>Verification code</Text>}
-                rules={[{ required: true, message: "Please enter the code sent to your email" }]}
+                label={<Text strong>Mã xác thực</Text>}
+                rules={[{ required: true, message: "Vui lòng nhập mã đã gửi tới email" }]}
                 style={{ marginTop: 16 }}
               >
-                <Input maxLength={8} placeholder="e.g. 174444" />
+                <Input maxLength={8} placeholder="ví dụ: 174444" />
               </Form.Item>
 
               <Button
@@ -172,7 +174,7 @@ const OrgAdminChangeEmail: React.FC = () => {
                 onClick={onConfirm}
                 loading={loadingConfirm}
               >
-                Confirm Change Email
+                Xác nhận đổi email
               </Button>
             </>
           )}

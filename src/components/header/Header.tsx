@@ -27,15 +27,13 @@ const Header = () => {
 
   useEffect(() => {
     fetchUserCurrent();
-    // re-fetch if user id changes (login/logout)
   }, [user?.id]);
 
-  // AntD v5: dùng menu.items thay cho overlay/Menu cũ
   const menuItems: MenuProps["items"] = [
     {
       key: "profile",
       icon: <UserOutlined />,
-      label: "Profile",
+      label: "Thông tin cá nhân",
       onClick: () => navigate("/profile"),
     },
     {
@@ -44,17 +42,17 @@ const Header = () => {
     {
       key: "logout",
       icon: <LogoutOutlined />,
-      label: "Log out",
+      label: "Đăng xuất",
       onClick: handleLogout,
     },
   ];
 
   const navLinks = [
-    { name: "Home", to: "/" },
-    { name: "Category", to: "/course-list" },
+    { name: "Trang chủ", to: "/" },
+    { name: "Danh mục khóa học", to: "/course-list" },
     { name: "AI Quiz", to: "/ai-quiz" },
-    { name: "About", to: "/about" },
-    { name: "Contact", to: "/contact" },
+    { name: "Giới thiệu", to: "/about" },
+    // { name: "Contact", to: "/contact" },
   ];
 
   return (

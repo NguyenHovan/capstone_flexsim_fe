@@ -58,9 +58,9 @@ function writeCurrentUser(next: Partial<Account>) {
 }
 
 const GENDER_OPTIONS = [
-  { label: "Male", value: 1 },
-  { label: "Female", value: 2 },
-  { label: "Other", value: 3 },
+  { label: "Nam", value: 1 },
+  { label: "Nữ", value: 2 },
+  { label: "Khác", value: 3 },
 ];
 
 const OrgAdminProfile: React.FC = () => {
@@ -114,7 +114,7 @@ const OrgAdminProfile: React.FC = () => {
           e?.response?.data?.message ||
             (typeof e?.response?.data === "string" ? e.response.data : "") ||
             e?.message ||
-            "Failed to load user info."
+            "Tải thông tin người dùng thất bại."
         );
       }
     })();
@@ -212,13 +212,13 @@ const OrgAdminProfile: React.FC = () => {
 
       form.setFieldsValue({ gender: normalized.gender });
 
-      toast.success("Profile updated successfully!");
+      toast.success("Cập nhật thông tin thành công!");
     } catch (e: any) {
       toast.error(
         e?.response?.data?.message ||
           (typeof e?.response?.data === "string" ? e.response.data : "") ||
           e?.message ||
-          "Update failed."
+          "Cập nhật thất bại."
       );
     } finally {
       setSavingAll(false);
@@ -230,10 +230,10 @@ const OrgAdminProfile: React.FC = () => {
       {/* HERO */}
       <div className="profile-hero">
         <Title level={3} className="profile-hero__title">
-          Welcome to LogiSimEdu
+          Chào mừng đến LogiSimEdu
         </Title>
         <Text className="profile-hero__subtitle">
-          {(user?.fullName || currentUser?.fullName) ?? "Organization Admin"}
+          {(user?.fullName || currentUser?.fullName) ?? "Quản trị tổ chức"}
         </Text>
 
         <div className="avatar-block">
@@ -277,11 +277,11 @@ const OrgAdminProfile: React.FC = () => {
             <Col xs={24} md={12}>
               <Form.Item
                 name="fullName"
-                label="Full name"
-                rules={[{ required: true }]}
+                label="Họ và tên"
+                rules={[{ required: true, message: "Vui lòng nhập họ và tên" }]}
               >
                 <Input
-                  placeholder="Your full name"
+                  placeholder="Nhập họ và tên của bạn"
                   onPressEnter={(e) => {
                     e.preventDefault();
                     form.submit();
@@ -289,7 +289,7 @@ const OrgAdminProfile: React.FC = () => {
                 />
               </Form.Item>
 
-              <Form.Item name="phone" label="Phone">
+              <Form.Item name="phone" label="Số điện thoại">
                 <Input
                   placeholder="(+84) 09xxxxxxx"
                   onPressEnter={(e) => {
@@ -301,15 +301,13 @@ const OrgAdminProfile: React.FC = () => {
 
               <Form.Item
                 name="gender"
-                label="Gender"
-                rules={[{ required: true }]}
+                label="Giới tính"
+                rules={[{ required: true, message: "Vui lòng chọn giới tính" }]}
               >
                 <Select
                   options={GENDER_OPTIONS}
                   // đảm bảo value luôn là number 1..3
-                  onChange={(val) =>
-                    form.setFieldValue("gender", asNum(val, 1))
-                  }
+                  onChange={(val) => form.setFieldValue("gender", asNum(val, 1))}
                 />
               </Form.Item>
             </Col>
@@ -319,9 +317,9 @@ const OrgAdminProfile: React.FC = () => {
                 <Input placeholder="name@example.com" disabled />
               </Form.Item>
 
-              <Form.Item name="address" label="Address">
+              <Form.Item name="address" label="Địa chỉ">
                 <Input
-                  placeholder="Street, City"
+                  placeholder="Số nhà, đường, quận/huyện, tỉnh/thành"
                   onPressEnter={(e) => {
                     e.preventDefault();
                     form.submit();
@@ -335,10 +333,10 @@ const OrgAdminProfile: React.FC = () => {
                   onClick={onReset}
                   style={{ marginRight: 8 }}
                 >
-                  Reset
+                  Hoàn tác
                 </Button>
                 <Button type="primary" htmlType="submit" loading={savingAll}>
-                  Save changes
+                  Lưu thay đổi
                 </Button>
               </div>
             </Col>

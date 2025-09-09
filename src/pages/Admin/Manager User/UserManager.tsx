@@ -56,9 +56,9 @@ const ROLE_OPTIONS: { label: string; value: RoleSlug }[] = [
 ];
 
 const GENDER_MAP: Record<number, string> = {
-  1: "Male",
-  2: "Female",
-  3: "Other",
+  1: "Nam",
+  2: "Nữ",
+  3: "Khác",
 };
 
 
@@ -188,7 +188,7 @@ const UserManager: React.FC = () => {
             const be400 = getBE400Message(err);
             if (be400) {
               if (setEmailDuplicateIfAny(formCreate, err)) return;
-              setCreateError(be400); // e.g., Organization unpaid
+              setCreateError(be400); 
               return;
             }
             console.error("Create org admin failed:", err);
@@ -296,7 +296,7 @@ const UserManager: React.FC = () => {
       sortDirections: ["ascend", "descend"],
     },
     {
-      title: "Image",
+      title: "Ảnh",
       dataIndex: "avtUrl",
       key: "image",
       width: 110,
@@ -318,7 +318,7 @@ const UserManager: React.FC = () => {
       ),
     },
     {
-      title: "Organization",
+      title: "Tổ chức",
       dataIndex: "organizationId",
       key: "organizationId",
       ellipsis: true,
@@ -328,7 +328,7 @@ const UserManager: React.FC = () => {
         compareStr(getOrgName(a.organizationId), getOrgName(b.organizationId)),
     },
     {
-      title: "Role",
+      title: "Vai trò",
       dataIndex: "roleId",
       key: "roleId",
       ellipsis: true,
@@ -337,7 +337,7 @@ const UserManager: React.FC = () => {
       sorter: (a, b) => (a.roleId || 0) - (b.roleId || 0),
     },
     {
-      title: "Username",
+      title: "Tên đăng nhập",
       dataIndex: "userName",
       key: "userName",
       ellipsis: true,
@@ -345,7 +345,7 @@ const UserManager: React.FC = () => {
       sorter: (a, b) => compareStr(a.userName, b.userName),
     },
     {
-      title: "Full Name",
+      title: "Tên người dùng",
       dataIndex: "fullName",
       key: "fullName",
       ellipsis: true,
@@ -361,7 +361,7 @@ const UserManager: React.FC = () => {
       sorter: (a, b) => compareStr(a.email, b.email),
     },
     {
-      title: "Phone",
+      title: "Số điện thoại",
       dataIndex: "phone",
       key: "phone",
       ellipsis: true,
@@ -369,7 +369,7 @@ const UserManager: React.FC = () => {
       sorter: (a, b) => compareStr(a.phone, b.phone),
     },
     {
-      title: "Gender",
+      title: "Giới tính",
       dataIndex: "gender",
       key: "gender",
       ellipsis: true,
@@ -378,7 +378,7 @@ const UserManager: React.FC = () => {
       sorter: (a, b) => compareStr(GENDER_MAP[a.gender], GENDER_MAP[b.gender]),
     },
     {
-      title: "Address",
+      title: "Địa chỉ",
       dataIndex: "address",
       key: "address",
       ellipsis: true,
@@ -387,16 +387,16 @@ const UserManager: React.FC = () => {
       sorter: (a, b) => compareStr(a.address, b.address),
     },
     {
-      title: "Email Verified",
+      title: "Xác minh email",
       dataIndex: "isEmailVerify",
       key: "isEmailVerify",
       ellipsis: true,
       width: 150,
-      render: (v: boolean) => (v ? "Yes" : "No"),
+      render: (v: boolean) => (v ? "Đã xác thực" : "Chưa xác thực"),
       sorter: (a, b) => Number(a.isEmailVerify) - Number(b.isEmailVerify),
     },
     {
-      title: "Active",
+      title: "Trạng thái",
       dataIndex: "isActive",
       key: "isActive",
       width: 120,
@@ -410,7 +410,7 @@ const UserManager: React.FC = () => {
       sorter: (a, b) => Number(a.isActive) - Number(b.isActive),
     },
     {
-      title: "Created At",
+      title: "Ngày tạo",
       dataIndex: "createdAt",
       key: "createdAt",
       ellipsis: true,
@@ -430,7 +430,7 @@ const UserManager: React.FC = () => {
       defaultSortOrder: "descend",
     },
     {
-      title: "Updated At",
+      title: "Ngày chỉnh sửa",
       dataIndex: "updatedAt",
       key: "updatedAt",
       ellipsis: true,
@@ -449,7 +449,7 @@ const UserManager: React.FC = () => {
           : 0),
     },
     {
-      title: "Actions",
+      title: "Thao tác",
       key: "actions",
       width: 180,
       render: (_: any, record: Account) => (
@@ -489,7 +489,7 @@ const UserManager: React.FC = () => {
               className="dashboard-title"
               style={{ marginBottom: 0 }}
             >
-              User Manager
+              Quản lí người dùng
             </Title>
           </Col>
           <Col>
@@ -501,7 +501,7 @@ const UserManager: React.FC = () => {
                 formCreate.resetFields();
               }}
             >
-              Create Organization Admin
+              Thêm Organization Admin
             </Button>
           </Col>
         </Row>
@@ -523,7 +523,7 @@ const UserManager: React.FC = () => {
                 value={roleFilter}
                 onChange={(v) => setRoleFilter(v)}
                 style={{ width: "100%" }}
-                placeholder="Filter by Role"
+                placeholder="Lọc theo vai trò"
                 options={ROLE_OPTIONS}
               />
             </Col>
@@ -534,7 +534,7 @@ const UserManager: React.FC = () => {
                 value={orgFilter}
                 onChange={(v) => setOrgFilter(v)}
                 style={{ width: "100%" }}
-                placeholder="Filter by Organization"
+                placeholder="Lọc theo tô chức"
                 optionFilterProp="label"
                 options={organizations.map((org) => ({
                   label: org.organizationName,
@@ -544,7 +544,7 @@ const UserManager: React.FC = () => {
             </Col>
             <Col xs={24} md={6} lg={2} style={{ textAlign: "right" }}>
               <Button icon={<ReloadOutlined />} onClick={resetFilters} block>
-                Reset
+                Đặt lại
               </Button>
             </Col>
           </Row>
@@ -563,7 +563,7 @@ const UserManager: React.FC = () => {
         </Card>
 
         <Modal
-          title="View User Details"
+          title="Xem thông tin người dùng"
           open={isViewModalVisible}
           onCancel={() => setIsViewModalVisible(false)}
           footer={null}
@@ -576,29 +576,29 @@ const UserManager: React.FC = () => {
                 <strong>ID:</strong> {viewingUser.id}
               </p>
               <p>
-                <strong>Organization:</strong>{" "}
+                <strong>Tổ chức:</strong>{" "}
                 {getOrgName(viewingUser.organizationId)}
               </p>
               <p>
-                <strong>Role:</strong> {ROLE_LABEL_MAP[viewingUser.roleId]}
+                <strong>Vai trò:</strong> {ROLE_LABEL_MAP[viewingUser.roleId]}
               </p>
               <p>
-                <strong>Username:</strong> {viewingUser.userName}
+                <strong>Tên đăng nhập:</strong> {viewingUser.userName}
               </p>
               <p>
-                <strong>Full Name:</strong> {viewingUser.fullName}
+                <strong>Tên người dùng:</strong> {viewingUser.fullName}
               </p>
               <p>
                 <strong>Email:</strong> {viewingUser.email}
               </p>
               <p>
-                <strong>Phone:</strong> {viewingUser.phone}
+                <strong>Số điện thoại:</strong> {viewingUser.phone}
               </p>
               <p>
-                <strong>Gender:</strong> {GENDER_MAP[viewingUser.gender]}
+                <strong>Giới tính:</strong> {GENDER_MAP[viewingUser.gender]}
               </p>
               <p>
-                <strong>Address:</strong> {viewingUser.address || "N/A"}
+                <strong>Địa chỉ:</strong> {viewingUser.address || "N/A"}
               </p>
               <p>
                 <strong>Avatar URL:</strong>{" "}
@@ -608,28 +608,28 @@ const UserManager: React.FC = () => {
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    View
+                    Xem
                   </a>
                 ) : (
                   "N/A"
                 )}
               </p>
               <p>
-                <strong>Email Verified:</strong>{" "}
-                {viewingUser.isEmailVerify ? "Yes" : "No"}
+                <strong>Xác minh email:</strong>{" "}
+                {viewingUser.isEmailVerify ? "Đã xác thực" : "Chưa xác thực"}
               </p>
               <p>
-                <strong>Active:</strong> {viewingUser.isActive ? "Yes" : "No"}
+                <strong>Trạng thái:</strong> {viewingUser.isActive ? "Yes" : "No"}
               </p>
               <p>
-                <strong>Created At:</strong>{" "}
+                <strong>Ngày tạo:</strong>{" "}
                 {viewingUser.createdAt &&
                 !Number.isNaN(Date.parse(viewingUser.createdAt))
                   ? new Date(viewingUser.createdAt).toLocaleString()
                   : "N/A"}
               </p>
               <p>
-                <strong>Updated At:</strong>{" "}
+                <strong>Ngày cập nhật:</strong>{" "}
                 {viewingUser.updatedAt &&
                 !Number.isNaN(Date.parse(viewingUser.updatedAt))
                   ? new Date(viewingUser.updatedAt).toLocaleString()
@@ -639,9 +639,8 @@ const UserManager: React.FC = () => {
           )}
         </Modal>
 
-        {/* Create Org Admin */}
         <Modal
-          title="Create Organization Admin"
+          title="Thêm mới Organization Admin"
           open={isCreateModalVisible}
           onCancel={() => {
             setIsCreateModalVisible(false);
@@ -669,14 +668,14 @@ const UserManager: React.FC = () => {
           >
             <Form.Item
               name="organizationId"
-              label="Organization"
+              label="Tổ chức"
               rules={[
                 { required: true, message: "Please select an organization!" },
               ]}
             >
               <Select
                 showSearch
-                placeholder="Select an organization"
+                placeholder="Chọn tổ chức"
                 optionFilterProp="label"
                 options={organizations.map((org) => ({
                   label: org.organizationName,
@@ -687,7 +686,7 @@ const UserManager: React.FC = () => {
 
             <Form.Item
               name="userName"
-              label="Username"
+              label="Tên đăng nhập"
               rules={[{ required: true, message: "Please enter a username!" }]}
             >
               <Input />
@@ -695,7 +694,7 @@ const UserManager: React.FC = () => {
 
             <Form.Item
               name="fullName"
-              label="Full Name"
+              label="Tên người dùng"
               rules={[
                 { required: true, message: "Please enter your full name!" },
               ]}
@@ -754,7 +753,7 @@ const UserManager: React.FC = () => {
               onClick={handleCreateOrgAdmin}
               loading={loading}
             >
-              Create Organization Admin
+              Thêm mới Organization Admin
             </Button>
           </Form>
         </Modal>

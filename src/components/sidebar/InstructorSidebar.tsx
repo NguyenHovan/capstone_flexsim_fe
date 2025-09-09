@@ -14,13 +14,13 @@ const sidebarItems = [
   {
     key: "Dashboard",
     icon: <AppstoreOutlined />,
-    label: "Dashboard",
+    label: "Trang tổng quan",
     url: "/instructor-dashboard",
   },
   {
     key: "Courses",
     icon: <BookOutlined />,
-    label: "Courses",
+    label: "Khóa học",
     url: "/instructor-course",
   },
 
@@ -45,34 +45,34 @@ const sidebarItems = [
   {
     key: "Scenarios",
     icon: <DollarOutlined />,
-    label: "Scenarios",
+    label: "Kịch bản",
     url: "/instructor-scenario",
   },
   {
     key: "Scene",
     icon: <InfoCircleOutlined />,
-    label: "Scene",
+    label: "Mô hình mô phỏng",
     url: "/instructor-scene",
   },
   {
     key: "ChangePassword",
     icon: <SettingOutlined />,
-    label: "Change Password",
+    label: "Đổi mật khẩu",
     url: "/instructor-change-password",
   },
 
   {
     key: "ChangeEmail",
     icon: <SettingOutlined />,
-    label: "Change Email",
+    label: "Thay đổi email",
     url: "/instructor-change-email",
   },
-  {
-    key: "Support / Help",
-    icon: <UserOutlined />,
-    label: "Support / Help",
-    url: "/instructor",
-  },
+  // {
+  //   key: "Support / Help",
+  //   icon: <UserOutlined />,
+  //   label: "Support / Help",
+  //   url: "/instructor",
+  // },
 ];
 
 const InstructorSidebar = () => {
@@ -110,7 +110,7 @@ const InstructorSidebar = () => {
             style={{ color: "red", marginTop: "auto" }}
           >
             <LogoutOutlined />
-            <span className="org-sidebar-label">Logout</span>
+            <span className="org-sidebar-label">Đăng xuất</span>
           </li>
         </ul>
       </nav>

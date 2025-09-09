@@ -16,6 +16,7 @@ import dayjs from 'dayjs';
 import type { Dayjs } from 'dayjs';
 import weekOfYear from 'dayjs/plugin/weekOfYear';
 import isoWeek from 'dayjs/plugin/isoWeek';
+import 'dayjs/locale/vi'; // <-- Thêm locale tiếng Việt
 
 import axiosInstance from '../../api/axiosInstance';
 import { API } from '../../api';
@@ -25,6 +26,7 @@ import './organizationAdminOverview.css';
 
 dayjs.extend(weekOfYear);
 dayjs.extend(isoWeek);
+dayjs.locale('vi'); // <-- Bật tiếng Việt cho định dạng ngày/thứ
 ChartJS.register(Tooltip, Legend, BarElement, ArcElement, CategoryScale, LinearScale);
 
 const { Content } = Layout;
@@ -49,12 +51,19 @@ const EMPTY_DAILY: Pick<Counters, 'students' | 'instructors' | 'workspaces' | 'o
   students: 0, instructors: 0, workspaces: 0, orders: 0, courses: 0
 };
 
-// Palette giống Admin (sử dụng cho bar + donut)
+// Màu dùng cho bar + donut
 const ADMIN_COLORS = {
-  teal: '#2ED3C6',   // Students
-  navy: '#223A54',   // Instructors
-  gray: '#E3E7EF',   // Workspaces
-  cyan: '#7AD6E0',   // Orders
+  teal: '#2ED3C6',   // Học viên
+  navy: '#223A54',   // Giảng viên
+  gray: '#E3E7EF',   // Không gian
+  cyan: '#7AD6E0',   // Đơn hàng
+};
+
+const VI_DATASET_LABELS = {
+  students: 'Học viên',
+  instructors: 'Giảng viên',
+  workspaces: 'Không gian làm việc',
+  orders: 'Đơn hàng',
 };
 
 type OrderRow = {
@@ -145,11 +154,11 @@ const OrganizationAdminOverview: React.FC = () => {
   const [totals, setTotals] = useState<Counters>(EMPTY);
   const [dailyStats, setDailyStats] = useState<DailyStats>({});
 
-  // Filters: Week/Month/Year
+  // Bộ lọc: Tuần/Tháng/Năm
   const [granularity, setGranularity] = useState<Granularity>('week');
   const [anchorDate, setAnchorDate] = useState<Dayjs>(dayjs());
 
-  // Recent orders (PAID by this account)
+  // Đơn gần đây (đã thanh toán bởi tài khoản này)
   const [recentOrders, setRecentOrders] = useState<OrderRow[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(false);
   const [planNameById, setPlanNameById] = useState<Record<string, string>>({});
@@ -174,7 +183,7 @@ const OrganizationAdminOverview: React.FC = () => {
         const wsRes = await axiosInstance.get(withId(API.GET_ALL_WORKSPACE_ORGID, orgId));
         const workspaces = safeList(wsRes.data);
 
-        // Courses (org) — ưu tiên endpoint theo org; fallback lấy all rồi filter
+        // Courses (org)
         let courses: AnyItem[] = [];
         try {
           const cResOrg = await axiosInstance.get(withId((API as any).GET_ALL_COURSE_ORGID, orgId));
@@ -196,7 +205,7 @@ const OrganizationAdminOverview: React.FC = () => {
 
         if (!mounted) return;
 
-        // Totals (orders = đơn của account này)
+        // Tổng quan
         setTotals({
           students: students.length,
           instructors: instructors.length,
@@ -205,7 +214,7 @@ const OrganizationAdminOverview: React.FC = () => {
           orders: myOrdersAll.length,
         });
 
-        // Daily stats (thêm courses; orders dùng org cho chart/percent)
+        // Thống kê theo ngày
         const daily: DailyStats = {};
         addDaily(daily, students,    'students');
         addDaily(daily, instructors, 'instructors');
@@ -222,7 +231,7 @@ const OrganizationAdminOverview: React.FC = () => {
       }
     })();
 
-    // Recent orders (PAID by this account)
+    // Đơn gần đây (đã thanh toán bởi tài khoản này)
     (async () => {
       const myId = getCurrentAccountId();
       if (!myId) return;
@@ -281,7 +290,7 @@ const OrganizationAdminOverview: React.FC = () => {
     return () => { mounted = false; };
   }, []);
 
-  // WoW % (thêm courses)
+  // WoW %
   const dayLabelsAll = useMemo(() => Object.keys(dailyStats), [dailyStats]);
   const last7IdxStart = Math.max(0, dayLabelsAll.length - 7);
   const prev7IdxStart = Math.max(0, dayLabelsAll.length - 14);
@@ -295,7 +304,7 @@ const OrganizationAdminOverview: React.FC = () => {
     courses:     pct(sum(last7.map(x => x.courses)),     sum(prev7.map(x => x.courses))),
   };
 
-  // Chuẩn hóa dữ liệu theo Week / Month / Year + Export (chart vẫn 4 series)
+  // Chuẩn hóa dữ liệu theo Tuần/Tháng/Năm + Export
   const PRUNE_EMPTY = true;
   const filtered = useMemo(() => {
     const prune = <T extends { students: number; instructors: number; workspaces: number; orders: number; courses?: number }>(rows: (T & { label: string })[]) =>
@@ -303,7 +312,7 @@ const OrganizationAdminOverview: React.FC = () => {
 
     if (dayLabelsAll.length === 0) {
       return {
-        labelText: 'N/A',
+        labelText: 'Không có dữ liệu',
         barLabels: [] as string[],
         barSeries: { Students: [] as number[], Instructors: [] as number[], Workspaces: [] as number[], Orders: [] as number[] },
         share: { students: 0, instructors: 0, workspaces: 0, orders: 0 },
@@ -318,12 +327,11 @@ const OrganizationAdminOverview: React.FC = () => {
       const range = buildDateRange(start, end);
 
       const rawRows = range.map((d) => ({
-        label: dayjs(d).format('dddd'),
+        label: dayjs(d).format('dddd'), // sẽ ra Thứ Hai, Thứ Ba...
         ...(dailyStats[d] ?? { ...EMPTY_DAILY })
       }));
       const rows = prune(rawRows);
 
-      // cộng đủ fields + ép kiểu để TS không đòi 'label'
       const sums = rows.reduce<Pick<Counters,'students'|'instructors'|'workspaces'|'orders'|'courses'>>(
         (a, r) => ({
           students:    a.students    + r.students,
@@ -336,7 +344,7 @@ const OrganizationAdminOverview: React.FC = () => {
       );
 
       return {
-        labelText: `ISO Week ${anchorDate.isoWeek()}, ${anchorDate.year()}`,
+        labelText: `Tuần ISO ${anchorDate.isoWeek()}, ${anchorDate.year()}`,
         barLabels: rows.map(r => r.label),
         barSeries: {
           Students: rows.map(r => r.students),
@@ -378,7 +386,7 @@ const OrganizationAdminOverview: React.FC = () => {
       );
 
       return {
-        labelText: anchorDate.format('MMMM YYYY'),
+        labelText: anchorDate.format('MMMM YYYY'), // Tiếng Việt nhờ dayjs.locale('vi')
         barLabels: rows.map(r => r.label),
         barSeries: {
           Students: rows.map(r => r.students),
@@ -452,10 +460,10 @@ const OrganizationAdminOverview: React.FC = () => {
   const barData = useMemo(() => ({
     labels: filtered.barLabels,
     datasets: [
-      { label: 'Students',    data: filtered.barSeries.Students,    backgroundColor: ADMIN_COLORS.teal,  borderRadius: 10, borderSkipped: false, maxBarThickness: 36, barPercentage: 0.8, categoryPercentage: 0.6 },
-      { label: 'Instructors', data: filtered.barSeries.Instructors, backgroundColor: ADMIN_COLORS.navy,  borderRadius: 10, borderSkipped: false, maxBarThickness: 36, barPercentage: 0.8, categoryPercentage: 0.6 },
-      { label: 'Workspaces',  data: filtered.barSeries.Workspaces,  backgroundColor: ADMIN_COLORS.gray,  borderRadius: 10, borderSkipped: false, maxBarThickness: 36, barPercentage: 0.8, categoryPercentage: 0.6 },
-      { label: 'Orders',      data: filtered.barSeries.Orders,      backgroundColor: ADMIN_COLORS.cyan,  borderRadius: 10, borderSkipped: false, maxBarThickness: 36, barPercentage: 0.8, categoryPercentage: 0.6 },
+      { label: VI_DATASET_LABELS.students,    data: filtered.barSeries.Students,    backgroundColor: ADMIN_COLORS.teal,  borderRadius: 10, borderSkipped: false, maxBarThickness: 36, barPercentage: 0.8, categoryPercentage: 0.6 },
+      { label: VI_DATASET_LABELS.instructors, data: filtered.barSeries.Instructors, backgroundColor: ADMIN_COLORS.navy,  borderRadius: 10, borderSkipped: false, maxBarThickness: 36, barPercentage: 0.8, categoryPercentage: 0.6 },
+      { label: VI_DATASET_LABELS.workspaces,  data: filtered.barSeries.Workspaces,  backgroundColor: ADMIN_COLORS.gray,  borderRadius: 10, borderSkipped: false, maxBarThickness: 36, barPercentage: 0.8, categoryPercentage: 0.6 },
+      { label: VI_DATASET_LABELS.orders,      data: filtered.barSeries.Orders,      backgroundColor: ADMIN_COLORS.cyan,  borderRadius: 10, borderSkipped: false, maxBarThickness: 36, barPercentage: 0.8, categoryPercentage: 0.6 },
     ]
   }), [filtered.barLabels.join(','), filtered.barSeries]);
 
@@ -466,7 +474,7 @@ const OrganizationAdminOverview: React.FC = () => {
       legend: { labels: { usePointStyle: true, boxWidth: 10 } },
       tooltip: {
         backgroundColor: 'rgba(15,23,42,0.92)', padding: 12, cornerRadius: 8,
-        callbacks: { label: (ctx) => ` ${ctx.dataset.label}: ${ctx.parsed.y?.toLocaleString()}` }
+        callbacks: { label: (ctx) => ` ${ctx.dataset.label}: ${ctx.parsed.y?.toLocaleString('vi-VN')}` }
       }
     },
     scales: {
@@ -479,7 +487,7 @@ const OrganizationAdminOverview: React.FC = () => {
     (filtered.share.students + filtered.share.instructors + filtered.share.workspaces + filtered.share.orders) || 1;
 
   const shareData = useMemo(() => ({
-    labels: ['Students', 'Instructors', 'Workspaces', 'Orders'],
+    labels: [VI_DATASET_LABELS.students, VI_DATASET_LABELS.instructors, VI_DATASET_LABELS.workspaces, VI_DATASET_LABELS.orders],
     datasets: [{
       data: [
         filtered.share.students,
@@ -510,16 +518,16 @@ const OrganizationAdminOverview: React.FC = () => {
           label: (ctx) => {
             const val = ctx.parsed as number;
             const percent = Math.round((val / totalShare) * 100);
-            return ` ${ctx.label}: ${val.toLocaleString()} (${percent}%)`;
+            return ` ${ctx.label}: ${val.toLocaleString('vi-VN')} (${percent}%)`;
           }
         }
       }
     }
   };
 
-  // Export CSV
+  // Xuất CSV
   const handleExportCSV = () => {
-    const header = ['label', 'students', 'instructors', 'workspaces', 'orders'];
+    const header = ['nhan', 'hoc_vien', 'giang_vien', 'khong_gian', 'don_hang']; // header tiếng Việt/slug
     const rows = filtered.tableRows.map(r =>
       [r.label, r.students, r.instructors, r.workspaces, r.orders].join(',')
     );
@@ -527,60 +535,60 @@ const OrganizationAdminOverview: React.FC = () => {
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    const prefix = granularity === 'week' ? `week-${anchorDate.isoWeek()}-${anchorDate.year()}`
+    const prefix = granularity === 'week' ? `tuan-${anchorDate.isoWeek()}-${anchorDate.year()}`
       : granularity === 'month' ? anchorDate.format('YYYY-MM')
       : `${anchorDate.year()}`;
     a.href = url;
-    a.download = `org-dashboard-${granularity}-${prefix}.csv`;
+    a.download = `bang-dieu-khien-${granularity}-${prefix}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
 
   const resetToday = () => setAnchorDate(dayjs());
 
-  // Metric cards (màu admin + purple cho Courses) — hiển thị % WoW dạng số
+  // Thẻ chỉ số
   const cards = [
-    { key: 'students',    title: 'Total Students',    icon: <TeamOutlined />,         value: totals.students,    percent: wow.students,    className: 'metric--tealSolid'   },
-    { key: 'instructors', title: 'Total Instructors', icon: <UserOutlined />,         value: totals.instructors, percent: wow.instructors, className: 'metric--navySolid'   },
-    { key: 'workspaces',  title: 'Total Workspaces',  icon: <CheckCircleOutlined />,  value: totals.workspaces,  percent: wow.workspaces,  className: 'metric--graySolid'   },
-    { key: 'courses',     title: 'Total Courses',     icon: <BookOutlined />,         value: totals.courses,     percent: wow.courses,     className: 'metric--purpleSolid' },
-    { key: 'orders',      title: 'Total Orders',      icon: <ShoppingCartOutlined />, value: totals.orders,      percent: wow.orders,      className: 'metric--cyanSolid'   },
+    { key: 'students',    title: 'Tổng học viên',      icon: <TeamOutlined />,         value: totals.students,    percent: wow.students,    className: 'metric--tealSolid'   },
+    { key: 'instructors', title: 'Tổng giảng viên',    icon: <UserOutlined />,         value: totals.instructors, percent: wow.instructors, className: 'metric--navySolid'   },
+    { key: 'workspaces',  title: 'Tổng không gian làm việc', icon: <CheckCircleOutlined />,  value: totals.workspaces,  percent: wow.workspaces,  className: 'metric--graySolid'   },
+    { key: 'courses',     title: 'Tổng khóa học',      icon: <BookOutlined />,         value: totals.courses,     percent: wow.courses,     className: 'metric--purpleSolid' },
+    { key: 'orders',      title: 'Tổng đơn hàng',      icon: <ShoppingCartOutlined />, value: totals.orders,      percent: wow.orders,      className: 'metric--cyanSolid'   },
   ] as const;
 
-  // Table columns
+  // Cột bảng
   const orderCols = [
     {
-      title: '#',
+      title: 'Mã đơn',
       dataIndex: 'orderCode',
       key: 'orderCode',
       render: (_: any, r: OrderRow) => r.orderCode ?? r.id?.slice(-6)?.toUpperCase() ?? '—',
     },
     {
-      title: 'Subscription Plan',
+      title: 'Gói đăng ký',
       dataIndex: 'subscriptionPlanName',
       key: 'plan',
       render: (_: any, r: OrderRow) =>
         r.subscriptionPlanName || (r.subscriptionPlanId ? planNameById[r.subscriptionPlanId!] : '') || '—',
     },
     {
-      title: 'Price',
+      title: 'Giá',
       dataIndex: 'totalPrice',
       key: 'price',
       render: (_: any, r: OrderRow) =>
         typeof r.totalPrice === 'number' ? `${r.totalPrice.toLocaleString('vi-VN')} ₫` : '—',
     },
     {
-      title: 'Status',
+      title: 'Trạng thái',
       dataIndex: 'status',
       key: 'status',
       render: (s: OrderRow['status']) => {
-        const label = s === 1 ? 'PAID' : s === 2 ? 'CANCELLED' : 'PENDING';
+        const label = s === 1 ? 'ĐÃ THANH TOÁN' : s === 2 ? 'ĐÃ HỦY' : 'CHỜ XỬ LÝ';
         const color = s === 1 ? 'green' : s === 2 ? 'red' : 'gold';
         return <Tag color={color}>{label}</Tag>;
       },
     },
     {
-      title: 'Created',
+      title: 'Thời gian tạo',
       dataIndex: 'createdAt',
       key: 'createdAt',
       render: (_: any, r: OrderRow) => {
@@ -595,11 +603,11 @@ const OrganizationAdminOverview: React.FC = () => {
       <Content className="purple-container">
         {/* Header */}
         <div className="purple-header">
-          <Title level={4} className="purple-title"><AimOutlined /> Dashboard</Title>
-          <span className="purple-overview">Overview</span>
+          <Title level={4} className="purple-title"><AimOutlined /> Trang tổng quan</Title>
+          <span className="purple-overview">Tổng quan</span>
         </div>
 
-        {/* FILTER BAR */}
+        {/* Thanh lọc */}
         <Row justify="space-between" align="middle" style={{ marginBottom: 12 }}>
           <Col flex="auto">
             <Space size="middle" wrap>
@@ -607,21 +615,36 @@ const OrganizationAdminOverview: React.FC = () => {
                 value={granularity}
                 onChange={(v) => setGranularity(v as Granularity)}
                 options={[
-                  { label: 'Week', value: 'week' },
-                  { label: 'Month', value: 'month' },
-                  { label: 'Year', value: 'year' },
+                  { label: 'Tuần', value: 'week' },
+                  { label: 'Tháng', value: 'month' },
+                  { label: 'Năm', value: 'year' },
                 ]}
               />
               {granularity === 'week' && (
-                <DatePicker picker="week" value={anchorDate} onChange={(d) => d && setAnchorDate(d)} />
+                <DatePicker
+                  picker="week"
+                  value={anchorDate}
+                  onChange={(d) => d && setAnchorDate(d)}
+                  placeholder="Chọn tuần"
+                />
               )}
               {granularity === 'month' && (
-                <DatePicker picker="month" value={anchorDate} onChange={(d) => d && setAnchorDate(d)} />
+                <DatePicker
+                  picker="month"
+                  value={anchorDate}
+                  onChange={(d) => d && setAnchorDate(d)}
+                  placeholder="Chọn tháng"
+                />
               )}
               {granularity === 'year' && (
-                <DatePicker picker="year" value={anchorDate} onChange={(d) => d && setAnchorDate(d)} />
+                <DatePicker
+                  picker="year"
+                  value={anchorDate}
+                  onChange={(d) => d && setAnchorDate(d)}
+                  placeholder="Chọn năm"
+                />
               )}
-              <Button icon={<ReloadOutlined />} onClick={resetToday}>Today</Button>
+              <Button icon={<ReloadOutlined />} onClick={resetToday}>Hôm nay</Button>
             </Space>
           </Col>
           <Col>
@@ -630,14 +653,14 @@ const OrganizationAdminOverview: React.FC = () => {
                 {filtered.labelText}
               </Button>
               <Button icon={<DownloadOutlined />} type="primary" onClick={handleExportCSV}>
-                Export CSV
+                Xuất CSV
               </Button>
             </Space>
           </Col>
         </Row>
 
         <Spin spinning={loading}>
-          {/* METRICS */}
+          {/* THẺ CHỈ SỐ */}
           <Row gutter={[20, 20]} className="metric-row equal-cards">
             {cards.map((c) => (
               <Col xs={24} sm={12} md={12} lg={8} xl={6} xxl={4} key={c.key}>
@@ -646,7 +669,7 @@ const OrganizationAdminOverview: React.FC = () => {
                     <div className="metric-icon">{c.icon}</div>
                     <div className="metric-title">{c.title}</div>
                   </div>
-                  <div className="metric-value">{c.value.toLocaleString()}</div>
+                  <div className="metric-value">{c.value.toLocaleString('vi-VN')}</div>
                   <div className="metric-trend">
                     <PctTag value={c.percent} />
                   </div>
@@ -655,14 +678,14 @@ const OrganizationAdminOverview: React.FC = () => {
             ))}
           </Row>
 
-          {/* CHARTS */}
+          {/* BIỂU ĐỒ */}
           <Row gutter={[20, 20]} className="charts-row">
             <Col xs={24} lg={16}>
               <Card className="panel-card">
                 <div className="panel-title">
-                  {granularity === 'week' && 'WEEKLY REPORT'}
-                  {granularity === 'month' && 'MONTHLY REPORT'}
-                  {granularity === 'year' && 'YEARLY REPORT'}
+                  {granularity === 'week' && 'BÁO CÁO THEO TUẦN'}
+                  {granularity === 'month' && 'BÁO CÁO THEO THÁNG'}
+                  {granularity === 'year' && 'BÁO CÁO THEO NĂM'}
                 </div>
                 <div className="panel-chart" style={{ height: 420 }}>
                   <Bar data={barData} options={barOpts} />
@@ -672,7 +695,7 @@ const OrganizationAdminOverview: React.FC = () => {
 
             <Col xs={24} lg={8}>
               <Card className="panel-card">
-                <div className="panel-title">Entity Share — {filtered.labelText}</div>
+                <div className="panel-title">Tỷ trọng thực thể — {filtered.labelText}</div>
                 <div className="panel-chart donut" style={{ height: 360 }}>
                   <Doughnut data={shareData} options={shareOpts} />
                 </div>
@@ -680,11 +703,11 @@ const OrganizationAdminOverview: React.FC = () => {
             </Col>
           </Row>
 
-          {/* RECENT ORDERS (YOU PAID) */}
+          {/* ĐƠN HÀNG GẦN ĐÂY */}
           <Row gutter={[20, 20]} style={{ marginTop: 8 }}>
             <Col span={24}>
               <Card className="panel-card">
-                <div className="panel-title">Recent Orders (you paid)</div>
+                <div className="panel-title">Đơn hàng gần đây (bạn đã thanh toán)</div>
                 <Table
                   size="middle"
                   rowKey="id"

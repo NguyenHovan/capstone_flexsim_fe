@@ -7,7 +7,6 @@ import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
 
 import type { Order, OrderStatusCode } from "../../../types/order";
-import { getOrderStatusLabel } from "../../../types/order";
 import { OrderService } from "../../../services/order.service";
 import { PaymentService } from "../../../services/payment.service";
 import type { SubscriptionPlan } from "../../../types/subscriptionPlan";
@@ -22,6 +21,9 @@ type CurrentUser = { id: string; organizationId: string; userName?: string };
 
 const statusColor = (s?: OrderStatusCode) =>
   s === 1 ? "green" : s === 2 ? "red" : "gold";
+
+const statusLabelVI = (s?: OrderStatusCode) =>
+  s === 1 ? "ĐÃ THANH TOÁN" : s === 2 ? "ĐÃ HỦY" : "CHỜ THANH TOÁN";
 
 const currency = (n?: number) =>
   typeof n === "number" ? new Intl.NumberFormat("vi-VN").format(n) : "";
@@ -106,7 +108,7 @@ const OrderOrganization: React.FC = () => {
 
   const columns: ColumnsType<Order> = [
     {
-      title: "Order ID",
+      title: "Mã đơn hàng",
       dataIndex: "id",
       key: "id",
       width: 240,
@@ -116,7 +118,7 @@ const OrderOrganization: React.FC = () => {
       ),
     },
     {
-      title: "Start → End",
+      title: "Bắt đầu → Kết thúc",
       key: "dates",
       width: 210,
       render: (_, row) => {
@@ -126,7 +128,7 @@ const OrderOrganization: React.FC = () => {
       }
     },
     {
-      title: "Total Price",
+      title: "Tổng tiền",
       dataIndex: "totalPrice",
       key: "totalPrice",
       align: "center",
@@ -135,20 +137,20 @@ const OrderOrganization: React.FC = () => {
       sorter: (a, b) => ((a as any).totalPrice ?? a.totalPrice ?? 0) - ((b as any).totalPrice ?? b.totalPrice ?? 0),
     },
     {
-      title: "Status",
+      title: "Trạng thái",
       dataIndex: "status",
       key: "status",
-      width: 140,
-      render: (s) => <Tag color={statusColor(s)}>{getOrderStatusLabel(s)}</Tag>,
+      width: 160,
+      render: (s) => <Tag color={statusColor(s)}>{statusLabelVI(s)}</Tag>,
       filters: [
-        { text: "PENDING", value: 0 },
-        { text: "PAID", value: 1 },
-        { text: "CANCELLED", value: 2 },
+        { text: "Chờ thanh toán", value: 0 },
+        { text: "Đã thanh toán", value: 1 },
+        { text: "Đã hủy", value: 2 },
       ],
       onFilter: (value, record) => record.status === (value as number),
     },
     {
-      title: "Created At",
+      title: "Tạo lúc",
       dataIndex: "createdAt",
       key: "createdAt",
       width: 180,
@@ -156,7 +158,7 @@ const OrderOrganization: React.FC = () => {
       sorter: (a, b) => dayjs(a.createdAt || 0).valueOf() - dayjs(b.createdAt || 0).valueOf(),
     },
     {
-      title: "Action",
+      title: "Thao tác",
       key: "action",
       width: 160,
       render: (_, row) => (
@@ -170,7 +172,7 @@ const OrderOrganization: React.FC = () => {
   if (!currentUser) {
     return (
       <Card>
-        <Title level={4} style={{ margin: 0 }}>Order Manager</Title>
+        <Title level={4} style={{ margin: 0 }}>Quản lý đơn hàng</Title>
         <div style={{ marginTop: 16 }}>
           <Empty description="Bạn cần đăng nhập để xem đơn hàng của mình" />
         </div>
@@ -181,7 +183,7 @@ const OrderOrganization: React.FC = () => {
   return (
     <Card>
       <Space style={{ width: "100%", justifyContent: "space-between", marginBottom: 12 }}>
-        <Title level={4} style={{ margin: 0 }}>Order Manager</Title>
+        <Title level={4} style={{ margin: 0 }}>Quản lý đơn hàng</Title>
         <Button type="primary" onClick={() => setOpenCreate(true)}>Tạo & Thanh toán</Button>
       </Space>
 
@@ -204,9 +206,9 @@ const OrderOrganization: React.FC = () => {
       >
         <Form form={form} layout="vertical">
           <Form.Item
-            label="Subscription Plan"
+            label="Gói dịch vụ"
             name="subscriptionPlanId"
-            rules={[{ required: true, message: "Chọn gói dịch vụ" }]}
+            rules={[{ required: true, message: "Vui lòng chọn gói dịch vụ" }]}
           >
             <Select
               placeholder="Chọn gói"

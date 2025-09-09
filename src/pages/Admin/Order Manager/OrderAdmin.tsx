@@ -57,7 +57,7 @@ const OrderAdmin: React.FC = () => {
       const data = await OrderService.getAll();
       setOrders(Array.isArray(data) ? data : []);
     } catch (e: any) {
-      message.error(e?.message || "Unable to load orders");
+      message.error(e?.message || "Không thể tải danh sách đơn hàng");
     } finally {
       setLoading(false);
     }
@@ -88,13 +88,13 @@ const OrderAdmin: React.FC = () => {
   const doUpdateStatus = async (row: Order, newStatus: OrderStatusCode) => {
     setUpdatingId(row.id);
     try {
-      const hide = message.loading("Updating status…", 0) as any;
+      const hide = message.loading("Cập nhật trang thái...", 0) as any;
       await OrderService.updateStatus(row.id, newStatus); 
       if (typeof hide === "function") hide();
-      message.success("Update status successful");
+      message.success("Cập nhật trạng thái thành công");
       await loadOrders();
     } catch (e: any) {
-      message.error(e?.message || "Update status failure");
+      message.error(e?.message || "Cập nhật trạng thái thất bại");
     } finally {
       setUpdatingId(null);
     }
@@ -112,7 +112,7 @@ const OrderAdmin: React.FC = () => {
     const next = updateNewStatus;
 
     if (next === curr) {
-      message.info("Status unchanged");
+      message.info("Trạng thái không thay đổi");
       setUpdateModalOpen(false);
       setUpdateTarget(null);
       return;
@@ -132,11 +132,11 @@ const OrderAdmin: React.FC = () => {
     setDeletingId(row.id);
     try {
       await OrderService.delete(row.id);
-      message.success("Deleted order successfully");
+      message.success("Xóa đơn hàng thành công");
       setOrders(prev => prev.filter(o => o.id !== row.id));
       await loadOrders();
     } catch (e: any) {
-      message.error(e?.message || "Delete order failed");
+      message.error(e?.message || "Xóa đơn hàng thất bại");
     } finally {
       setDeletingId(null);
     }
@@ -160,16 +160,16 @@ const OrderAdmin: React.FC = () => {
     }
 
     Modal.confirm({
-      title: "Delete this order?",
+      title: "Xóa đơn hàng này?",
       icon: <ExclamationCircleOutlined />,
       content: (
         <span>
           You are deleting order <Text code>{row.id}</Text>. This action cannot be undone.
         </span>
       ),
-      okText: "Delete",
+      okText: "Xóa",
       okType: "danger",
-      cancelText: "Cancel",
+      cancelText: "Hủy",
       onOk: () => doDelete(row),
     });
   };
@@ -178,7 +178,7 @@ const OrderAdmin: React.FC = () => {
 
   const columns: ColumnsType<Order> = [
     {
-      title: "Order ID",
+      title: "Mã đơn hàng",
       dataIndex: "id",
       key: "id",
       width: 260,
@@ -189,7 +189,7 @@ const OrderAdmin: React.FC = () => {
       ),
     },
     {
-      title: "Plan",
+      title: "Gói đăng ký",
       dataIndex: "subscriptionPlanName",
       key: "subscriptionPlanName",
       ellipsis: true,
@@ -202,7 +202,7 @@ const OrderAdmin: React.FC = () => {
       },
     },
     {
-      title: "Total Price",
+      title: "Tổng tiền ",
       dataIndex: "totalPrice",
       key: "totalPrice",
       width: 120,
@@ -214,7 +214,7 @@ const OrderAdmin: React.FC = () => {
       ),
     },
     {
-      title: "Status",
+      title: "Trạng thái",
       dataIndex: "status",
       key: "status",
       width: 170,
@@ -228,7 +228,7 @@ const OrderAdmin: React.FC = () => {
       ),
     },
     {
-      title: "Organization",
+      title: "Tổ chức",
       dataIndex: "organizationId",
       key: "organizationId",
       width: 240,
@@ -237,7 +237,7 @@ const OrderAdmin: React.FC = () => {
       ),
     },
     {
-      title: "Account",
+      title: "Tài khoản tạo đơn hàng",
       dataIndex: "accountId",
       key: "accountId",
       width: 240,
@@ -246,7 +246,7 @@ const OrderAdmin: React.FC = () => {
       ),
     },
     {
-      title: "Created",
+      title: "Ngày tạo đơn",
       dataIndex: "createdAt",
       key: "createdAt",
       width: 180,
@@ -254,7 +254,7 @@ const OrderAdmin: React.FC = () => {
       render: (v?: string) => (v ? dayjs(v).format("YYYY-MM-DD HH:mm") : "—"),
     },
     {
-      title: "Action",
+      title: "Hành động",
       key: "action",
       width: 280,
       render: (_, row) => (
@@ -264,7 +264,7 @@ const OrderAdmin: React.FC = () => {
             onClick={() => openUpdateModal(row)}
             loading={updatingId === row.id}
           >
-            Update
+            Cặp nhật đơn hàng
           </Button>
 
           <Button
@@ -274,7 +274,7 @@ const OrderAdmin: React.FC = () => {
             onClick={() => handleDeleteClick(row)}
             data-can-delete={row.status === 2}
           >
-            Delete
+            Xóa
           </Button>
         </Space>
       ),
@@ -284,11 +284,11 @@ const OrderAdmin: React.FC = () => {
   return (
     <Card className="oa-card">
       <div className="oa-header">
-        <Title level={4} className="oa-title">Order Manager</Title>
+        <Title level={4} className="oa-title">Quản lý các đơn hàng</Title>
         <Space className="oa-controls" wrap>
           <Select
             allowClear
-            placeholder="Filter status"
+            placeholder="Lọc trạng thái"
             value={statusFilter}
             onChange={(v) => setStatusFilter(v)}
             className="oa-filter"
@@ -296,7 +296,7 @@ const OrderAdmin: React.FC = () => {
           />
           <Search
             allowClear
-            placeholder="Search by ID / Code / Org / Account / Plan"
+            placeholder="Tìm kiếm bằng ID /Tổ chức / Tài khoản / Gói đăng ký"
             onSearch={setSearchText}
             onChange={(e) => setSearchText(e.target.value)}
             className="oa-search"
@@ -318,11 +318,11 @@ const OrderAdmin: React.FC = () => {
       />
 
       <Modal
-        title="Update Order Status"
+        title="Cập nhật trạng thái đơn hàng"
         open={updateModalOpen}
         onCancel={closeUpdateModal}
         onOk={submitUpdate}
-        okText="Update"
+        okText="Cập nhật"
         okButtonProps={{
           loading: updatingId === updateTarget?.id,
          
@@ -332,16 +332,16 @@ const OrderAdmin: React.FC = () => {
         {updateTarget && (
           <Space direction="vertical" style={{ width: "100%" }}>
             <div>
-              Order: <Text code>{updateTarget.id}</Text>
+              Đơn hàng: <Text code>{updateTarget.id}</Text>
             </div>
             <div>
-              Current:&nbsp;
+              Trạng thái hiện tại:&nbsp;
               <Tag color={statusColor(updateTarget.status)} style={{ margin: 0 }}>
                 {getOrderStatusLabel(updateTarget.status)}
               </Tag>
             </div>
             <div>
-              New status:
+              Trạng thái cập nhật:
               <div style={{ marginTop: 8 }}>
                 <Select<OrderStatusCode>
                   value={updateNewStatus}

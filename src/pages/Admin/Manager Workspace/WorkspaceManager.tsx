@@ -259,7 +259,7 @@ const WorkspaceManager: React.FC = () => {
                       <Tag>{c.ratingAverage.toFixed(1)}</Tag>
                     )}
                     <Tag color={c.isActive ? "green" : "red"}>
-                      {c.isActive ? "Active" : "Inactive"}
+                      {c.isActive ? "Đang hoạt động" : "Không hoạt động"}
                     </Tag>
                   </div>
                 }
@@ -272,7 +272,7 @@ const WorkspaceManager: React.FC = () => {
                         </span>
                       </Tooltip>
                       <span>
-                        <b>Created:</b>{" "}
+                        <b>Ngày tạo:</b>{" "}
                         {c.createdAt
                           ? new Date(c.createdAt).toLocaleDateString()
                           : "N/A"}
@@ -307,7 +307,7 @@ const WorkspaceManager: React.FC = () => {
       sorter: (a, b) => compareStr(a.id, b.id),
     },
     {
-      title: "Workspace Name",
+      title: "Tên không gian làm việc",
       dataIndex: "workSpaceName",
       key: "workSpaceName",
       ellipsis: true,
@@ -315,14 +315,14 @@ const WorkspaceManager: React.FC = () => {
       sorter: (a, b) => compareStr(a.workSpaceName, b.workSpaceName),
     },
     {
-      title: "Order ID",
+      title: "Mã đơn hàng",
       dataIndex: "orderId",
       key: "orderId",
       ellipsis: true,
       width: 160,
     },
     {
-      title: "Organization",
+      title: "Tổ chức",
       dataIndex: "organizationId",
       key: "organizationId",
       ellipsis: true,
@@ -332,14 +332,14 @@ const WorkspaceManager: React.FC = () => {
         compareStr(getOrgName(a.organizationId), getOrgName(b.organizationId)),
     },
     {
-      title: "Accounts",
+      title: "Số lượng người dùng",
       dataIndex: "numberOfAccount",
       key: "numberOfAccount",
-      width: 110,
+      width: 170,
       sorter: (a, b) => (a.numberOfAccount || 0) - (b.numberOfAccount || 0),
     },
     {
-      title: "Courses",
+      title: "Các khóa học",
       key: "courses",
       width: 460,
       render: (_: any, record: Workspace) => {
@@ -351,7 +351,7 @@ const WorkspaceManager: React.FC = () => {
 
         return (
           <div>
-            <Text strong>{count}</Text> {count === 1 ? "course" : "courses"}
+            <Text strong>{count}</Text> {count === 1 ? "khóa học" : "khóa học"}
             <div style={{ marginTop: 6 }}>
               {renderCourseList(displayList, { dense: true })}
               {count > 3 && (
@@ -365,7 +365,7 @@ const WorkspaceManager: React.FC = () => {
                     }))
                   }
                 >
-                  {expanded ? "Show less" : "Show more"}
+                  {expanded ? "Thu gọn" : "Hiển thị thêm"}
                 </Button>
               )}
             </div>
@@ -374,21 +374,21 @@ const WorkspaceManager: React.FC = () => {
       },
     },
     {
-      title: "Image URL",
+      title: "Ảnh",
       dataIndex: "imgUrl",
       key: "imgUrl",
       width: 120,
       render: (url: string) => <Image src={url} />,
     },
     {
-      title: "Description",
+      title: "Mô tả",
       dataIndex: "description",
       key: "description",
       ellipsis: true,
       width: 260,
     },
     {
-      title: "Active",
+      title: "Trạng thái",
       dataIndex: "isActive",
       key: "isActive",
       width: 90,
@@ -396,7 +396,7 @@ const WorkspaceManager: React.FC = () => {
       sorter: (a, b) => Number(a.isActive) - Number(b.isActive),
     },
     {
-      title: "Created At",
+      title: "Ngày tạo",
       dataIndex: "createdAt",
       key: "createdAt",
       width: 160,
@@ -408,7 +408,7 @@ const WorkspaceManager: React.FC = () => {
       defaultSortOrder: "descend",
     },
     {
-      title: "Updated At",
+      title: "Ngày cập nhật",
       dataIndex: "updatedAt",
       key: "updatedAt",
       width: 160,
@@ -418,25 +418,25 @@ const WorkspaceManager: React.FC = () => {
         (a.updatedAt ? Date.parse(a.updatedAt) : 0) -
         (b.updatedAt ? Date.parse(b.updatedAt) : 0),
     },
+    // {
+    //   title: "Ngày xóa",
+    //   dataIndex: "deleteAt",
+    //   key: "deleteAt",
+    //   width: 160,
+    //   render: (text: string | null) =>
+    //     text ? new Date(text).toLocaleDateString() : "N/A",
+    //   sorter: (a, b) =>
+    //     (a.deleteAt ? Date.parse(a.deleteAt) : 0) -
+    //     (b.deleteAt ? Date.parse(b.deleteAt) : 0),
+    // },
     {
-      title: "Deleted At",
-      dataIndex: "deleteAt",
-      key: "deleteAt",
-      width: 160,
-      render: (text: string | null) =>
-        text ? new Date(text).toLocaleDateString() : "N/A",
-      sorter: (a, b) =>
-        (a.deleteAt ? Date.parse(a.deleteAt) : 0) -
-        (b.deleteAt ? Date.parse(b.deleteAt) : 0),
-    },
-    {
-      title: "Actions",
+      title: "Thao tác",
       key: "actions",
       width: 160,
       render: (_: any, record: Workspace) => (
         <div>
           <Button style={{ marginRight: 8 }} onClick={() => handleView(record)}>
-            View
+            Xem
           </Button>
           <Button
             icon={<DeleteOutlined />}
@@ -444,7 +444,7 @@ const WorkspaceManager: React.FC = () => {
             onClick={() => handleDelete(record)}
             disabled={loading}
           >
-            Delete
+            Xóa
           </Button>
         </div>
       ),
@@ -456,7 +456,7 @@ const WorkspaceManager: React.FC = () => {
   return (
     <div>
       <Title level={2} style={{ marginBottom: 12 }}>
-        Workspace Manager
+        Quản lí không gian làm việc
       </Title>
 
       <Card style={{ marginBottom: 12 }}>
@@ -467,7 +467,7 @@ const WorkspaceManager: React.FC = () => {
               onChange={(e) => setKeyword(e.target.value)}
               allowClear
               prefix={<SearchOutlined />}
-              placeholder="Search by name, description, ID, organization, course, or instructor"
+              placeholder="Tìm kiếm theo tên, ID, tổ chức, khóa học..."
             />
           </Col>
           <Col xs={24} sm={12} md={8} lg={6}>
@@ -477,7 +477,7 @@ const WorkspaceManager: React.FC = () => {
               value={orgFilter}
               onChange={(v) => setOrgFilter(v)}
               style={{ width: "100%" }}
-              placeholder="Filter by Organization"
+              placeholder="Lọc theo tổ chức"
               optionFilterProp="label"
               options={organizations.map((org) => ({
                 label: org.organizationName,
@@ -492,7 +492,7 @@ const WorkspaceManager: React.FC = () => {
                 setOrgFilter(undefined);
               }}
             >
-              Reset
+              Đặt lại
             </Button>
           </Col>
         </Row>
@@ -516,7 +516,7 @@ const WorkspaceManager: React.FC = () => {
       />
 
       <Modal
-        title="Workspace Details"
+        title="Mô tả chi tiết không gian làm việc"
         open={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
         footer={null}
@@ -528,17 +528,17 @@ const WorkspaceManager: React.FC = () => {
               <strong>ID:</strong> {selectedWorkspace.id}
             </p>
             <p>
-              <strong>Workspace Name:</strong> {selectedWorkspace.workSpaceName}
+              <strong>Tên không gian làm việc:</strong> {selectedWorkspace.workSpaceName}
             </p>
             <p>
-              <strong>Order ID:</strong> {selectedWorkspace.orderId || "N/A"}
+              <strong>Mã đơn hàng:</strong> {selectedWorkspace.orderId || "N/A"}
             </p>
             <p>
-              <strong>Organization:</strong>{" "}
+              <strong>Tổ chức:</strong>{" "}
               {getOrgName(selectedWorkspace.organizationId)}
             </p>
             <p>
-              <strong>Number of Accounts:</strong>{" "}
+              <strong>Số lượng người dùng:</strong>{" "}
               {selectedWorkspace.numberOfAccount}
             </p>
             <p>
@@ -549,38 +549,38 @@ const WorkspaceManager: React.FC = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  View
+                  Xem chi tiết
                 </a>
               ) : (
                 "N/A"
               )}
             </p>
             <p>
-              <strong>Description:</strong> {selectedWorkspace.description}
+              <strong>Mô tả:</strong> {selectedWorkspace.description}
             </p>
             <p>
-              <strong>Active:</strong>{" "}
+              <strong>Trạng thái:</strong>{" "}
               {selectedWorkspace.isActive ? "Yes" : "No"}
             </p>
             <p>
-              <strong>Created At:</strong>{" "}
+              <strong>Ngày tạo:</strong>{" "}
               {new Date(selectedWorkspace.createdAt).toLocaleDateString()}
             </p>
             <p>
-              <strong>Updated At:</strong>{" "}
+              <strong>Ngày chỉnh sửa:</strong>{" "}
               {selectedWorkspace.updatedAt
                 ? new Date(selectedWorkspace.updatedAt).toLocaleDateString()
                 : "N/A"}
             </p>
-            <p>
-              <strong>Deleted At:</strong>{" "}
+            {/* <p>
+              <strong>Ngày xóa:</strong>{" "}
               {selectedWorkspace.deleteAt
                 ? new Date(selectedWorkspace.deleteAt).toLocaleDateString()
                 : "N/A"}
-            </p>
+            </p> */}
 
             <div style={{ marginTop: 16 }}>
-              <Text strong>Courses in this workspace:</Text>
+              <Text strong>Các khóa học thuộc không gian làm việc:</Text>
               <div style={{ marginTop: 8 }}>
                 {renderCourseList(
                   coursesByWorkspaceId.get(normalizeId(selectedWorkspace.id)) ||
@@ -593,7 +593,7 @@ const WorkspaceManager: React.FC = () => {
               style={{ marginTop: 16 }}
               onClick={() => setIsModalVisible(false)}
             >
-              Close
+              Đóng
             </Button>
           </div>
         )}

@@ -20,7 +20,6 @@ const OrganizationManager: React.FC = () => {
   const [editingOrganization, setEditingOrganization] = useState<Organization | null>(null);
   const [viewingOrganization, setViewingOrganization] = useState<Organization | null>(null);
 
-  // === loadOrganizations: tự động fetch lại data từ server ===
   const loadOrganizations = useCallback(async () => {
     setLoading(true);
     try {
@@ -47,7 +46,6 @@ const OrganizationManager: React.FC = () => {
         await OrganizationService.create(values);
         message.success('Organization created successfully');
       }
-      // Sau khi create/update, luôn refetch từ server để data mới nhất
       await loadOrganizations();
       handleModalClose();
     } catch (error) {
@@ -62,7 +60,6 @@ const OrganizationManager: React.FC = () => {
     try {
       await OrganizationService.deleteOrganizationById(id);
       message.success('Organization deleted successfully');
-      // Refetch sau khi xóa
       await loadOrganizations();
     } catch (error) {
       message.error('Failed to delete organization');
@@ -110,7 +107,6 @@ const OrganizationManager: React.FC = () => {
       };
       await OrganizationService.updateOrganizationById(record.id, payload);
       message.success('Updated active status');
-      // Refetch sau khi toggle
       await loadOrganizations();
     } catch (error) {
       message.error('Failed to update active status');
@@ -128,12 +124,12 @@ const OrganizationManager: React.FC = () => {
 
   const columns = [
     { title: 'ID', dataIndex: 'id', key: 'id', width: 100, ellipsis: true },
-    { title: 'Name', dataIndex: 'organizationName', key: 'organizationName' },
+    { title: 'Tên tổ chức', dataIndex: 'organizationName', key: 'organizationName' },
     { title: 'Email', dataIndex: 'email', key: 'email' },
-    { title: 'Phone', dataIndex: 'phone', key: 'phone' },
-    { title: 'Address', dataIndex: 'address', key: 'address' },
+    { title: 'Số điện thoại', dataIndex: 'phone', key: 'phone' },
+    { title: 'Địa chỉ', dataIndex: 'address', key: 'address' },
     {
-      title: 'Active',
+      title: 'Trạng thái',
       dataIndex: 'isActive',
       key: 'isActive',
       render: (isActive: boolean, record: Organization) => (
@@ -144,7 +140,7 @@ const OrganizationManager: React.FC = () => {
       )
     },
     {
-      title: 'Created At',
+      title: 'Ngày tạo',
       dataIndex: 'createdAt',
       key: 'createdAt',
       render: (date: string) => {
@@ -154,7 +150,7 @@ const OrganizationManager: React.FC = () => {
       },
     },
     {
-      title: 'Updated At',
+      title: 'Ngày cập nhật',
       dataIndex: 'updatedAt',
       key: 'updatedAt',
       render: (date: string) => {
@@ -164,7 +160,7 @@ const OrganizationManager: React.FC = () => {
       },
     },
     {
-      title: 'Actions',
+      title: 'Thao tác',
       key: 'actions',
       render: (_: any, record: Organization) => (
         <Space>
@@ -181,7 +177,7 @@ const OrganizationManager: React.FC = () => {
       <Content>
         <Row justify="space-between" align="middle" style={{ marginBottom: '20px', padding: '0 24px' }}>
           <Col>
-            <Title level={2}>Organization Manager</Title>
+            <Title level={2}>Quản lí người dùng</Title>
           </Col>
           <Col>
             <Space>
@@ -190,7 +186,7 @@ const OrganizationManager: React.FC = () => {
                 onClick={loadOrganizations}
                 loading={loading}
               >
-                Reload
+                Làm mới
               </Button>
               <Button
                 type="primary"
@@ -202,7 +198,7 @@ const OrganizationManager: React.FC = () => {
                   setIsModalOpen(true);
                 }}
               >
-                Create New Organization
+               Thêm tổ chức
               </Button>
             </Space>
           </Col>
@@ -220,10 +216,10 @@ const OrganizationManager: React.FC = () => {
         <Modal
           title={
             viewingOrganization
-              ? 'View Organization'
+              ? 'Xem chi tiết tổ chức'
               : editingOrganization
-              ? 'Edit Organization'
-              : 'Create Organization'
+              ? 'Chỉnh sửa tổ chức'
+              : 'Thêm tổ chức'
           }
           open={isModalOpen}
           onCancel={handleModalClose}
@@ -234,33 +230,33 @@ const OrganizationManager: React.FC = () => {
           {viewingOrganization ? (
             <div>
               <p><b>ID:</b> {viewingOrganization.id}</p>
-              <p><b>Name:</b> {viewingOrganization.organizationName}</p>
+              <p><b>Tên tổ chức:</b> {viewingOrganization.organizationName}</p>
               <p><b>Email:</b> {viewingOrganization.email}</p>
-              <p><b>Phone:</b> {viewingOrganization.phone}</p>
-              <p><b>Address:</b> {viewingOrganization.address}</p>
-              <p><b>Active:</b> {viewingOrganization.isActive ? 'Yes' : 'No'}</p>
-              <p><b>Created At:</b> {viewingOrganization.createdAt ? new Date(viewingOrganization.createdAt).toLocaleDateString() : 'N/A'}</p>
-              <p><b>Updated At:</b> {viewingOrganization.updatedAt ? new Date(viewingOrganization.updatedAt).toLocaleDateString() : 'N/A'}</p>
-              <Button type="primary" onClick={handleModalClose} style={{ marginTop: 16 }}>Close</Button>
+              <p><b>Số điện thoại:</b> {viewingOrganization.phone}</p>
+              <p><b>Địa chỉ:</b> {viewingOrganization.address}</p>
+              <p><b>Trạng thái:</b> {viewingOrganization.isActive ? 'Yes' : 'No'}</p>
+              <p><b>Ngày tạo:</b> {viewingOrganization.createdAt ? new Date(viewingOrganization.createdAt).toLocaleDateString() : 'N/A'}</p>
+              <p><b>Ngày cập nhật:</b> {viewingOrganization.updatedAt ? new Date(viewingOrganization.updatedAt).toLocaleDateString() : 'N/A'}</p>
+              <Button type="primary" onClick={handleModalClose} style={{ marginTop: 16 }}>Đóng</Button>
             </div>
           ) : (
             <Form form={form} layout="vertical" onFinish={handleSaveOrganization}>
-              <Form.Item name="organizationName" label="Organization Name" rules={[{ required: true }]}>
+              <Form.Item name="organizationName" label="Tên tổ chức" rules={[{ required: true }]}>
                 <Input />
               </Form.Item>
               <Form.Item name="email" label="Email" rules={[{ required: true, type: 'email' }]}>
                 <Input />
               </Form.Item>
-              <Form.Item name="phone" label="Phone" rules={[{ required: true }]}>
+              <Form.Item name="phone" label="Số điện thoại" rules={[{ required: true }]}>
                 <Input />
               </Form.Item>
-              <Form.Item name="address" label="Address" rules={[{ required: true }]}>
+              <Form.Item name="address" label="Địa chỉ" rules={[{ required: true }]}>
                 <Input />
               </Form.Item>
               
               <div style={{ textAlign: 'right' }}>
-                <Button onClick={handleModalClose} style={{ marginRight: 8 }}>Cancel</Button>
-                <Button type="primary" htmlType="submit">{editingOrganization ? 'Update' : 'Create'}</Button>
+                <Button onClick={handleModalClose} style={{ marginRight: 8 }}>Hủy</Button>
+                <Button type="primary" htmlType="submit">{editingOrganization ? 'Cập nhật' : 'Tạo'}</Button>
               </div>
             </Form>
           )}

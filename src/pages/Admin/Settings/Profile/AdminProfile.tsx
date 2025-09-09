@@ -25,12 +25,11 @@ const { Title, Text } = Typography;
 
 const asNum = (v: any, fb = 1) => (Number.isFinite(Number(v)) ? Number(v) : fb);
 
-/** Chuẩn hoá về 1/2/3. Nếu lỡ có 0/1/2 cũ -> +1; nếu linh tinh -> mặc định 1 */
 const normalizeGender = (g: any): 1 | 2 | 3 => {
   const n = asNum(g, 1);
   if (n === 1 || n === 2 || n === 3) return n as 1 | 2 | 3;
   if (n === 0) return 1;
-  if (n === 2 /* trường hợp cũ bị 0-based  */) return 3 as 1 | 2 | 3;
+  if (n === 2) return 3 as 1 | 2 | 3;
   return 1;
 };
 
@@ -39,7 +38,6 @@ function readCurrentUser(): any | null {
     const raw = localStorage.getItem("currentUser");
     if (!raw) return null;
     const u = JSON.parse(raw);
-    // repair nếu lỡ lưu 0/1/2
     if (u && "gender" in u) u.gender = normalizeGender(u.gender);
     return u;
   } catch {
@@ -51,7 +49,6 @@ function writeCurrentUser(next: Partial<Account>) {
   try {
     const prev = readCurrentUser() || {};
     const merged = { ...prev, ...next };
-    // luôn lưu 1/2/3
     if ("gender" in merged) merged.gender = normalizeGender(merged.gender);
     localStorage.setItem("currentUser", JSON.stringify(merged));
     window.dispatchEvent(new Event("user:updated"));
@@ -59,9 +56,9 @@ function writeCurrentUser(next: Partial<Account>) {
 }
 
 const GENDER_OPTIONS = [
-  { label: "Male", value: 1 },
-  { label: "Female", value: 2 },
-  { label: "Other", value: 3 },
+  { label: "Nam", value: 1 },
+  { label: "Nữ", value: 2 },
+  { label: "Khác", value: 3 },
 ];
 
 const AdminProfile: React.FC = () => {
@@ -75,7 +72,6 @@ const AdminProfile: React.FC = () => {
   const currentUser = useMemo(() => readCurrentUser(), []);
   const userId = currentUser?.id as string | undefined;
 
-  // Prefill nhanh từ localStorage (đã normalize về 1/2/3)
   useEffect(() => {
     if (!currentUser) return;
     setUser((prev) => prev ?? (currentUser as Account));
@@ -84,13 +80,11 @@ const AdminProfile: React.FC = () => {
       fullName: currentUser.fullName,
       phone: currentUser.phone,
       address: (currentUser as any).address,
-      gender: normalizeGender(currentUser.gender), // 1/2/3
+      gender: normalizeGender(currentUser.gender), 
       email: currentUser.email,
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Load mới nhất từ BE -> lưu chuẩn 1/2/3
   useEffect(() => {
     if (!userId) return;
     (async () => {
@@ -119,7 +113,6 @@ const AdminProfile: React.FC = () => {
         );
       }
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
   useEffect(() => {
@@ -186,7 +179,7 @@ const AdminProfile: React.FC = () => {
       if (nextAddress !== ((user as any).address ?? ""))
         diff.address = nextAddress as string | undefined;
 
-      const nextGender = normalizeGender(values.gender); // 1/2/3
+      const nextGender = normalizeGender(values.gender); 
       if (normalizeGender(user.gender) !== nextGender) diff.gender = nextGender;
 
       if ((avatarUrl || "") !== (user.avtUrl || ""))
@@ -200,7 +193,6 @@ const AdminProfile: React.FC = () => {
 
       await AccountService.updateAccount(user.id, diff);
 
-      // GET lại và đồng bộ localStorage
       const fresh = await AccountService.getAccountById(user.id);
       const normalized: Account = {
         ...fresh,
@@ -213,13 +205,13 @@ const AdminProfile: React.FC = () => {
 
       form.setFieldsValue({ gender: normalized.gender });
 
-      toast.success("Profile updated successfully!");
+      toast.success("Cập nhật thông tin cá nhân thành công!");
     } catch (e: any) {
       toast.error(
         e?.response?.data?.message ||
           (typeof e?.response?.data === "string" ? e.response.data : "") ||
           e?.message ||
-          "Update failed."
+          "Cập nhật thông tin thất bại."
       );
     } finally {
       setSavingAll(false);
@@ -228,10 +220,9 @@ const AdminProfile: React.FC = () => {
 
   return (
     <div className="profile-page">
-      {/* HERO */}
       <div className="profile-hero">
         <Title level={3} className="profile-hero__title">
-          Welcome to LogiSimEduss
+          Chào mừng bạn đến với LogiSimEdu
         </Title>
         <Text className="profile-hero__subtitle">
           {(user?.fullName || currentUser?.fullName) ?? "Organization Admin"}
@@ -281,7 +272,7 @@ const AdminProfile: React.FC = () => {
             <Col xs={24} md={12}>
               <Form.Item
                 name="fullName"
-                label="Full name"
+                label="Tên đầy đủ"
                 rules={[{ required: true }]}
               >
                 <Input
@@ -293,7 +284,7 @@ const AdminProfile: React.FC = () => {
                 />
               </Form.Item>
 
-              <Form.Item name="phone" label="Phone">
+              <Form.Item name="phone" label="Số điện thoại">
                 <Input
                   placeholder="(+84) 09xxxxxxx"
                   onPressEnter={(e) => {
@@ -305,7 +296,7 @@ const AdminProfile: React.FC = () => {
 
               <Form.Item
                 name="gender"
-                label="Gender"
+                label="Giới tính"
                 rules={[{ required: true }]}
               >
                 <Select
@@ -322,9 +313,9 @@ const AdminProfile: React.FC = () => {
                 <Input placeholder="name@example.com" disabled />
               </Form.Item>
 
-              <Form.Item name="address" label="Address">
+              <Form.Item name="address" label="Địa chỉ">
                 <Input
-                  placeholder="Street, City"
+                  
                   onPressEnter={(e) => {
                     e.preventDefault();
                     form.submit();
@@ -338,10 +329,10 @@ const AdminProfile: React.FC = () => {
                   onClick={onReset}
                   style={{ marginRight: 8 }}
                 >
-                  Reset
+                  Đặt lại
                 </Button>
                 <Button type="primary" htmlType="submit" loading={savingAll}>
-                  Save changes
+                  Lưu thay đổi
                 </Button>
               </div>
             </Col>

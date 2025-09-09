@@ -39,6 +39,8 @@ import dayjs from "dayjs";
 import type { Dayjs } from "dayjs";
 import weekOfYear from "dayjs/plugin/weekOfYear";
 import isoWeek from "dayjs/plugin/isoWeek";
+import "dayjs/locale/vi";             // ⟵ thêm dòng này
+dayjs.locale("vi");                   // ⟵ và dòng này
 
 import { toast } from "sonner";
 import axiosInstance from "../../api/axiosInstance";
@@ -158,10 +160,10 @@ const monthsInYear = (y: number) =>
     dayjs().year(y).month(i).format("YYYY-MM")
   );
 const COLORS = {
-  teal: "#2ED3C6", // Users
-  navy: "#223A54", // Organizations
-  gray: "#E3E7EF", // Workspaces
-  cyan: "#7AD6E0", // Orders
+  teal: "#2ED3C6", // Người dùng
+  navy: "#223A54", // Tổ chức
+  gray: "#E3E7EF", // Workspace
+  cyan: "#7AD6E0", // Đơn hàng
 };
 
 const AdminOverview: React.FC = () => {
@@ -174,11 +176,11 @@ const AdminOverview: React.FC = () => {
   });
   const [loading, setLoading] = useState(false);
 
-  // filters
-  const [granularity, setGranularity] = useState<Granularity>("week"); // default giống mẫu
+  // Bộ lọc
+  const [granularity, setGranularity] = useState<Granularity>("week");
   const [anchorDate, setAnchorDate] = useState<Dayjs>(dayjs());
 
-  // recent orders
+  // Đơn hàng gần đây
   const [recentOrders, setRecentOrders] = useState<OrderRow[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(false);
   const [planNameById, setPlanNameById] = useState<Record<string, string>>({});
@@ -222,7 +224,7 @@ const AdminOverview: React.FC = () => {
         });
       } catch (e) {
         console.error(e);
-        toast.error("Không tải được dữ liệu dashboard");
+        toast.error("Không tải được dữ liệu tổng quan");
       } finally {
         if (mounted) setLoading(false);
       }
@@ -326,7 +328,7 @@ const AdminOverview: React.FC = () => {
   const cards = [
     {
       key: "users",
-      title: "Total Users",
+      title: "Tổng số người dùng",
       icon: <TeamOutlined />,
       value: stats.totalUsers,
       percent: wow.users,
@@ -334,7 +336,7 @@ const AdminOverview: React.FC = () => {
     },
     {
       key: "organizations",
-      title: "Total Organizations",
+      title: "Tổng số tổ chức",
       icon: <AppstoreOutlined />,
       value: stats.totalOrganizations,
       percent: wow.organizations,
@@ -342,7 +344,7 @@ const AdminOverview: React.FC = () => {
     },
     {
       key: "workspaces",
-      title: "Total Workspaces",
+      title: "Tổng số workspace",
       icon: <CheckCircleOutlined />,
       value: stats.totalWorkspaces,
       percent: wow.workspaces,
@@ -350,7 +352,7 @@ const AdminOverview: React.FC = () => {
     },
     {
       key: "orders",
-      title: "Total Orders",
+      title: "Tổng số đơn hàng",
       icon: <ShoppingCartOutlined />,
       value: stats.totalOrders,
       percent: wow.orders,
@@ -370,13 +372,13 @@ const AdminOverview: React.FC = () => {
 
     if (dayLabelsAll.length === 0) {
       return {
-        labelText: "N/A",
+        labelText: "Không có dữ liệu",
         barLabels: [] as string[],
         barSeries: {
-          Users: [] as number[],
-          Organizations: [] as number[],
-          Workspaces: [] as number[],
-          Orders: [] as number[],
+          "Người dùng": [] as number[],
+          "Tổ chức": [] as number[],
+          "Workspace": [] as number[],
+          "Đơn hàng": [] as number[],
         },
         share: { users: 0, organizations: 0, workspaces: 0, orders: 0 },
         tableRows: [] as Array<{ label: string } & Counters>,
@@ -405,13 +407,13 @@ const AdminOverview: React.FC = () => {
       );
 
       return {
-        labelText: `ISO Week ${anchorDate.isoWeek()}, ${anchorDate.year()}`,
+        labelText: `Tuần ISO ${anchorDate.isoWeek()}, ${anchorDate.year()}`,
         barLabels: rows.map((r) => r.label),
         barSeries: {
-          Users: rows.map((r) => r.users),
-          Organizations: rows.map((r) => r.organizations),
-          Workspaces: rows.map((r) => r.workspaces),
-          Orders: rows.map((r) => r.orders),
+          "Người dùng": rows.map((r) => r.users),
+          "Tổ chức": rows.map((r) => r.organizations),
+          "Workspace": rows.map((r) => r.workspaces),
+          "Đơn hàng": rows.map((r) => r.orders),
         },
         share: sums,
         tableRows: rows,
@@ -445,10 +447,10 @@ const AdminOverview: React.FC = () => {
         labelText: anchorDate.format("MMMM YYYY"),
         barLabels: rows.map((r) => r.label),
         barSeries: {
-          Users: rows.map((r) => r.users),
-          Organizations: rows.map((r) => r.organizations),
-          Workspaces: rows.map((r) => r.workspaces),
-          Orders: rows.map((r) => r.orders),
+          "Người dùng": rows.map((r) => r.users),
+          "Tổ chức": rows.map((r) => r.organizations),
+          "Workspace": rows.map((r) => r.workspaces),
+          "Đơn hàng": rows.map((r) => r.orders),
         },
         share: sums,
         tableRows: rows,
@@ -493,10 +495,10 @@ const AdminOverview: React.FC = () => {
       labelText: `${year}`,
       barLabels: rows.map((r) => r.label),
       barSeries: {
-        Users: rows.map((r) => r.users),
-        Organizations: rows.map((r) => r.organizations),
-        Workspaces: rows.map((r) => r.workspaces),
-        Orders: rows.map((r) => r.orders),
+        "Người dùng": rows.map((r) => r.users),
+        "Tổ chức": rows.map((r) => r.organizations),
+        "Workspace": rows.map((r) => r.workspaces),
+        "Đơn hàng": rows.map((r) => r.orders),
       },
       share: sums,
       tableRows: rows,
@@ -511,8 +513,8 @@ const AdminOverview: React.FC = () => {
       labels: filtered.barLabels,
       datasets: [
         {
-          label: "Users",
-          data: filtered.barSeries.Users,
+          label: "Người dùng",
+          data: filtered.barSeries["Người dùng"],
           backgroundColor: COLORS.teal,
           borderWidth: 0,
           borderSkipped: false,
@@ -523,8 +525,8 @@ const AdminOverview: React.FC = () => {
           barPercentage: 0.72,
         },
         {
-          label: "Organizations",
-          data: filtered.barSeries.Organizations,
+          label: "Tổ chức",
+          data: filtered.barSeries["Tổ chức"],
           backgroundColor: COLORS.navy,
           borderWidth: 0,
           borderSkipped: false,
@@ -535,8 +537,8 @@ const AdminOverview: React.FC = () => {
           barPercentage: 0.72,
         },
         {
-          label: "Workspaces",
-          data: filtered.barSeries.Workspaces,
+          label: "Workspace",
+          data: filtered.barSeries["Workspace"],
           backgroundColor: COLORS.gray,
           borderWidth: 0,
           borderSkipped: false,
@@ -547,8 +549,8 @@ const AdminOverview: React.FC = () => {
           barPercentage: 0.72,
         },
         {
-          label: "Orders",
-          data: filtered.barSeries.Orders,
+          label: "Đơn hàng",
+          data: filtered.barSeries["Đơn hàng"],
           backgroundColor: COLORS.cyan,
           borderWidth: 0,
           borderSkipped: false,
@@ -610,7 +612,7 @@ const AdminOverview: React.FC = () => {
 
   const shareData = useMemo(
     () => ({
-      labels: ["Users", "Organizations", "Workspaces", "Orders"],
+      labels: ["Người dùng", "Tổ chức", "Workspace", "Đơn hàng"],
       datasets: [
         {
           data: [
@@ -650,11 +652,11 @@ const AdminOverview: React.FC = () => {
 
   const handleExportCSV = () => {
     const header = [
-      granularity,
-      "users",
-      "organizations",
-      "workspaces",
-      "orders",
+      granularity === "week" ? "Tuần" : granularity === "month" ? "Ngày" : "Tháng",
+      "Người dùng",
+      "Tổ chức",
+      "Workspace",
+      "Đơn hàng",
     ];
     const rows = filtered.tableRows.map((r) =>
       [r.label, r.users, r.organizations, r.workspaces, r.orders].join(",")
@@ -665,12 +667,12 @@ const AdminOverview: React.FC = () => {
     const a = document.createElement("a");
     const prefix =
       granularity === "week"
-        ? `week-${anchorDate.isoWeek()}-${anchorDate.year()}`
+        ? `tuan-${anchorDate.isoWeek()}-${anchorDate.year()}`
         : granularity === "month"
         ? anchorDate.format("YYYY-MM")
         : `${anchorDate.year()}`;
     a.href = url;
-    a.download = `dashboard-${granularity}-${prefix}.csv`;
+    a.download = `tong-quan-${granularity}-${prefix}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -679,14 +681,14 @@ const AdminOverview: React.FC = () => {
 
   const columns = [
     {
-      title: "Order Code",
+      title: "Mã đơn hàng",
       dataIndex: "orderCode",
       key: "orderCode",
       render: (_: any, r: OrderRow) =>
         r.orderCode ?? r.id?.slice(-6)?.toUpperCase() ?? "—",
     },
     {
-      title: "Subscription Plan",
+      title: "Gói đăng ký",
       dataIndex: "subscriptionPlanName",
       key: "plan",
       render: (_: any, r: OrderRow) =>
@@ -695,7 +697,7 @@ const AdminOverview: React.FC = () => {
         "—",
     },
     {
-      title: "Price",
+      title: "Giá",
       dataIndex: "totalPrice",
       key: "price",
       render: (_: any, r: OrderRow) =>
@@ -704,17 +706,17 @@ const AdminOverview: React.FC = () => {
           : "—",
     },
     {
-      title: "Status",
+      title: "Trạng thái",
       dataIndex: "status",
       key: "status",
       render: (s: OrderRow["status"]) => {
-        const label = s === 1 ? "PAID" : s === 2 ? "CANCELLED" : "PENDING";
+        const label = s === 1 ? "ĐÃ THANH TOÁN" : s === 2 ? "ĐÃ HỦY" : "ĐANG XỬ LÝ";
         const color = s === 1 ? "green" : s === 2 ? "red" : "gold";
         return <Tag color={color}>{label}</Tag>;
       },
     },
     {
-      title: "Created",
+      title: "Ngày tạo",
       dataIndex: "createdAt",
       key: "createdAt",
       render: (_: any, r: OrderRow) => {
@@ -729,13 +731,13 @@ const AdminOverview: React.FC = () => {
       <Content className="purple-container">
         <div className="purple-header">
           <Title level={4} className="purple-title">
-            <AimOutlined /> Dashboard
+            <AimOutlined /> Trang tổng quan
           </Title>
-          <span className="purple-overview">Overview</span>
+          <span className="purple-overview">Tổng quan</span>
         </div>
 
         <Spin spinning={loading}>
-          {/* FILTER BAR */}
+          {/* THANH BỘ LỌC */}
           <Row
             justify="space-between"
             align="middle"
@@ -747,9 +749,9 @@ const AdminOverview: React.FC = () => {
                   value={granularity}
                   onChange={(v) => setGranularity(v as Granularity)}
                   options={[
-                    { label: "Week", value: "week" },
-                    { label: "Month", value: "month" },
-                    { label: "Year", value: "year" },
+                    { label: "Tuần", value: "week" },
+                    { label: "Tháng", value: "month" },
+                    { label: "Năm", value: "year" },
                   ]}
                 />
                 {granularity === "week" && (
@@ -774,7 +776,7 @@ const AdminOverview: React.FC = () => {
                   />
                 )}
                 <Button icon={<ReloadOutlined />} onClick={resetToday}>
-                  Today
+                  Hôm nay
                 </Button>
               </Space>
             </Col>
@@ -788,13 +790,13 @@ const AdminOverview: React.FC = () => {
                   type="primary"
                   onClick={handleExportCSV}
                 >
-                  Export CSV
+                  Xuất CSV
                 </Button>
               </Space>
             </Col>
           </Row>
 
-          {/* TOP METRICS */}
+          {/* THẺ CHỈ SỐ */}
           <Row gutter={[16, 16]} className="metric-row equal-cards">
             {cards.map((c) => (
               <Col xs={24} sm={12} lg={6} key={c.key}>
@@ -803,11 +805,10 @@ const AdminOverview: React.FC = () => {
                     <div className="metric-icon">{c.icon}</div>
                     <div className="metric-title">{c.title}</div>
                   </div>
-                  <div className="metric-value">{c.value.toLocaleString()}</div>
+                  <div className="metric-value">{c.value.toLocaleString("vi-VN")}</div>
                   <div className="metric-trend">
                     <Tag color={c.percent >= 0 ? "green" : "red"}>
-                      WoW: {c.percent >= 0 ? "Up" : "Down"}{" "}
-                      {Math.abs(c.percent)}%
+                      WoW: {c.percent >= 0 ? "Tăng" : "Giảm"} {Math.abs(c.percent)}%
                     </Tag>
                   </div>
                 </Card>
@@ -815,14 +816,14 @@ const AdminOverview: React.FC = () => {
             ))}
           </Row>
 
-          {/* CHARTS */}
+          {/* BIỂU ĐỒ */}
           <Row gutter={[16, 16]} className="charts-row">
             <Col xs={24} lg={16}>
               <Card className="panel-card">
                 <div className="panel-title">
-                  {granularity === "week" && "WEEKLY SALES REPORT"}
-                  {granularity === "month" && "MONTHLY REPORT"}
-                  {granularity === "year" && "YEARLY REPORT"}
+                  {granularity === "week" && "BÁO CÁO THEO TUẦN"}
+                  {granularity === "month" && "BÁO CÁO THEO THÁNG"}
+                  {granularity === "year" && "BÁO CÁO THEO NĂM"}
                 </div>
                 <div className="panel-chart" style={{ height: 420 }}>
                   <Bar data={barData} options={barOpts} />
@@ -833,7 +834,7 @@ const AdminOverview: React.FC = () => {
             <Col xs={24} lg={8}>
               <Card className="panel-card">
                 <div className="panel-title">
-                  Entity Share — {filtered.labelText}
+                  Tỷ trọng theo nhóm — {filtered.labelText}
                 </div>
                 <div className="panel-chart donut" style={{ height: 360 }}>
                   <Doughnut data={shareData} options={shareOpts} />
@@ -842,11 +843,11 @@ const AdminOverview: React.FC = () => {
             </Col>
           </Row>
 
-          {/* RECENT ORDERS */}
+          {/* ĐƠN HÀNG GẦN ĐÂY */}
           <Row gutter={[16, 16]} style={{ marginTop: 8 }}>
             <Col span={24}>
               <Card className="panel-card">
-                <div className="panel-title">Recent Orders</div>
+                <div className="panel-title">Đơn hàng gần đây</div>
                 <Table
                   size="middle"
                   rowKey="id"

@@ -91,7 +91,7 @@ const WorkspaceOrganization: React.FC = () => {
 
   useEffect(() => {
     if (!organizationId) {
-      message.error("Missing organizationId.");
+      message.error("Thiếu mã tổ chức.");
       return;
     }
     fetchAll();
@@ -102,14 +102,14 @@ const WorkspaceOrganization: React.FC = () => {
     try {
       const [ws, cs, accs] = await Promise.all([
         WorkspaceService.getAllByOrg(organizationId),
-        CourseService.getCourseByOrgId(organizationId), // chỉ các course của org này
+        CourseService.getCourseByOrgId(organizationId), // chỉ các khóa học của org này
         AccountService.getAllAccounts(), // để map instructorId -> fullName
       ]);
       setWorkspaces(Array.isArray(ws) ? ws : []);
       setCourses(Array.isArray(cs) ? cs : []);
       setAccounts(Array.isArray(accs) ? accs : []);
     } catch (err) {
-      showErrorMessage(err, "Failed to fetch data.");
+      showErrorMessage(err, "Không thể tải dữ liệu.");
     } finally {
       setLoading(false);
     }
@@ -123,11 +123,11 @@ const WorkspaceOrganization: React.FC = () => {
       const items = await WorkspaceService.getAllByOrg(organizationId);
       setWorkspaces(items);
 
-      // refresh course list cùng lúc để luôn đúng
+      // refresh danh sách khóa học để luôn đúng
       const cs = await CourseService.getCourseByOrgId(organizationId);
       setCourses(Array.isArray(cs) ? cs : []);
     } catch (err) {
-      showErrorMessage(err, "Failed to fetch workspaces.");
+      showErrorMessage(err, "Không thể tải danh sách không gian.");
     } finally {
       if (!silent) setLoading(false);
       else setRefreshing(false);
@@ -165,7 +165,7 @@ const WorkspaceOrganization: React.FC = () => {
       (c as any)?.instructor?.fullName ||
       (c as any)?.instructor?.userName ||
       "";
-    return { text: nested || "Unknown", id: c.instructorId || "" };
+    return { text: nested || "Không rõ", id: c.instructorId || "" };
   };
 
   /* ===== Search / Filter ===== */
@@ -198,15 +198,15 @@ const WorkspaceOrganization: React.FC = () => {
   /* ===== CRUD ===== */
   const onCreate = async (vals: any) => {
     if (!organizationId) {
-      message.error("Please sign in.");
+      message.error("Vui lòng đăng nhập.");
       return;
     }
     if (!imgUrlCreate && !imgFileCreate) {
-      message.error("Please upload an image before saving.");
+      message.error("Vui lòng tải ảnh lên trước khi lưu.");
       return;
     }
     if (!vals.workSpaceName?.trim() || !vals.description?.trim()) {
-      message.error("Workspace name and description are required.");
+      message.error("Tên không gian và mô tả là bắt buộc.");
       return;
     }
 
@@ -228,13 +228,13 @@ const WorkspaceOrganization: React.FC = () => {
       });
       await fetchList({ silent: true });
 
-      message.success("Workspace created successfully.");
+      message.success("Tạo không gian làm việc thành công.");
       setCreateVisible(false);
       createForm.resetFields();
       setImgUrlCreate("");
       setImgFileCreate(null);
     } catch (err) {
-      showErrorMessage(err, "Failed to create workspace.");
+      showErrorMessage(err, "Tạo không gian thất bại.");
     } finally {
       setLoading(false);
     }
@@ -260,14 +260,14 @@ const WorkspaceOrganization: React.FC = () => {
       });
       await fetchList({ silent: true });
 
-      message.success("Workspace updated successfully.");
+      message.success("Cập nhật không gian làm việc thành công.");
       setUpdateVisible(false);
       updateForm.resetFields();
       setImgUrlUpdate("");
       setImgFileUpdate(null);
       setSelected(null);
     } catch (err) {
-      showErrorMessage(err, "Failed to update workspace.");
+      showErrorMessage(err, "Cập nhật không gian thất bại.");
     } finally {
       setLoading(false);
     }
@@ -275,18 +275,19 @@ const WorkspaceOrganization: React.FC = () => {
 
   const handleDelete = async (id: string) => {
     Modal.confirm({
-      title: "Delete workspace?",
-      content: "This action cannot be undone.",
-      okText: "Delete",
+      title: "Xoá không gian?",
+      content: "Hành động này không thể hoàn tác.",
+      okText: "Xoá",
       okButtonProps: { danger: true },
+      cancelText: "Huỷ",
       onOk: async () => {
         setLoading(true);
         try {
           await WorkspaceService.deleteWorkspace(id);
           await fetchList({ silent: true });
-          message.success("Workspace deleted successfully.");
+          message.success("Xoá không gian thành công.");
         } catch (err) {
-          showErrorMessage(err, "Failed to delete workspace.");
+          showErrorMessage(err, "Xoá không gian thất bại.");
         } finally {
           setLoading(false);
         }
@@ -301,7 +302,7 @@ const WorkspaceOrganization: React.FC = () => {
       setViewData(data);
       setViewVisible(true);
     } catch (err) {
-      showErrorMessage(err, "Failed to fetch workspace details.");
+      showErrorMessage(err, "Không thể tải chi tiết không gian.");
     } finally {
       setLoading(false);
     }
@@ -321,7 +322,7 @@ const WorkspaceOrganization: React.FC = () => {
 
   /* ===== Course list renderer (anti-overflow) ===== */
   const renderCourseList = (list: Course[], opts?: { dense?: boolean }) => {
-    if (list.length === 0) return <Text type="secondary">No courses.</Text>;
+    if (list.length === 0) return <Text type="secondary">Không có khóa học.</Text>;
     return (
       <List
         className="course-list"
@@ -341,19 +342,21 @@ const WorkspaceOrganization: React.FC = () => {
                       {c.courseName}
                     </Text>
                     {typeof c.ratingAverage === "number" && <Tag>{c.ratingAverage.toFixed(1)}</Tag>}
-                    <Tag color={c.isActive ? "green" : "red"}>{c.isActive ? "Active" : "Inactive"}</Tag>
+                    <Tag color={c.isActive ? "green" : "red"}>
+                      {c.isActive ? "Đang hoạt động" : "Ngừng hoạt động"}
+                    </Tag>
                   </div>
                 }
                 description={
                   <div className="course-desc-wrap">
                     <div className="course-meta-line">
-                      <Tooltip title={ins.id ? `Instructor ID: ${ins.id}` : ""}>
+                      <Tooltip title={ins.id ? `Mã giảng viên: ${ins.id}` : ""}>
                         <span>
-                          <b>Instructor:</b> {ins.text}
+                          <b>Giảng viên:</b> {ins.text}
                         </span>
                       </Tooltip>
                       <span>
-                        <b>Created:</b>{" "}
+                        <b>Ngày tạo:</b>{" "}
                         {c.createdAt ? new Date(c.createdAt).toLocaleDateString() : "N/A"}
                       </span>
                     </div>
@@ -376,7 +379,7 @@ const WorkspaceOrganization: React.FC = () => {
   const columns: ColumnsType<Workspace> = [
     { title: "ID", dataIndex: "id", key: "id", width: 220, ellipsis: true, sorter: (a, b) => compareStr(a.id, b.id) },
     {
-      title: "Image",
+      title: "Hình ảnh",
       dataIndex: "imgUrl",
       key: "imgUrl",
       align: "center",
@@ -399,7 +402,7 @@ const WorkspaceOrganization: React.FC = () => {
         ),
     },
     {
-      title: "Name",
+      title: "Tên",
       dataIndex: "workSpaceName",
       key: "workSpaceName",
       width: 200,
@@ -407,7 +410,7 @@ const WorkspaceOrganization: React.FC = () => {
       sorter: (a, b) => compareStr(a.workSpaceName, b.workSpaceName),
     },
     {
-      title: "Accounts",
+      title: "Tài khoản",
       dataIndex: "numberOfAccount",
       key: "numberOfAccount",
       align: "center",
@@ -415,7 +418,7 @@ const WorkspaceOrganization: React.FC = () => {
       sorter: (a, b) => (a.numberOfAccount || 0) - (b.numberOfAccount || 0),
     },
     {
-      title: "Courses",
+      title: "Khóa học",
       key: "courses",
       width: 460,
       render: (_: any, rec: Workspace) => {
@@ -427,7 +430,7 @@ const WorkspaceOrganization: React.FC = () => {
 
         return (
           <div>
-            <Text strong>{count}</Text> {count === 1 ? "course" : "courses"}
+            <Text strong>{count}</Text> {count === 1 ? "khóa học" : "khóa học"}
             <div style={{ marginTop: 6 }}>
               {renderCourseList(displayList, { dense: true })}
               {count > 3 && (
@@ -438,7 +441,7 @@ const WorkspaceOrganization: React.FC = () => {
                     setShowAllCoursesCell((prev) => ({ ...prev, [key]: !expanded }))
                   }
                 >
-                  {expanded ? "Show less" : "Show more"}
+                  {expanded ? "Thu gọn" : "Xem thêm"}
                 </Button>
               )}
             </div>
@@ -447,43 +450,43 @@ const WorkspaceOrganization: React.FC = () => {
       },
     },
     {
-      title: "Description",
+      title: "Mô tả",
       dataIndex: "description",
       key: "description",
       width: 240,
       ellipsis: true,
     },
     {
-      title: "Status",
+      title: "Trạng thái",
       dataIndex: "isActive",
       key: "isActive",
       align: "center",
       width: 120,
       filters: [
-        { text: "Active", value: "active" },
-        { text: "Inactive", value: "inactive" },
+        { text: "Đang hoạt động", value: "active" },
+        { text: "Ngừng hoạt động", value: "inactive" },
       ],
       onFilter: (value, record) =>
         value === "active" ? record.isActive : !record.isActive,
       render: (v: boolean) =>
-        v ? <Tag color="green">Active</Tag> : <Tag color="red">Inactive</Tag>,
+        v ? <Tag color="green">Đang hoạt động</Tag> : <Tag color="red">Ngừng hoạt động</Tag>,
       sorter: (a, b) => Number(a.isActive) - Number(b.isActive),
     },
     {
-      title: "Actions",
+      title: "Thao tác",
       key: "actions",
       width: 270,
       align: "center",
       render: (_, rec) => (
         <Space wrap>
           <Button icon={<EyeOutlined />} size="small" onClick={() => handleView(rec)}>
-            View
+            Xem
           </Button>
           <Button icon={<EditOutlined />} size="small" onClick={() => handleEdit(rec)}>
-            Edit
+            Sửa
           </Button>
           <Button icon={<DeleteOutlined />} size="small" danger onClick={() => handleDelete(rec.id)}>
-            Delete
+            Xoá
           </Button>
         </Space>
       ),
@@ -495,7 +498,7 @@ const WorkspaceOrganization: React.FC = () => {
       <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
         <Col>
           <Input.Search
-            placeholder="Search by name / description / course / instructor"
+            placeholder="Tìm theo tên / mô tả / khóa học / giảng viên"
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
             allowClear
@@ -509,7 +512,7 @@ const WorkspaceOrganization: React.FC = () => {
             onClick={() => setCreateVisible(true)}
             disabled={!organizationId}
           >
-            Create workspace
+            Tạo không gian làm việc
           </Button>
         </Col>
       </Row>
@@ -527,7 +530,7 @@ const WorkspaceOrganization: React.FC = () => {
 
       {/* CREATE */}
       <Modal
-        title="Create workspace"
+        title="Tạo không gian làm việc"
         open={createVisible}
         footer={null}
         onCancel={() => {
@@ -536,25 +539,25 @@ const WorkspaceOrganization: React.FC = () => {
           setImgUrlCreate("");
           setImgFileCreate(null);
         }}
-        destroyOnHidden
+        destroyOnClose
         width={520}
       >
         <Form form={createForm} layout="vertical" onFinish={onCreate}>
           <Form.Item
             name="workSpaceName"
-            label="Workspace name"
-            rules={[{ required: true, message: "Please input name" }]}
+            label="Tên không gian"
+            rules={[{ required: true, message: "Vui lòng nhập tên" }]}
           >
-            <Input placeholder="e.g. Logistics Lab" />
+            <Input placeholder="VD: Phòng thí nghiệm Logistics" />
           </Form.Item>
           <Form.Item
             name="numberOfAccount"
-            label="Number of accounts"
+            label="Số tài khoản"
             rules={[{ type: "number", min: 0 }]}
           >
             <InputNumber style={{ width: "100%" }} />
           </Form.Item>
-          <Form.Item label="Image (Cloudinary)" required>
+          <Form.Item label="Ảnh (Cloudinary)" required>
             <UploadCloudinary
               value={imgUrlCreate}
               onChange={setImgUrlCreate}
@@ -563,10 +566,10 @@ const WorkspaceOrganization: React.FC = () => {
           </Form.Item>
           <Form.Item
             name="description"
-            label="Description"
-            rules={[{ required: true, message: "Please input description" }]}
+            label="Mô tả"
+            rules={[{ required: true, message: "Vui lòng nhập mô tả" }]}
           >
-            <Input.TextArea rows={3} placeholder="Short description…" />
+            <Input.TextArea rows={3} placeholder="Mô tả ngắn…" />
           </Form.Item>
           <Row justify="end" gutter={8}>
             <Col>
@@ -578,12 +581,12 @@ const WorkspaceOrganization: React.FC = () => {
                   setImgFileCreate(null);
                 }}
               >
-                Cancel
+                Huỷ
               </Button>
             </Col>
             <Col>
               <Button type="primary" htmlType="submit" loading={loading}>
-                Save
+                Lưu
               </Button>
             </Col>
           </Row>
@@ -592,7 +595,7 @@ const WorkspaceOrganization: React.FC = () => {
 
       {/* UPDATE */}
       <Modal
-        title="Update workspace"
+        title="Cập nhật không gian làm việc"
         open={updateVisible}
         footer={null}
         onCancel={() => {
@@ -602,29 +605,29 @@ const WorkspaceOrganization: React.FC = () => {
           setImgFileUpdate(null);
           setSelected(null);
         }}
-        destroyOnHidden
+        destroyOnClose
         width={520}
       >
         <Form form={updateForm} layout="vertical" onFinish={onUpdate}>
-          <Form.Item name="workSpaceName" label="Workspace name">
-            <Input placeholder="(optional)" />
+          <Form.Item name="workSpaceName" label="Tên không gian">
+            <Input placeholder="(không bắt buộc)" />
           </Form.Item>
           <Form.Item
             name="numberOfAccount"
-            label="Number of accounts"
+            label="Số tài khoản"
             rules={[{ type: "number", min: 0 }]}
           >
             <InputNumber style={{ width: "100%" }} />
           </Form.Item>
-          <Form.Item label="Image (Cloudinary)">
+          <Form.Item label="Ảnh (Cloudinary)">
             <UploadCloudinary
               value={imgUrlUpdate}
               onChange={setImgUrlUpdate}
               onFileChange={setImgFileUpdate}
             />
           </Form.Item>
-          <Form.Item name="description" label="Description">
-            <Input.TextArea rows={3} placeholder="(optional)" />
+          <Form.Item name="description" label="Mô tả">
+            <Input.TextArea rows={3} placeholder="(không bắt buộc)" />
           </Form.Item>
           <Row justify="end" gutter={8}>
             <Col>
@@ -637,12 +640,12 @@ const WorkspaceOrganization: React.FC = () => {
                   setSelected(null);
                 }}
               >
-                Cancel
+                Huỷ
               </Button>
             </Col>
             <Col>
               <Button type="primary" htmlType="submit" loading={loading}>
-                Update
+                Cập nhật
               </Button>
             </Col>
           </Row>
@@ -651,23 +654,23 @@ const WorkspaceOrganization: React.FC = () => {
 
       {/* VIEW */}
       <Modal
-        title="Workspace Details"
+        title="Chi tiết không gian"
         open={viewVisible}
         footer={null}
         onCancel={() => {
           setViewVisible(false);
           setViewData(null);
         }}
-        destroyOnHidden
+        destroyOnClose
         width={700}
       >
         {viewData ? (
           <div>
             <p><strong>ID:</strong> {viewData.id}</p>
-            <p><strong>Name:</strong> {viewData.workSpaceName}</p>
-            <p><strong>Description:</strong> {viewData.description}</p>
-            <p><strong>Accounts:</strong> {viewData.numberOfAccount}</p>
-            <p><strong>Status:</strong> {viewData.isActive ? "Active" : "Inactive"}</p>
+            <p><strong>Tên:</strong> {viewData.workSpaceName}</p>
+            <p><strong>Mô tả:</strong> {viewData.description}</p>
+            <p><strong>Số tài khoản:</strong> {viewData.numberOfAccount}</p>
+            <p><strong>Trạng thái:</strong> {viewData.isActive ? "Đang hoạt động" : "Ngừng hoạt động"}</p>
             {viewData.imgUrl && (
               <img
                 src={viewData.imgUrl}
@@ -677,14 +680,14 @@ const WorkspaceOrganization: React.FC = () => {
             )}
 
             <div style={{ marginTop: 16 }}>
-              <Text strong>Courses in this workspace:</Text>
+              <Text strong>Khóa học trong không gian này:</Text>
               <div style={{ marginTop: 8 }}>
                 {renderCourseList(coursesByWorkspaceId.get(normalizeId(viewData.id)) || [])}
               </div>
             </div>
           </div>
         ) : (
-          <p>Loading...</p>
+          <p>Đang tải…</p>
         )}
       </Modal>
     </>

@@ -28,12 +28,12 @@ const AdminSidebar: React.FC = () => {
   };
 
   const menuItems = [
-    { label: "Overview",              icon: <HomeOutlined />,       path: "/admin/" },
-    { label: "Organization Manager",  icon: <TeamOutlined />,       path: "/admin/organization-manager" },
-    { label: "User Manager",          icon: <UserOutlined />,       path: "/admin/user-manager" },
-    { label: "Workspace Manager",     icon: <AppstoreOutlined />,   path: "/admin/workspace-manager" },
-    { label: "Subcription Manager",   icon: <SettingOutlined />,    path: "/admin/subscriptionPlan-manager" },
-    { label: "Order Manager",         icon: <SettingOutlined />,    path: "/admin/order-manager" },
+    { label: "Tổng quan",              icon: <HomeOutlined />,       path: "/admin/" },
+    { label: "Quản lý Tổ chức",  icon: <TeamOutlined />,       path: "/admin/organization-manager" },
+    { label: "Quản lý Người dùng",          icon: <UserOutlined />,       path: "/admin/user-manager" },
+    { label: "Quản lý Không gian làm việc",     icon: <AppstoreOutlined />,   path: "/admin/workspace-manager" },
+    { label: "Quản lý Gói đăng ký",   icon: <SettingOutlined />,    path: "/admin/subscriptionPlan-manager" },
+    { label: "Quản lý Đơn hàng",         icon: <SettingOutlined />,    path: "/admin/order-manager" },
     // { label: "Scene Manager",         icon: <SettingOutlined />,    path: "/admin/scene-manager" },
     // { label: "Scenario Manager",      icon: <SettingOutlined />,    path: "/admin/scenario-manager" },
     // { label: "Support & Help",        icon: <QuestionCircleOutlined />, path: "/admin/support" },
@@ -76,7 +76,7 @@ const AdminSidebar: React.FC = () => {
             onClick={() => setOpenSettings((v) => !v)}
           >
             <SettingOutlined />
-            <span className="admin-sidebar-label">Settings</span>
+            <span className="admin-sidebar-label">Cài đặt</span>
             <span style={{ marginLeft: "auto" }}>
               {openSettings ? <DownOutlined /> : <RightOutlined />}
             </span>
@@ -92,7 +92,7 @@ const AdminSidebar: React.FC = () => {
                   }
                 >
                   <UserOutlined />
-                  <span className="admin-sidebar-label">Profile</span>
+                  <span className="admin-sidebar-label">Thông tin cá nhân</span>
                 </NavLink>
               </li>
               <li>
@@ -103,7 +103,7 @@ const AdminSidebar: React.FC = () => {
                   }
                 >
                   <KeyOutlined />
-                  <span className="admin-sidebar-label">Change password</span>
+                  <span className="admin-sidebar-label">Đổi mật khẩu</span>
                 </NavLink>
               </li>
               <li>
@@ -114,7 +114,7 @@ const AdminSidebar: React.FC = () => {
                   }
                 >
                   <MailOutlined />
-                  <span className="admin-sidebar-label">Change email</span>
+                  <span className="admin-sidebar-label">Thay đổi email</span>
                 </NavLink>
               </li>
             </ul>
@@ -129,7 +129,7 @@ const AdminSidebar: React.FC = () => {
             onClick={(e) => handleLogout(e)}
           >
             <LogoutOutlined />
-            <span className="admin-sidebar-label">Logout</span>
+            <span className="admin-sidebar-label">Đăng xuất</span>
           </NavLink>
         </li>
       </ul>
