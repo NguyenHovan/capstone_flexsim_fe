@@ -22,7 +22,7 @@ const SceneManagement = () => {
       const res = await SceneService.getAllScenes();
       setDataSource(res);
     } catch (e) {
-      toast.error("Error loading scene");
+      toast.error("Lỗi tải danh sách bối cảnh");
     } finally {
       setLoading(false);
     }
@@ -40,25 +40,25 @@ const SceneManagement = () => {
     form.setFieldsValue({
       sceneName: record.sceneName,
       description: record.description,
-      
     });
     setIsModalVisible(true);
   };
 
   const handleDelete = async (id: string) => {
     Modal.confirm({
-      title: "Are you sure you want to delete this scene?",
+      title: "Bạn có chắc muốn xoá bối cảnh này?",
       onOk: async () => {
         try {
           await SceneService.deleteScene(id);
-          toast.success("Deleted successfully!");
+          toast.success("Xoá bối cảnh thành công!");
           fetchScenes();
         } catch (err) {
-          toast.error("Delete failed!");
+          toast.error("Xoá bối cảnh thất bại!");
         }
       },
     });
   };
+
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
@@ -81,25 +81,25 @@ const SceneManagement = () => {
 
       if (isEditing && selectedSceneId) {
         await SceneService.updateScene(selectedSceneId, formData);
-        toast.success("Scene update successful!");
+        toast.success("Cập nhật bối cảnh thành công!");
       } else {
         await SceneService.createScene(formData);
-        toast.success("Scene creation successful!");
+        toast.success("Tạo bối cảnh thành công!");
       }
       setIsModalVisible(false);
       fetchScenes();
     } catch (e) {
-      toast.error("An error occurred while saving the scene!");
+      toast.error("Đã có lỗi khi lưu bối cảnh!");
     }
   };
 
   const columns = [
     {
-      title: "Scene Name",
+      title: "Tên bối cảnh",
       dataIndex: "sceneName",
     },
     {
-      title: "Description",
+      title: "Mô tả",
       dataIndex: "description",
     },
     // {
@@ -110,13 +110,13 @@ const SceneManagement = () => {
     //   ),
     // },
     {
-      title: "Action",
+      title: "Thao tác",
       render: (_: any, record: any) => (
         <Space>
-          <Tooltip title="Edit">
+          <Tooltip title="Sửa">
             <EditOutlined onClick={() => handleEdit(record)} />
           </Tooltip>
-          <Tooltip title="Delete">
+          <Tooltip title="Xoá">
             <DeleteOutlined
               style={{ color: "red" }}
               onClick={() => handleDelete(record.id)}
@@ -132,14 +132,14 @@ const SceneManagement = () => {
   return (
     <div>
       <div className="header-section" style={{ marginBottom: 16 }}>
-        <Input.Search placeholder="Search Scene" style={{ width: 250 }} />
+        <Input.Search placeholder="Tìm kiếm bối cảnh" style={{ width: 250 }} />
         <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
-          Add Scene
+          Thêm bối cảnh
         </Button>
       </div>
 
       <Table
-        columns={columns}
+        columns={columns as any}
         dataSource={dataSource}
         pagination={{ pageSize: 6 }}
         rowKey="id"
@@ -149,24 +149,25 @@ const SceneManagement = () => {
 
       <Modal
         open={isModalVisible}
-        title={isEditing ? "Edit Scene" : "Add Scene"}
+        title={isEditing ? "Sửa bối cảnh" : "Thêm bối cảnh"}
         onCancel={() => setIsModalVisible(false)}
         onOk={handleSubmit}
-        okText={isEditing ? "Edit" : "Create New Scene"}
+        okText={isEditing ? "Cập nhật" : "Tạo mới"}
+        cancelText="Hủy"
       >
         <Form layout="vertical" form={form}>
           <Form.Item
-            label="Scene Name"
+            label="Tên bối cảnh"
             name="sceneName"
-            rules={[{ required: true, message: "Please enter Scene Name" }]}
+            rules={[{ required: true, message: "Vui lòng nhập tên bối cảnh" }]}
           >
             <Input />
           </Form.Item>
 
           <Form.Item
-            label="Description"
+            label="Mô tả"
             name="description"
-            rules={[{ required: true, message: "Please enter Discription" }]}
+            rules={[{ required: true, message: "Vui lòng nhập mô tả" }]}
           >
             <Input.TextArea rows={3} />
           </Form.Item>

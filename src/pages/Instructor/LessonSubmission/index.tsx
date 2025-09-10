@@ -18,9 +18,7 @@ interface Submission {
 const ClassSubmissionsTable = () => {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [visible, setVisible] = useState(false);
-  const [currentSubmission, setCurrentSubmission] = useState<Submission | null>(
-    null
-  );
+  const [currentSubmission, setCurrentSubmission] = useState<Submission | null>(null);
   const { id } = useParams();
   const [form] = Form.useForm();
 
@@ -31,12 +29,13 @@ const ClassSubmissionsTable = () => {
       const allSubmissions = Object.values(response).flat() as Submission[];
       setSubmissions(allSubmissions);
     } catch (error) {
-      console.log({ error });
+      console.log("Lỗi tải danh sách bài nộp:", error);
     }
   };
 
   useEffect(() => {
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleGrade = (submission: Submission) => {
@@ -56,8 +55,11 @@ const ClassSubmissionsTable = () => {
           currentSubmission.submissionId,
           values.totalScore
         );
+
+        // tải lại dữ liệu mới nhất
         fetchData();
 
+        // đồng bộ ngay trên UI
         setSubmissions((prev) =>
           prev.map((s) =>
             s.submissionId === currentSubmission.submissionId
@@ -70,49 +72,50 @@ const ClassSubmissionsTable = () => {
         setCurrentSubmission(null);
       }
     } catch (error) {
-      console.log("Error in scoring:", error);
+      console.log("Lỗi khi chấm điểm:", error);
     }
   };
 
   return (
     <div>
-      <h2>List of students who have submitted their work</h2>
+      <h2>Danh sách học viên đã nộp bài</h2>
+
       <Table dataSource={submissions} rowKey="submissionId" pagination={false}>
-        <Table.Column title="Student Name" dataIndex="studentName" key="name" />
+        <Table.Column title="Họ và tên" dataIndex="studentName" key="name" />
         <Table.Column
-          title="File submitted"
+          title="Tệp đã nộp"
           dataIndex="fileUrl"
           key="file"
           render={(fileUrl: string) =>
             fileUrl ? (
               <Button type="link" href={fileUrl} target="_blank">
-                View file
+                Xem tệp
               </Button>
             ) : (
-              <Text type="secondary">Not submitted</Text>
+              <Text type="secondary">Chưa nộp</Text>
             )
           }
         />
         <Table.Column
-          title="Submission time"
+          title="Thời gian nộp"
           dataIndex="submitTime"
           key="time"
-          render={(time: string) => new Date(time).toLocaleString()}
+          render={(time: string) => new Date(time).toLocaleString("vi-VN")}
         />
         <Table.Column
-          title="Score"
+          title="Điểm"
           dataIndex="totalScore"
           key="score"
           render={(score: number | null) =>
-            score !== null ? score : <Text type="warning">Not yet marked</Text>
+            score !== null ? score : <Text type="warning">Chưa chấm</Text>
           }
         />
         <Table.Column
-          title="Action"
+          title="Thao tác"
           key="action"
           render={(_, record: Submission) => (
             <Button type="primary" onClick={() => handleGrade(record)}>
-              Scoring
+              Chấm điểm
             </Button>
           )}
         />
@@ -123,18 +126,23 @@ const ClassSubmissionsTable = () => {
         title={currentSubmission?.studentName}
         onOk={handleOk}
         onCancel={() => setVisible(false)}
-        okText="Save score"
+        okText="Lưu điểm"
       >
         <Form form={form} layout="vertical">
           <Form.Item
-            label="Score"
+            label="Điểm"
             name="totalScore"
-            rules={[{ required: true, message: "Please enter score" }]}
+            rules={[{ required: true, message: "Vui lòng nhập điểm" }]}
           >
-            <InputNumber min={0} max={10} style={{ width: "100%" }} />
+            <InputNumber
+              min={0}
+              max={10}
+              style={{ width: "100%" }}
+              placeholder="Nhập điểm (0–10)"
+            />
           </Form.Item>
-          {/* <Form.Item label="Note" name="note">
-            <TextArea rows={3} />
+          {/* <Form.Item label="Ghi chú" name="note">
+            <TextArea rows={3} placeholder="Nhập ghi chú (nếu có)" />
           </Form.Item> */}
         </Form>
       </Modal>

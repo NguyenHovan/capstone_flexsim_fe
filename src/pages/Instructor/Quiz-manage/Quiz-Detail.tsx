@@ -64,7 +64,6 @@ const QuizDetail: React.FC = () => {
 
   const { id } = useParams();
 
-  // Fetch submissions
   const fetchQuizSubmissions = async () => {
     try {
       const response = await QuizSubmitssionService.getQuizSubmitLessonByQuizId(
@@ -76,7 +75,6 @@ const QuizDetail: React.FC = () => {
     }
   };
 
-  // Fetch quiz detail
   const fetchQuizDetail = async () => {
     try {
       const response = await QuizService.getFullQuizById(id ?? "");
@@ -159,9 +157,7 @@ const QuizDetail: React.FC = () => {
 
   const handleOk = async () => {
     try {
-      if (!id) {
-        return;
-      }
+      if (!id) return;
       const values = await form.validateFields();
 
       const formatted = values.questions.map((q: any) => ({
@@ -224,7 +220,7 @@ const QuizDetail: React.FC = () => {
                   {quizData.quizName}
                 </Typography.Title>
                 <Button type="primary" onClick={() => setVisible(true)}>
-                  Create Questions
+                  Thêm câu hỏi
                 </Button>
               </Flex>
               <List
@@ -263,11 +259,14 @@ const QuizDetail: React.FC = () => {
         </Tabs.TabPane>
       </Tabs>
 
+      {/* Modal cập nhật câu hỏi */}
       <Modal
         title="Cập nhật câu hỏi"
         open={openModal}
         onCancel={() => setOpenModal(false)}
         onOk={handleSaveQuestion}
+        okText="Lưu"
+        cancelText="Hủy"
         width={600}
       >
         <Form form={form} layout="vertical">
@@ -276,7 +275,7 @@ const QuizDetail: React.FC = () => {
             label="Mô tả câu hỏi"
             rules={[{ required: true, message: "Nhập mô tả câu hỏi" }]}
           >
-            <Input />
+            <Input placeholder="Nhập mô tả câu hỏi" />
           </Form.Item>
 
           <Form.List name="answers">
@@ -293,7 +292,7 @@ const QuizDetail: React.FC = () => {
                       name={[name, "description"]}
                       rules={[{ required: true, message: "Nhập đáp án" }]}
                     >
-                      <Input placeholder="Đáp án" />
+                      <Input placeholder="Nội dung đáp án" />
                     </Form.Item>
                     <Form.Item
                       {...rest}
@@ -310,11 +309,14 @@ const QuizDetail: React.FC = () => {
         </Form>
       </Modal>
 
+      {/* Modal thêm câu hỏi mới */}
       <Modal
-        title="Create Quiz"
+        title="Thêm câu hỏi"
         open={visible}
         onCancel={() => setVisible(false)}
         onOk={handleOk}
+        okText="Lưu"
+        cancelText="Hủy"
         width={800}
       >
         <Form form={form} layout="vertical" name="quizForm">
@@ -335,26 +337,23 @@ const QuizDetail: React.FC = () => {
                       align="baseline"
                       style={{ justifyContent: "space-between", width: "100%" }}
                     >
-                      <h4>Question {index + 1}</h4>
+                      <h4>Câu hỏi {index + 1}</h4>
                       <MinusCircleOutlined onClick={() => remove(field.name)} />
                     </Space>
 
                     <Form.Item
                       {...field}
                       name={[field.name, "description"]}
-                      label="Question Description"
+                      label="Mô tả câu hỏi"
                       rules={[
-                        { required: true, message: "Please enter question!" },
+                        { required: true, message: "Vui lòng nhập câu hỏi!" },
                       ]}
                     >
-                      <Input placeholder="Enter question" />
+                      <Input placeholder="Nhập nội dung câu hỏi" />
                     </Form.Item>
 
                     <Form.List name={[field.name, "answers"]}>
-                      {(
-                        answerFields,
-                        { add: addAnswer, remove: removeAnswer }
-                      ) => (
+                      {(answerFields, { add: addAnswer, remove: removeAnswer }) => (
                         <>
                           {answerFields.map((answerField) => (
                             <Space
@@ -366,16 +365,19 @@ const QuizDetail: React.FC = () => {
                                 {...answerField}
                                 name={[answerField.name, "description"]}
                                 rules={[
-                                  { required: true, message: "Enter answer!" },
+                                  {
+                                    required: true,
+                                    message: "Vui lòng nhập đáp án!",
+                                  },
                                 ]}
                               >
-                                <Input placeholder="Answer description" />
+                                <Input placeholder="Nội dung đáp án" />
                               </Form.Item>
                               <Form.Item
                                 name={[answerField.name, "isAnswerCorrect"]}
                                 valuePropName="checked"
                               >
-                                <Checkbox>Correct</Checkbox>
+                                <Checkbox>Đáp án đúng</Checkbox>
                               </Form.Item>
                               <MinusCircleOutlined
                                 onClick={() => removeAnswer(answerField.name)}
@@ -388,7 +390,7 @@ const QuizDetail: React.FC = () => {
                             block
                             icon={<PlusOutlined />}
                           >
-                            Add Answer
+                            Thêm đáp án
                           </Button>
                         </>
                       )}
@@ -402,7 +404,7 @@ const QuizDetail: React.FC = () => {
                   block
                   icon={<PlusOutlined />}
                 >
-                  Add Question
+                  Thêm câu hỏi
                 </Button>
               </>
             )}

@@ -37,19 +37,23 @@ const ReviewManagement = () => {
       const res = await ReviewService.getAllReviews();
       setData(res);
     } catch (err) {
-      toast.error("Error when fetch review data");
+      toast.error("Lỗi tải dữ liệu đánh giá");
     } finally {
       setLoading(false);
     }
   };
 
   const fetchUsersAndCourses = async () => {
-    const [userList, courseList] = await Promise.all([
-      AccountService.getAllAccounts?.(),
-      CourseService.getAllCourses(),
-    ]);
-    setUsers(userList || []);
-    setCourses(courseList || []);
+    try {
+      const [userList, courseList] = await Promise.all([
+        AccountService.getAllAccounts?.(),
+        CourseService.getAllCourses(),
+      ]);
+      setUsers(userList || []);
+      setCourses(courseList || []);
+    } catch (err) {
+      toast.error("Lỗi tải danh sách người dùng/khóa học");
+    }
   };
 
   const openModal = (record?: any) => {
@@ -74,28 +78,31 @@ const ReviewManagement = () => {
       const values = await form.validateFields();
       if (isEditing && selectedId) {
         await ReviewService.updateReview(selectedId, values);
-        toast.success("Review updated successfully!");
+        toast.success("Cập nhật đánh giá thành công!");
       } else {
         await ReviewService.createReview(values);
-        toast.success("Review created successfully!");
+        toast.success("Tạo đánh giá thành công!");
       }
       setIsModalVisible(false);
       fetchData();
     } catch (err) {
-      toast.error("Error saving review");
+      toast.error("Lưu đánh giá thất bại");
     }
   };
 
   const handleDelete = async (id: string) => {
     Modal.confirm({
-      title: "Are you sure you want to delete this review?",
+      title: "Bạn có chắc muốn xóa đánh giá này?",
+      okText: "Xóa",
+      cancelText: "Hủy",
+      okButtonProps: { danger: true },
       onOk: async () => {
         try {
           await ReviewService.deleteReview(id);
-          toast.success("Deleted successfully!");
+          toast.success("Xóa thành công!");
           fetchData();
         } catch {
-          toast.error("Delete failed!");
+          toast.error("Xóa thất bại!");
         }
       },
     });
@@ -103,30 +110,30 @@ const ReviewManagement = () => {
 
   const columns = [
     {
-      title: "Reviewer",
+      title: "Người đánh giá",
       dataIndex: ["account", "fullName"],
     },
     {
-      title: "Course",
+      title: "Khóa học",
       dataIndex: ["course", "courseName"],
     },
     {
-      title: "Description",
+      title: "Nội dung đánh giá",
       dataIndex: "description",
     },
     {
-      title: "Rating",
+      title: "Xếp hạng",
       dataIndex: "rating",
       render: (val: number) => <Rate disabled defaultValue={val} />,
     },
     {
-      title: "Action",
+      title: "Thao tác",
       render: (_: any, record: any) => (
         <Space>
-          <Tooltip title="Edit">
+          <Tooltip title="Chỉnh sửa">
             <EditOutlined onClick={() => openModal(record)} />
           </Tooltip>
-          <Tooltip title="Delete">
+          <Tooltip title="Xóa">
             <DeleteOutlined
               style={{ color: "red" }}
               onClick={() => handleDelete(record.id)}
@@ -146,13 +153,9 @@ const ReviewManagement = () => {
           justifyContent: "space-between",
         }}
       >
-        <h2>Review Management</h2>
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={() => openModal()}
-        >
-          Add new review
+        <h2>Quản lý đánh giá</h2>
+        <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
+          Thêm đánh giá
         </Button>
       </div>
 
@@ -166,19 +169,20 @@ const ReviewManagement = () => {
       />
 
       <Modal
-        title={isEditing ? "Update review" : "Create review"}
+        title={isEditing ? "Cập nhật đánh giá" : "Tạo đánh giá"}
         open={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
         onOk={handleSubmit}
-        okText={isEditing ? "Edit" : "Create new review"}
+        okText={isEditing ? "Cập nhật" : "Tạo mới"}
+        cancelText="Hủy"
       >
         <Form layout="vertical" form={form}>
           <Form.Item
-            label="User"
+            label="Người dùng"
             name="accountId"
-            rules={[{ required: true, message: "Required" }]}
+            rules={[{ required: true, message: "Vui lòng chọn người dùng" }]}
           >
-            <Select placeholder="Select user">
+            <Select placeholder="Chọn người dùng">
               {users.map((user: any) => (
                 <Select.Option key={user.id} value={user.id}>
                   {user.fullName}
@@ -188,11 +192,11 @@ const ReviewManagement = () => {
           </Form.Item>
 
           <Form.Item
-            label="Course"
+            label="Khóa học"
             name="courseId"
-            rules={[{ required: true, message: "Required" }]}
+            rules={[{ required: true, message: "Vui lòng chọn khóa học" }]}
           >
-            <Select placeholder="Select Course">
+            <Select placeholder="Chọn khóa học">
               {courses.map((course: any) => (
                 <Select.Option key={course.id} value={course.id}>
                   {course.courseName}
@@ -202,17 +206,17 @@ const ReviewManagement = () => {
           </Form.Item>
 
           <Form.Item
-            label="Review content"
+            label="Nội dung đánh giá"
             name="description"
-            rules={[{ required: true, message: "Please enter content" }]}
+            rules={[{ required: true, message: "Vui lòng nhập nội dung" }]}
           >
-            <Input.TextArea rows={3} />
+            <Input.TextArea rows={3} placeholder="Nhập nội dung đánh giá..." />
           </Form.Item>
 
           <Form.Item
-            label="Rating"
+            label="Xếp hạng"
             name="rating"
-            rules={[{ required: true, message: "Olease select rating" }]}
+            rules={[{ required: true, message: "Vui lòng chọn số sao" }]}
           >
             <Rate allowHalf />
           </Form.Item>

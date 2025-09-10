@@ -15,7 +15,7 @@ const QuizManagement = () => {
       const res = await QuizService.getAllQuizzes();
       setQuizzes(res);
     } catch (err) {
-      console.error("Fetch quiz failed", err);
+      console.error("Tải bài kiểm tra thất bại", err);
     } finally {
       setLoading(false);
     }

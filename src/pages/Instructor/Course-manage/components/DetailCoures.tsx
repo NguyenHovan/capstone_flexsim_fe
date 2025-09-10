@@ -147,29 +147,27 @@ const DetailCoures = () => {
 
       if (editingTopic) {
         await TopicService.updateTopic(editingTopic.id, formData);
-        toast.success("Topic updated successfully!");
+        toast.success("Cập nhật chủ đề thành công!");
       } else {
         await TopicService.createTopic(formData);
-        toast.success("Topic created successfully!");
+        toast.success("Tạo chủ đề thành công!");
       }
 
       setIsModalVisible(false);
       setEditingTopic(null);
       fetchDataTopic();
     } catch (e) {
-      toast.error(
-        editingTopic ? "Error updating topic!" : "Error creating topic!"
-      );
+      toast.error(editingTopic ? "Cập nhật chủ đề thất bại!" : "Tạo chủ đề thất bại!");
     }
   };
 
   const handleDeleteLesson = async (lessonId: string, topicId: string) => {
-    const isConfirmed = window.confirm("Are you sure you want to delete this lesson?");
+    const isConfirmed = window.confirm("Bạn có chắc muốn xoá bài học này?");
     if (!isConfirmed) return;
 
     try {
       await LessonService.deleteLesson(lessonId);
-      toast.success("Delete lesson successfully");
+      toast.success("Xoá bài học thành công");
 
       setLessonsByTopic((prev) => ({
         ...prev,
@@ -177,7 +175,7 @@ const DetailCoures = () => {
       }));
     } catch (error) {
       console.log(error);
-      toast.error("Delete failed lesson");
+      toast.error("Xoá bài học thất bại");
     }
   };
 
@@ -208,10 +206,10 @@ const DetailCoures = () => {
 
       if (editingLesson) {
         await LessonService.updateLesson(editingLesson.id, fd);
-        toast.success("Lesson updated successfully");
+        toast.success("Cập nhật bài học thành công");
       } else {
         await LessonService.createLesson(fd);
-        toast.success("Create successful lessons");
+        toast.success("Tạo bài học thành công");
       }
 
       fetchLessons(selectedTopic);
@@ -221,7 +219,7 @@ const DetailCoures = () => {
       setSelectedTopic(null);
     } catch (err) {
       console.error(err);
-      toast.error(editingLesson ? "Update failed" : "Create failed");
+      toast.error(editingLesson ? "Cập nhật thất bại" : "Tạo thất bại");
     } finally {
       setLoading(false);
     }
@@ -261,7 +259,7 @@ const DetailCoures = () => {
           </Typography>
           <Flex gap={12}>
             <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
-              Add new topic
+              Thêm chủ đề
             </Button>
           </Flex>
         </Flex>
@@ -298,7 +296,7 @@ const DetailCoures = () => {
                         handleOpenEditTopic(tp);
                       }}
                     >
-                      Edit Topic
+                      Sửa chủ đề
                     </Button>
 
                     <Button
@@ -318,7 +316,7 @@ const DetailCoures = () => {
                         fetchDataTopic();
                       }}
                     >
-                      Delete Topic
+                      Xoá chủ đề
                     </Button>
                     <Button
                       type="primary"
@@ -336,7 +334,7 @@ const DetailCoures = () => {
                         setIsModalVisibleLesson(true);
                       }}
                     >
-                      Add Lesson
+                      Thêm bài học
                     </Button>
                   </Flex>
                 </Flex>
@@ -408,7 +406,7 @@ const DetailCoures = () => {
                                       {line}
                                     </p>
                                   ))
-                              : "No description"}
+                              : "Không có mô tả"}
                           </Typography>
                           {lesson.fileUrl && (
                             <video
@@ -443,7 +441,7 @@ const DetailCoures = () => {
                                     marginBottom: "4px",
                                   }}
                                 >
-                                  📌 Scenario: {lesson.scenario.scenarioName}
+                                  📌 Tình huống: {lesson.scenario.scenarioName}
                                 </Typography>
                                 <Typography
                                   style={{
@@ -452,8 +450,7 @@ const DetailCoures = () => {
                                     marginBottom: "4px",
                                   }}
                                 >
-                                  {lesson.scenario.description ||
-                                    "No description"}
+                                  {lesson.scenario.description || "Không có mô tả"}
                                 </Typography>
                                 {lesson.scenario.fileUrl && (
                                   <a
@@ -465,7 +462,7 @@ const DetailCoures = () => {
                                       color: "#1890ff",
                                     }}
                                   >
-                                    📂 View Scenario file
+                                    📂 Xem tệp tình huống
                                   </a>
                                 )}
                               </Flex>
@@ -476,7 +473,7 @@ const DetailCoures = () => {
                                   )
                                 }
                               >
-                                View submit
+                                Xem bài nộp
                               </Button>
                             </Flex>
                           )}
@@ -568,7 +565,7 @@ const DetailCoures = () => {
                           dataSource={lesson.quizzes}
                           columns={[
                             {
-                              title: "Quizi",
+                              title: "Bài kiểm tra",
                               dataIndex: "quizName",
                               key: "quizName",
                             },
@@ -595,7 +592,7 @@ const DetailCoures = () => {
                     margin: "8px 0",
                   }}
                 >
-                  ⏳ Loading or no lessons
+                  ⏳ Đang tải hoặc chưa có bài học
                 </p>
               )}
             </Panel>
@@ -605,7 +602,7 @@ const DetailCoures = () => {
 
       <Modal
         open={isModalVisible}
-        title={editingTopic ? "Edit topic" : "Add new topic"}
+        title={editingTopic ? "Sửa chủ đề" : "Thêm chủ đề"}
         onCancel={() => {
           setIsModalVisible(false);
           setEditingTopic(null);
@@ -614,36 +611,36 @@ const DetailCoures = () => {
       >
         <Form layout="vertical" form={form}>
           <Form.Item
-            label="Topic Name"
+            label="Tên chủ đề"
             name="topicName"
-            rules={[{ required: true, message: "Please enter topic name" }]}
+            rules={[{ required: true, message: "Vui lòng nhập tên chủ đề" }]}
           >
-            <Input />
+            <Input placeholder="VD: Tổng quan" />
           </Form.Item>
 
           <Form.Item
-            label="Description"
+            label="Mô tả"
             name="description"
-            rules={[{ required: true, message: "Please enter description" }]}
+            rules={[{ required: true, message: "Vui lòng nhập mô tả" }]}
           >
-            <Input.TextArea rows={3} />
+            <Input.TextArea rows={3} placeholder="Mô tả ngắn…" />
           </Form.Item>
 
           <Form.Item
-            label="Order Index"
+            label="Thứ tự"
             name="orderIndex"
             rules={[
-              { required: true, message: "Please enter the order index of the lecture" },
+              { required: true, message: "Vui lòng nhập thứ tự bài giảng" },
             ]}
           >
-            <InputNumber min={1} />
+            <InputNumber min={1} placeholder="VD: 1" />
           </Form.Item>
         </Form>
       </Modal>
 
       <Modal
         open={isModalVisibleLesson}
-        title={editingLesson ? "Edit lesson" : "Add new lesson"}
+        title={editingLesson ? "Sửa bài học" : "Thêm bài học"}
         onCancel={() => {
           setIsModalVisibleLesson(false);
           setEditingLesson(null);
@@ -660,23 +657,23 @@ const DetailCoures = () => {
           initialValues={mappedInitialValues}
         >
           <Form.Item
-            label="Lesson Name"
+            label="Tên bài học"
             name="lessonName"
-            rules={[{ required: true, message: "Please enter the lesson name" }]}
+            rules={[{ required: true, message: "Vui lòng nhập tên bài học" }]}
           >
             <Input placeholder="VD: Bài học 1" />
           </Form.Item>
 
           <Form.Item
-            label="Title"
+            label="Tiêu đề"
             name="title"
-            rules={[{ required: true, message: "Please enter the title" }]}
+            rules={[{ required: true, message: "Vui lòng nhập tiêu đề" }]}
           >
-            <Input placeholder="Ex: Introduction Course" />
+            <Input placeholder="VD: Giới thiệu khoá học" />
           </Form.Item>
 
-          <Form.Item label="Scenario" name="scenarioId">
-            <Select placeholder="Choose ScenarioId">
+          <Form.Item label="Tình huống" name="scenarioId">
+            <Select placeholder="Chọn tình huống">
               {scenarios.map((scene) => (
                 <Select.Option key={scene.id} value={scene.id}>
                   {scene.scenarioName}
@@ -686,7 +683,7 @@ const DetailCoures = () => {
           </Form.Item>
 
           <Form.Item
-            label="Video Lesson (optional)"
+            label="Video bài học (tuỳ chọn)"
             name="fileUrl"
             valuePropName="fileList"
             getValueFromEvent={(e) => {
@@ -695,29 +692,29 @@ const DetailCoures = () => {
             }}
           >
             <Upload accept="video/*" maxCount={1} beforeUpload={() => false}>
-              <Button icon={<UploadOutlined />}>Select video (optional)</Button>
+              <Button icon={<UploadOutlined />}>Chọn video (tuỳ chọn)</Button>
             </Upload>
           </Form.Item>
 
           <Form.Item
-            label="Description"
+            label="Mô tả"
             name="description"
-            rules={[{ required: true, message: "Please enter the lesson description" }]}
+            rules={[{ required: true, message: "Vui lòng nhập mô tả bài học" }]}
           >
-            <Input.TextArea rows={6} placeholder="Enter the lesson description" />
+            <Input.TextArea rows={6} placeholder="Nhập mô tả bài học" />
           </Form.Item>
 
           <Form.Item
-            label="Order index"
+            label="Thứ tự"
             name="orderIndex"
-            rules={[{ required: true, message: "Order index" }]}
+            rules={[{ required: true, message: "Vui lòng nhập thứ tự" }]}
           >
-            <InputNumber placeholder="Order index" />
+            <InputNumber placeholder="VD: 1" />
           </Form.Item>
 
           <Form.Item>
             <Button type="primary" htmlType="submit" loading={loading}>
-              {editingLesson ? "Save change" : "Create new Lesson"}
+              {editingLesson ? "Lưu thay đổi" : "Tạo bài học"}
             </Button>
           </Form.Item>
         </Form>

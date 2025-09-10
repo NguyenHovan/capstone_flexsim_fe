@@ -33,7 +33,7 @@ const MenuCourse = () => {
       label: (
         <span style={labelStyle}>
           <InfoCircleOutlined style={iconStyle} />
-          <span style={{ fontWeight: 600 }}>DETAIL COURSE</span>
+          <span style={{ fontWeight: 600 }}>CHI TIẾT KHÓA HỌC</span>
         </span>
       ),
       children: <DetailCoures />,
@@ -43,7 +43,7 @@ const MenuCourse = () => {
       label: (
         <span style={labelStyle}>
           <AppstoreOutlined style={iconStyle} />
-          <span style={{ fontWeight: 600 }}>CLASS</span>
+          <span style={{ fontWeight: 600 }}>LỚP HỌC</span>
         </span>
       ),
       children: <ClassManagement />,
@@ -53,7 +53,7 @@ const MenuCourse = () => {
       label: (
         <span style={labelStyle}>
           <UserSwitchOutlined style={iconStyle} />
-          <span style={{ fontWeight: 600 }}>ENROLMENT REQUEST</span>
+          <span style={{ fontWeight: 600 }}>YÊU CẦU GHI DANH</span>
         </span>
       ),
       children: <EnrollManage />,
@@ -63,7 +63,7 @@ const MenuCourse = () => {
       label: (
         <span style={labelStyle}>
           <StarOutlined style={iconStyle} />
-          <span style={{ fontWeight: 600 }}>REVIEW</span>
+          <span style={{ fontWeight: 600 }}>ĐÁNH GIÁ</span>
         </span>
       ),
       children: <ReviewCardList />,

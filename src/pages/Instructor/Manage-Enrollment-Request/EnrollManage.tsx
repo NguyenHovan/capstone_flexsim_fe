@@ -3,69 +3,72 @@ import { Table, Button, Space, Modal, Form, Select, message, Tag } from "antd";
 import { EnrollmentRequestService } from "../../../services/enrollment-request.service";
 import { toast } from "sonner";
 import { useParams } from "react-router-dom";
+
 type StatusKey = 0 | 1 | 2;
+
 const EnrollManage = () => {
   const [form] = Form.useForm();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [enrolls, setEnrolls] = useState([]);
+  const [enrolls, setEnrolls] = useState<any[]>([]);
   const { id } = useParams();
+
+  // Map trạng thái -> nhãn & màu
   const statusMap: Record<StatusKey, { text: string; color: string }> = {
-    0: { text: "Pending", color: "orange" },
-    1: { text: "Accepted", color: "green" },
-    2: { text: "Rejected", color: "red" },
+    0: { text: "Đang chờ", color: "orange" },
+    1: { text: "Đã chấp nhận", color: "green" },
+    2: { text: "Đã từ chối", color: "red" },
   };
 
   const fetchEnrolls = async () => {
     setLoading(true);
     try {
-      const data = await EnrollmentRequestService.getEnrolmentRequestByCourseId(
-        id ?? ""
-      );
+      const data = await EnrollmentRequestService.getEnrolmentRequestByCourseId(id ?? "");
       setEnrolls(data || []);
     } catch (error) {
-      message.error("Không thể tải danh sách enroll");
+      message.error("Không thể tải danh sách yêu cầu ghi danh");
     }
     setLoading(false);
   };
 
   useEffect(() => {
     fetchEnrolls();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
-  const handleAcp = async (id: string) => {
+  const handleAcp = async (reqId: string) => {
     try {
-      await EnrollmentRequestService.acpEnrollmentRequest(id);
-      toast.success("Chấp nhận thành công");
+      await EnrollmentRequestService.acpEnrollmentRequest(reqId);
+      toast.success("Chấp nhận yêu cầu thành công");
       fetchEnrolls();
     } catch {
-      toast.error("Không thể chấp nhận");
+      toast.error("Không thể chấp nhận yêu cầu");
     }
   };
 
-  const handleReject = async (id: string) => {
+  const handleReject = async (reqId: string) => {
     try {
-      await EnrollmentRequestService.rejectEnrollmentRequest(id);
-      toast.success("Từ chối thành công");
+      await EnrollmentRequestService.rejectEnrollmentRequest(reqId);
+      toast.success("Từ chối yêu cầu thành công");
       fetchEnrolls();
     } catch {
-      toast.error("Không thể từ chối");
+      toast.error("Không thể từ chối yêu cầu");
     }
   };
 
-  // const handleDelete = async (id: string) => {
+  // const handleDelete = async (reqId: string) => {
   //   try {
-  //     await EnrollmentRequestService.deleteEnrollmentRequest(id);
-  //     toast.success("Xóa enroll thành công");
+  //     await EnrollmentRequestService.deleteEnrollmentRequest(reqId);
+  //     toast.success("Xoá yêu cầu ghi danh thành công");
   //     fetchEnrolls();
   //   } catch (error) {
-  //     toast.error("Không thể xóa enroll");
+  //     toast.error("Không thể xoá yêu cầu ghi danh");
   //   }
   // };
 
   const columns = [
     {
-      title: "Student Name",
+      title: "Họ và tên",
       dataIndex: ["account", "fullName"],
     },
     {
@@ -73,21 +76,20 @@ const EnrollManage = () => {
       dataIndex: ["account", "email"],
     },
     {
-      title: "Phone",
+      title: "Số điện thoại",
       dataIndex: ["account", "phone"],
     },
-
     {
-      title: "Status",
+      title: "Trạng thái",
       dataIndex: "status",
       render: (status: StatusKey) => (
         <Tag color={statusMap[status]?.color || "default"}>
-          {statusMap[status]?.text || "Unknown"}
+          {statusMap[status]?.text || "Không xác định"}
         </Tag>
       ),
     },
     {
-      title: "Actions",
+      title: "Thao tác",
       render: (_: any, record: any) => (
         <Space style={{ display: "flex", justifyContent: "flex-start" }}>
           <Button
@@ -95,14 +97,14 @@ const EnrollManage = () => {
             onClick={() => handleAcp(record.id)}
             disabled={record.status === 1}
           >
-            Accept
+            Chấp nhận
           </Button>
           <Button
             danger
             onClick={() => handleReject(record.id)}
             disabled={record.status === 2}
           >
-            Reject
+            Từ chối
           </Button>
         </Space>
       ),
@@ -113,25 +115,27 @@ const EnrollManage = () => {
     <>
       <Table
         rowKey="id"
-        columns={columns}
+        columns={columns as any}
         dataSource={enrolls}
         loading={loading}
         pagination={{ pageSize: 5 }}
       />
 
-      {/* Modal Update */}
+      {/* Modal Cập nhật */}
       <Modal
-        title="Cập nhật Enroll"
+        title="Cập nhật yêu cầu ghi danh"
         open={isModalOpen}
         onCancel={() => setIsModalOpen(false)}
         onOk={() => form.submit()}
+        okText="Lưu"
+        cancelText="Hủy"
       >
         <Form form={form} layout="vertical">
-          <Form.Item name="status" label="Status">
-            <Select>
-              <Select.Option value={0}>Pending</Select.Option>
-              <Select.Option value={1}>Accepted</Select.Option>
-              <Select.Option value={2}>Rejected</Select.Option>
+          <Form.Item name="status" label="Trạng thái">
+            <Select placeholder="Chọn trạng thái">
+              <Select.Option value={0}>Đang chờ</Select.Option>
+              <Select.Option value={1}>Đã chấp nhận</Select.Option>
+              <Select.Option value={2}>Đã từ chối</Select.Option>
             </Select>
           </Form.Item>
         </Form>

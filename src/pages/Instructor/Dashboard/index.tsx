@@ -92,11 +92,10 @@ export default function InstructorDashboardPage() {
     setLoading(true);
     try {
       const res = await DashboardService.getDashboardInstructor();
-
       setData(res);
     } catch (e) {
       console.error(e);
-      message.error("Failed to load dashboard data (showing sample)");
+      message.error("Tải dữ liệu bảng điều khiển thất bại.");
     } finally {
       setLoading(false);
     }
@@ -146,17 +145,17 @@ export default function InstructorDashboardPage() {
                 color: "transparent",
               }}
             >
-              Instructor Dashboard
+              Trang thống kê
             </span>
           </Title>
-          <Text type="secondary">Courses, Classes & Enrollment overview</Text>
+          <Text type="secondary">Tổng quan Khoá học, Lớp & Ghi danh</Text>
         </Col>
         <Col>
           <Space>
             <Input
               allowClear
               prefix={<SearchOutlined />}
-              placeholder="Search course/class"
+              placeholder="Tìm kiếm khoá học/lớp"
               value={q}
               onChange={(e) => setQ(e.target.value)}
               style={{ width: 260 }}
@@ -166,7 +165,7 @@ export default function InstructorDashboardPage() {
               onClick={fetchData}
               loading={loading}
             >
-              Refresh
+              Làm mới
             </Button>
           </Space>
         </Col>
@@ -181,12 +180,12 @@ export default function InstructorDashboardPage() {
                 style={{ width: "100%", justifyContent: "space-between" }}
               >
                 <Statistic
-                  title="Total Courses"
+                  title="Tổng số khoá học"
                   value={data?.totalCourses ?? 0}
                   prefix={<BookOutlined />}
                 />
                 <Tag color="purple" style={pillStyle}>
-                  Active
+                  Đang hoạt động
                 </Tag>
               </Space>
             </Card>
@@ -200,12 +199,12 @@ export default function InstructorDashboardPage() {
                 style={{ width: "100%", justifyContent: "space-between" }}
               >
                 <Statistic
-                  title="Total Classes"
+                  title="Tổng số lớp"
                   value={data?.totalClasses ?? 0}
                   prefix={<AppstoreOutlined />}
                 />
                 <Tag color="green" style={pillStyle}>
-                  Live
+                  Đang diễn ra
                 </Tag>
               </Space>
             </Card>
@@ -219,12 +218,12 @@ export default function InstructorDashboardPage() {
                 style={{ width: "100%", justifyContent: "space-between" }}
               >
                 <Statistic
-                  title="Distinct Students"
+                  title="Học viên duy nhất"
                   value={data?.totalStudentsDistinct ?? 0}
                   prefix={<TeamOutlined />}
                 />
                 <Tag color="gold" style={pillStyle}>
-                  Unique
+                  Duy nhất
                 </Tag>
               </Space>
             </Card>
@@ -239,7 +238,7 @@ export default function InstructorDashboardPage() {
               title={
                 <span>
                   <BarChartOutlined />
-                  &nbsp;Students per Course
+                  &nbsp;Học viên theo khoá học
                 </span>
               }
             >
@@ -265,7 +264,7 @@ export default function InstructorDashboardPage() {
                       <Legend />
                       <Bar
                         dataKey="value"
-                        name="Students"
+                        name="Học viên"
                         fill="#6366F1"
                         radius={[0, 6, 6, 0]}
                       />
@@ -273,7 +272,7 @@ export default function InstructorDashboardPage() {
                   </ResponsiveContainer>
                 </div>
               ) : (
-                <Empty description="No course data" />
+                <Empty description="Không có dữ liệu khoá học" />
               )}
             </Card>
           </motion.div>
@@ -284,7 +283,7 @@ export default function InstructorDashboardPage() {
               title={
                 <span>
                   <BarChartOutlined />
-                  &nbsp;Students per Class
+                  &nbsp;Học viên theo lớp
                 </span>
               }
             >
@@ -310,7 +309,7 @@ export default function InstructorDashboardPage() {
                       <Legend />
                       <Bar
                         dataKey="value"
-                        name="Students"
+                        name="Học viên"
                         fill="#22C55E"
                         radius={[0, 6, 6, 0]}
                       />
@@ -318,7 +317,7 @@ export default function InstructorDashboardPage() {
                   </ResponsiveContainer>
                 </div>
               ) : (
-                <Empty description="No class data" />
+                <Empty description="Không có dữ liệu lớp" />
               )}
             </Card>
           </motion.div>
@@ -328,7 +327,7 @@ export default function InstructorDashboardPage() {
       <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
         <Col xs={24} md={12}>
           <motion.div initial={fadeUp.initial} animate={fadeUp.animate}>
-            <Card title="Per Course">
+            <Card title="Theo Khoá học">
               <Table
                 size="middle"
                 rowKey={(r) => r.courseId}
@@ -336,7 +335,7 @@ export default function InstructorDashboardPage() {
                 pagination={{ pageSize: 5 }}
                 columns={[
                   {
-                    title: "Course",
+                    title: "Khoá học",
                     dataIndex: "courseName",
                     key: "courseName",
                     render: (t: string) => (
@@ -344,7 +343,7 @@ export default function InstructorDashboardPage() {
                     ),
                   },
                   {
-                    title: "Students",
+                    title: "Học viên",
                     dataIndex: "studentCount",
                     key: "studentCount",
                     width: 120,
@@ -359,7 +358,7 @@ export default function InstructorDashboardPage() {
         </Col>
         <Col xs={24} md={12}>
           <motion.div initial={fadeUp.initial} animate={fadeUp.animate}>
-            <Card title="Per Class">
+            <Card title="Theo Lớp">
               <Table
                 size="middle"
                 rowKey={(r) => r.classId}
@@ -367,7 +366,7 @@ export default function InstructorDashboardPage() {
                 pagination={{ pageSize: 5 }}
                 columns={[
                   {
-                    title: "Class",
+                    title: "Lớp",
                     dataIndex: "className",
                     key: "className",
                     render: (t: string) => (
@@ -375,13 +374,13 @@ export default function InstructorDashboardPage() {
                     ),
                   },
                   {
-                    title: "Course",
+                    title: "Khoá học",
                     dataIndex: "courseName",
                     key: "courseName",
                     render: (t: string) => <Tag color="blue">{t}</Tag>,
                   },
                   {
-                    title: "Students",
+                    title: "Học viên",
                     dataIndex: "studentCount",
                     key: "studentCount",
                     width: 120,

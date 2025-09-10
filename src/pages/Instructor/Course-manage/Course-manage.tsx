@@ -67,7 +67,7 @@ const CourseManagement = () => {
       const data = await CourseService.getCourseByInstructorId();
       setDataSource(data);
     } catch (error) {
-      toast.error("Failed to fetch courses");
+      toast.error("Tải danh sách khoá học thất bại");
     } finally {
       setLoading(false);
     }
@@ -77,7 +77,7 @@ const CourseManagement = () => {
     fetchCourses();
   }, []);
 
-  // Add new
+  // Thêm mới
   const handleAdd = () => {
     form.resetFields();
     setFileList([]);
@@ -115,15 +115,15 @@ const CourseManagement = () => {
   //   setIsModalVisible(true);
   // };
 
-  // Delete
+  // Xoá
   const handleDelete = async (id: string) => {
     try {
       setLoading(true);
       await CourseService.deleteCourse(id);
-      toast.success("Deleted successfully!");
+      toast.success("Xoá thành công!");
       fetchCourses();
     } catch (error) {
-      toast.error("Delete failed!");
+      toast.error("Xoá thất bại!");
     } finally {
       setLoading(false);
     }
@@ -139,7 +139,7 @@ const CourseManagement = () => {
     }
 
     if (!userId) {
-      console.error("User ID not found!");
+      console.error("Không tìm thấy ID người dùng!");
       return;
     }
     try {
@@ -172,16 +172,16 @@ const CourseManagement = () => {
 
       if (isEditing && selectedCourseId) {
         await CourseService.updateCourse(selectedCourseId, formData);
-        toast.success("Update Course successful!");
+        toast.success("Cập nhật khoá học thành công!");
       } else {
         await CourseService.createCourse(formData);
-        toast.success("Create Course successful!");
+        toast.success("Tạo khoá học thành công!");
       }
 
       setIsModalVisible(false);
       fetchCourses();
     } catch (error) {
-      toast.error("Something went wrong!");
+      toast.error("Đã có lỗi xảy ra!");
     } finally {
       setLoading(false);
     }
@@ -192,15 +192,17 @@ const CourseManagement = () => {
       <Col span={24}>
         <Flex justify="space-between">
           <Typography style={{ fontSize: "30px", fontWeight: "bold" }}>
-            My Course
+            Khoá học của tôi
           </Typography>
           <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
-            Add new Course
+            Thêm khoá học
           </Button>
         </Flex>
       </Col>
+
       {dataSource?.map((course: any) => (
         <Col
+          key={course.id}
           span={6}
           onClick={() => navigate(`/instructor-course/detail/${course.id}`)}
         >
@@ -214,35 +216,38 @@ const CourseManagement = () => {
           />
         </Col>
       ))}
+
       <Modal
-        title={isEditing ? "Update Course" : "Create Course"}
+        title={isEditing ? "Cập nhật khoá học" : "Tạo khoá học"}
         open={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
         onOk={handleSubmit}
-        okText={isEditing ? "Update" : "Create new"}
+        okText={isEditing ? "Cập nhật" : "Tạo mới"}
         confirmLoading={loading}
       >
         <Form layout="vertical" form={form}>
           <Form.Item
-            label="Course Name"
+            label="Tên khoá học"
             name="courseName"
-            rules={[{ required: true, message: "Require field course name" }]}
+            rules={[{ required: true, message: "Vui lòng nhập tên khoá học" }]}
           >
-            <Input />
+            <Input placeholder="Nhập tên khoá học" />
           </Form.Item>
+
           <Form.Item
-            label="Description"
+            label="Mô tả"
             name="description"
-            rules={[{ required: true, message: "Require field description" }]}
+            rules={[{ required: true, message: "Vui lòng nhập mô tả" }]}
           >
-            <Input.TextArea rows={3} />
+            <Input.TextArea rows={3} placeholder="Nhập mô tả ngắn…" />
           </Form.Item>
+
           <Form.Item
-            label="Category"
+            label="Danh mục"
             name="categoryId"
-            rules={[{ required: true, message: "Require" }]}
+            rules={[{ required: true, message: "Bắt buộc" }]}
           >
-            <Select placeholder="Select Category">
+            <Select placeholder="Chọn danh mục">
               {categories.map((cat: Category) => (
                 <Select.Option key={cat.id} value={cat.id}>
                   {cat.categoryName}
@@ -254,9 +259,9 @@ const CourseManagement = () => {
           <Form.Item
             label="Workspace"
             name="workSpaceId"
-            rules={[{ required: true, message: "Require" }]}
+            rules={[{ required: true, message: "Bắt buộc" }]}
           >
-            <Select placeholder="Select Workspace">
+            <Select placeholder="Chọn workspace">
               {workspaces.map((ws: Workspace) => (
                 <Select.Option key={ws.id} value={ws.id}>
                   {ws.workSpaceName}
@@ -264,11 +269,9 @@ const CourseManagement = () => {
               ))}
             </Select>
           </Form.Item>
-          {/* <Form.Item label="Rating" name="ratingAverage">
-            <InputNumber min={0} max={5} step={0.1} style={{ width: "100%" }} />
-          </Form.Item> */}
+
           <Form.Item
-            label="Image"
+            label="Ảnh"
             name="imgUrl"
             valuePropName="fileList"
             getValueFromEvent={(e) => (Array.isArray(e) ? e : e && e.fileList)}
@@ -281,7 +284,7 @@ const CourseManagement = () => {
               maxCount={1}
               listType="picture"
             >
-              <Button>Select Image</Button>
+              <Button>Chọn ảnh</Button>
             </Upload>
           </Form.Item>
         </Form>
@@ -291,3 +294,4 @@ const CourseManagement = () => {
 };
 
 export default CourseManagement;
+

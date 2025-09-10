@@ -30,13 +30,14 @@ const ClassManagement = () => {
   const [selectedClassId, setSelectedClassId] = useState<string | null>(null);
   const [form] = Form.useForm();
   const navigate = useNavigate();
+
   const fetchClasses = async () => {
     try {
       setLoading(true);
       const data = await ClassService.getClassByCourse(id ?? "");
       setDataSource(data);
     } catch (error) {
-      toast.error("Failed to fetch classes");
+      toast.error("Không tải được danh sách lớp học");
     } finally {
       setLoading(false);
     }
@@ -44,6 +45,7 @@ const ClassManagement = () => {
 
   useEffect(() => {
     fetchClasses();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleAdd = () => {
@@ -62,16 +64,16 @@ const ClassManagement = () => {
     setIsModalVisible(true);
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (classId: string) => {
     Modal.confirm({
-      title: "Bạn có chắc muốn xóa lớp học này?",
+      title: "Bạn có chắc muốn xoá lớp học này?",
       onOk: async () => {
         try {
-          await ClassService.delete(id);
-          toast.success("Xóa thành công!");
+          await ClassService.delete(classId);
+          toast.success("Xoá lớp học thành công!");
           fetchClasses();
         } catch {
-          toast.error("Xóa thất bại!");
+          toast.error("Xoá lớp học thất bại!");
         }
       },
     });
@@ -81,6 +83,7 @@ const ClassManagement = () => {
     try {
       const user = JSON.parse(localStorage.getItem("currentUser") || "null");
       const values = await form.validateFields();
+
       if (isEditing && selectedClassId) {
         await ClassService.update(selectedClassId, { ...values, courseId: id });
         toast.success("Cập nhật lớp học thành công!");
@@ -98,21 +101,21 @@ const ClassManagement = () => {
       toast.error("Có lỗi xảy ra!");
     }
   };
+
   const columns: ColumnsType<any> = [
     {
-      title: "Class Name",
+      title: "Tên lớp",
       dataIndex: "className",
     },
-
     {
       title: "Số lượng học viên",
       dataIndex: "numberOfStudent",
     },
     {
-      title: "Action",
+      title: "Thao tác",
       render: (_, record) => (
         <Space>
-          <Tooltip title="Add Student">
+          <Tooltip title="Thêm học viên">
             <FolderViewOutlined
               style={{ cursor: "pointer" }}
               onClick={() =>
@@ -122,13 +125,13 @@ const ClassManagement = () => {
               }
             />
           </Tooltip>
-          <Tooltip title="Edit">
+          <Tooltip title="Chỉnh sửa">
             <EditOutlined
               style={{ cursor: "pointer" }}
               onClick={() => handleEdit(record)}
             />
           </Tooltip>
-          <Tooltip title="Delete">
+          <Tooltip title="Xoá">
             <DeleteOutlined
               style={{ cursor: "pointer", color: "red" }}
               onClick={() => handleDelete(record.id)}
@@ -146,7 +149,11 @@ const ClassManagement = () => {
         className="header-section"
         style={{ marginBottom: 12 }}
       >
-        <Input.Search placeholder="Search class" style={{ width: 250 }} />
+        <Input.Search
+          placeholder="Tìm lớp học"
+          style={{ width: 250 }}
+          allowClear
+        />
         <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
           Thêm lớp học
         </Button>
@@ -174,14 +181,15 @@ const ClassManagement = () => {
             name="className"
             rules={[{ required: true, message: "Vui lòng nhập tên lớp" }]}
           >
-            <Input />
+            <Input placeholder="VD: Lớp 01 - Kỳ Fall" />
           </Form.Item>
+
           <Form.Item
             label="Số lượng học viên"
             name="numberOfStudent"
             rules={[{ required: true, message: "Vui lòng nhập số lượng" }]}
           >
-            <InputNumber min={0} style={{ width: "100%" }} />
+            <InputNumber min={0} style={{ width: "100%" }} placeholder="VD: 40" />
           </Form.Item>
         </Form>
       </Modal>

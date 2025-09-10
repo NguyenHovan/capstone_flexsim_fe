@@ -42,19 +42,23 @@ const TopicManagement = () => {
       const res = await TopicService.getAllTopics();
       setDataSource(res);
     } catch (e) {
-      toast.error("Lỗi khi tải topics");
+      toast.error("Lỗi khi tải danh sách chủ đề");
     } finally {
       setLoading(false);
     }
   };
 
   const fetchCoursesAndScenes = async () => {
-    const [courseRes, sceneRes] = await Promise.all([
-      CourseService.getAllCourses(),
-      SceneService.getAllScenes(),
-    ]);
-    setCourses(courseRes);
-    setScenes(sceneRes);
+    try {
+      const [courseRes, sceneRes] = await Promise.all([
+        CourseService.getAllCourses(),
+        SceneService.getAllScenes(),
+      ]);
+      setCourses(courseRes || []);
+      setScenes(sceneRes || []);
+    } catch (e) {
+      toast.error("Lỗi khi tải danh sách khóa học/scene");
+    }
   };
 
   const handleAdd = () => {
@@ -71,25 +75,38 @@ const TopicManagement = () => {
       description: record.description,
       courseId: record.course?.id,
       sceneId: record.scene?.id,
-      imgUrl: [
-        {
-          uid: "-1",
-          name: "image.png",
-          status: "done",
-          url: record.imgUrl,
-        },
-      ],
+      imgUrl: record.imgUrl
+        ? [
+            {
+              uid: "-1",
+              name: "image.png",
+              status: "done",
+              url: record.imgUrl,
+            },
+          ]
+        : [],
     });
     setIsModalVisible(true);
+  };
+
+  const confirmDelete = (id: string) => {
+    Modal.confirm({
+      title: "Bạn có chắc muốn xóa chủ đề này?",
+      content: "Hành động này không thể hoàn tác.",
+      okText: "Xóa",
+      cancelText: "Hủy",
+      okButtonProps: { danger: true },
+      onOk: () => handleDelete(id),
+    });
   };
 
   const handleDelete = async (id: string) => {
     try {
       await TopicService.deleteTopic(id);
-      toast.success("Xóa thành công!");
+      toast.success("Xóa chủ đề thành công!");
       fetchTopics();
     } catch (err) {
-      toast.error("Xóa thất bại!");
+      toast.error("Xóa chủ đề thất bại!");
     }
   };
 
@@ -107,21 +124,21 @@ const TopicManagement = () => {
 
       if (isEditing && selectedTopicId) {
         await TopicService.updateTopic(selectedTopicId, formData);
-        toast.success("Cập nhật topic thành công!");
+        toast.success("Cập nhật chủ đề thành công!");
       } else {
         await TopicService.createTopic(formData);
-        toast.success("Tạo topic thành công!");
+        toast.success("Tạo chủ đề thành công!");
       }
       setIsModalVisible(false);
       fetchTopics();
     } catch (e) {
-      toast.error("Có lỗi xảy ra khi lưu topic!");
+      toast.error("Có lỗi xảy ra khi lưu chủ đề!");
     }
   };
 
   const columns = [
     {
-      title: "Tên topic",
+      title: "Tên chủ đề",
       dataIndex: "topicName",
     },
     {
@@ -139,21 +156,20 @@ const TopicManagement = () => {
     {
       title: "Ảnh",
       dataIndex: "imgUrl",
-      render: (url: string) => (
-        <img src={url} alt="topic" width={50} height={50} />
-      ),
+      render: (url: string) =>
+        url ? <img src={url} alt="topic" width={50} height={50} /> : "-",
     },
     {
       title: "Hành động",
       render: (_: any, record: any) => (
         <Space>
-          <Tooltip title="Sửa">
+          <Tooltip title="Chỉnh sửa">
             <EditOutlined onClick={() => handleEdit(record)} />
           </Tooltip>
           <Tooltip title="Xóa">
             <DeleteOutlined
               style={{ color: "red" }}
-              onClick={() => handleDelete(record.id)}
+              onClick={() => confirmDelete(record.id)}
             />
           </Tooltip>
         </Space>
@@ -165,10 +181,10 @@ const TopicManagement = () => {
 
   return (
     <div>
-      <div className="header-section">
-        <Input.Search placeholder="Search topic" style={{ width: 250 }} />
+      <div className="header-section" style={{ marginBottom: 16, display: "flex", gap: 8 }}>
+        <Input.Search placeholder="Tìm kiếm chủ đề" style={{ width: 280 }} />
         <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
-          Thêm Topic
+          Thêm chủ đề
         </Button>
       </div>
 
@@ -183,18 +199,19 @@ const TopicManagement = () => {
 
       <Modal
         open={isModalVisible}
-        title={isEditing ? "Cập nhật topic" : "Tạo topic"}
+        title={isEditing ? "Cập nhật chủ đề" : "Tạo chủ đề"}
         onCancel={() => setIsModalVisible(false)}
         onOk={handleSubmit}
         okText={isEditing ? "Cập nhật" : "Tạo mới"}
+        cancelText="Hủy"
       >
         <Form layout="vertical" form={form}>
           <Form.Item
-            label="Tên Topic"
+            label="Tên chủ đề"
             name="topicName"
-            rules={[{ required: true, message: "Vui lòng nhập tên topic" }]}
+            rules={[{ required: true, message: "Vui lòng nhập tên chủ đề" }]}
           >
-            <Input />
+            <Input placeholder="Nhập tên chủ đề" />
           </Form.Item>
 
           <Form.Item
@@ -202,13 +219,13 @@ const TopicManagement = () => {
             name="description"
             rules={[{ required: true, message: "Vui lòng nhập mô tả" }]}
           >
-            <Input.TextArea rows={3} />
+            <Input.TextArea rows={3} placeholder="Nhập mô tả ngắn..." />
           </Form.Item>
 
           <Form.Item
             label="Khóa học"
             name="courseId"
-            rules={[{ required: true, message: "Bắt buộc" }]}
+            rules={[{ required: true, message: "Vui lòng chọn khóa học" }]}
           >
             <Select placeholder="Chọn khóa học">
               {courses.map((course) => (
@@ -222,7 +239,7 @@ const TopicManagement = () => {
           <Form.Item
             label="Scene"
             name="sceneId"
-            rules={[{ required: true, message: "Bắt buộc" }]}
+            rules={[{ required: true, message: "Vui lòng chọn scene" }]}
           >
             <Select placeholder="Chọn scene">
               {scenes.map((scene) => (

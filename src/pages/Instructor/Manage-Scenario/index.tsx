@@ -24,26 +24,24 @@ const ScenarioManager: React.FC = () => {
   const [editingScenario, setEditingScenario] = useState<any>(null);
   const [form] = Form.useForm();
 
-  // Load danh sách Scenario
   const fetchScenarios = async () => {
     try {
       setLoading(true);
       const data = await ScenarioService.getScenarios();
-      setScenarios(data);
+      setScenarios(data || []);
     } catch {
-      message.error("Không tải được danh sách Scenario!");
+      message.error("Không tải được danh sách kịch bản!");
     } finally {
       setLoading(false);
     }
   };
 
-  // Load Scene cho Select
   const fetchScenes = async () => {
     try {
       const data = await SceneService.getAllScenes();
-      setScenes(data);
+      setScenes(data || []);
     } catch {
-      message.error("Không tải được Scene!");
+      message.error("Không tải được danh sách bối cảnh (Scene)!");
     }
   };
 
@@ -64,10 +62,10 @@ const ScenarioManager: React.FC = () => {
 
       if (editingScenario) {
         await ScenarioService.updateScenario(editingScenario.id, formData);
-        message.success("Cập nhật Scenario thành công!");
+        message.success("Cập nhật kịch bản thành công!");
       } else {
         await ScenarioService.createScenario(formData);
-        message.success("Tạo Scenario thành công!");
+        message.success("Tạo kịch bản thành công!");
       }
 
       setModalVisible(false);
@@ -82,17 +80,17 @@ const ScenarioManager: React.FC = () => {
   const handleDelete = async (id: string) => {
     try {
       await ScenarioService.deleteScenario(id);
-      message.success("Xóa thành công!");
+      message.success("Xoá kịch bản thành công!");
       fetchScenarios();
     } catch {
-      message.error("Xóa thất bại!");
+      message.error("Xoá kịch bản thất bại!");
     }
   };
 
   const columns = [
-    { title: "Scenario Name", dataIndex: "scenarioName", key: "scenarioName" },
+    { title: "Tên kịch bản", dataIndex: "scenarioName", key: "scenarioName" },
     {
-      title: "Description",
+      title: "Mô tả",
       dataIndex: "description",
       key: "description",
       render: (text: string) => {
@@ -109,31 +107,30 @@ const ScenarioManager: React.FC = () => {
         );
       },
     },
-
     {
-      title: "Scene",
+      title: "Bối cảnh (Scene)",
       dataIndex: "sceneId",
       key: "sceneId",
       render: (id: string) => {
-        const scene = scenes.find((s) => s.id === id || s.id === id);
+        const scene = scenes.find((s: any) => s.id === id || s._id === id);
         return scene ? scene.sceneName : id;
       },
     },
     {
-      title: "File",
+      title: "Tệp",
       dataIndex: "fileUrl",
       key: "fileUrl",
       render: (url: string) =>
         url ? (
           <a href={url} target="_blank" rel="noreferrer">
-            Xem file
+            Xem tệp
           </a>
         ) : (
           "Không có"
         ),
     },
     {
-      title: "Actions",
+      title: "Thao tác",
       key: "actions",
       render: (_: any, record: any) => (
         <div style={{ display: "flex", gap: 8 }}>
@@ -146,17 +143,29 @@ const ScenarioManager: React.FC = () => {
                 scenarioName: record.scenarioName,
                 description: record.description,
                 sceneId: record.sceneId,
+                fileUrl: record.fileUrl
+                  ? [
+                      {
+                        uid: "-1",
+                        name: record.fileUrl.split("/").pop() || "file",
+                        status: "done",
+                        url: record.fileUrl,
+                      },
+                    ]
+                  : [],
               });
             }}
           >
             Sửa
           </Button>
           <Popconfirm
-            title="Xóa scenario?"
+            title="Xoá kịch bản?"
+            okText="Xoá"
+            cancelText="Hủy"
             onConfirm={() => handleDelete(record.id)}
           >
             <Button danger size="small">
-              Xóa
+              Xoá
             </Button>
           </Popconfirm>
         </div>
@@ -166,7 +175,7 @@ const ScenarioManager: React.FC = () => {
 
   return (
     <div style={{ padding: 20 }}>
-      <h2 style={{ marginBottom: 20 }}>Quản lý Scenario</h2>
+      <h2 style={{ marginBottom: 20 }}>Quản lý Kịch bản (Scenario)</h2>
 
       <Button
         type="primary"
@@ -177,18 +186,18 @@ const ScenarioManager: React.FC = () => {
         }}
         style={{ marginBottom: 16 }}
       >
-        + Add Scenario
+        + Thêm kịch bản
       </Button>
 
       <Table
-        rowKey="_id"
-        columns={columns}
+        rowKey={(r: any) => r?.id ?? r?._id}
+        columns={columns as any}
         dataSource={scenarios}
         loading={loading}
       />
 
       <Modal
-        title={editingScenario ? "Sửa Scenario" : "Thêm Scenario"}
+        title={editingScenario ? "Sửa kịch bản" : "Thêm kịch bản"}
         open={modalVisible}
         onCancel={() => {
           setModalVisible(false);
@@ -197,32 +206,33 @@ const ScenarioManager: React.FC = () => {
         onOk={() => form.submit()}
         okText="Lưu"
         cancelText="Hủy"
+        destroyOnClose
       >
         <Form form={form} layout="vertical" onFinish={handleSubmit}>
           <Form.Item
-            label="Scenario Name"
+            label="Tên kịch bản"
             name="scenarioName"
-            rules={[{ required: true, message: "Nhập scenarioName!" }]}
+            rules={[{ required: true, message: "Vui lòng nhập tên kịch bản!" }]}
           >
-            <Input />
+            <Input placeholder="VD: Kịch bản xử lý đơn hàng" />
           </Form.Item>
 
           <Form.Item
-            label="Description"
+            label="Mô tả"
             name="description"
-            rules={[{ required: true, message: "Nhập description!" }]}
+            rules={[{ required: true, message: "Vui lòng nhập mô tả!" }]}
           >
-            <Input.TextArea rows={3} />
+            <Input.TextArea rows={3} placeholder="Mô tả ngắn về kịch bản" />
           </Form.Item>
 
           <Form.Item
-            label="Scene"
+            label="Bối cảnh (Scene)"
             name="sceneId"
-            rules={[{ required: true, message: "Chọn scene!" }]}
+            rules={[{ required: true, message: "Vui lòng chọn bối cảnh!" }]}
           >
-            <Select placeholder="Chọn scene">
-              {scenes.map((scene) => (
-                <Select.Option key={scene.id} value={scene.id}>
+            <Select placeholder="Chọn bối cảnh">
+              {scenes.map((scene: any) => (
+                <Select.Option key={scene.id || scene._id} value={scene.id || scene._id}>
                   {scene.sceneName}
                 </Select.Option>
               ))}
@@ -230,13 +240,13 @@ const ScenarioManager: React.FC = () => {
           </Form.Item>
 
           <Form.Item
-            label="File"
+            label="Tệp đính kèm"
             name="fileUrl"
             valuePropName="fileList"
-            getValueFromEvent={(e) => e.fileList}
+            getValueFromEvent={(e) => (Array.isArray(e) ? e : e?.fileList || [])}
           >
-            <Upload beforeUpload={() => false}>
-              <Button icon={<UploadOutlined />}>Chọn file</Button>
+            <Upload beforeUpload={() => false} maxCount={1}>
+              <Button icon={<UploadOutlined />}>Chọn tệp</Button>
             </Upload>
           </Form.Item>
         </Form>

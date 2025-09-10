@@ -79,7 +79,6 @@ const actionBarStyle: React.CSSProperties = {
 
 const labelStyle: React.CSSProperties = { fontWeight: 600 };
 
-
 /* ----------------- Component ----------------- */
 const ProfilePage = () => {
   const { user } = useAuth();
@@ -99,8 +98,6 @@ const ProfilePage = () => {
   const [avatarDirty, setAvatarDirty] = useState(false);
   const [savingAvatar, setSavingAvatar] = useState(false);
 
-
-
   const fetchUserById = async (id: string) => {
     try {
       setLoadingProfile(true);
@@ -116,7 +113,7 @@ const ProfilePage = () => {
       setAvatarDirty(false);
     } catch (error) {
       console.log({ error });
-      toast.error("Failed to load user information.");
+      toast.error("Tải thông tin người dùng thất bại.");
     } finally {
       setLoadingProfile(false);
     }
@@ -141,9 +138,9 @@ const ProfilePage = () => {
     try {
       await AccountService.updateAccount(user.id, { avtUrl: avatarUrl });
       await fetchUserById(user.id);
-      toast.success("Avatar updated successfully!");
+      toast.success("Cập nhật ảnh đại diện thành công!");
     } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Failed to update avatar.");
+      toast.error(error?.response?.data?.message || "Cập nhật ảnh đại diện thất bại.");
     } finally {
       setSavingAvatar(false);
     }
@@ -153,20 +150,20 @@ const ProfilePage = () => {
     try {
       const values = await formProfile.validateFields();
       if (!user?.id) {
-        toast.error("Account not identified.");
+        toast.error("Không xác định được tài khoản.");
         return;
       }
       await AccountService.updateAccount(user.id, {
         ...values,
         email: user.email,
-        avtUrl: avatarUrl, 
+        avtUrl: avatarUrl,
       });
-      toast.success("Information updated successfully!");
+      toast.success("Cập nhật thông tin thành công!");
       fetchUserById(user.id);
       setIsEditing(false);
       setAvatarDirty(false);
     } catch (error) {
-      toast.error("An error occurred while updating.");
+      toast.error("Đã xảy ra lỗi khi cập nhật.");
     }
   };
 
@@ -180,7 +177,7 @@ const ProfilePage = () => {
     try {
       const values = await formPassword.validateFields();
       if (values.newPassword !== values.confirmPassword) {
-        toast.error("New password does not match.");
+        toast.error("Mật khẩu mới không khớp.");
         return;
       }
       setLoading(true);
@@ -188,15 +185,15 @@ const ProfilePage = () => {
         currentPassword: values.currentPassword,
         newPassword: values.newPassword,
       });
-      toast.success("Password changed successfully!");
+      toast.success("Đổi mật khẩu thành công!");
       setIsModalVisible(false);
       formPassword.resetFields();
       setTimeout(() => {
         Modal.confirm({
-          title: "Do you want to log out?",
-          content: "Password changed successfully. Continue using or log out?",
-          okText: "Logout",
-          cancelText: "Continue",
+          title: "Bạn có muốn đăng xuất?",
+          content: "Đổi mật khẩu thành công. Tiếp tục sử dụng hay đăng xuất?",
+          okText: "Đăng xuất",
+          cancelText: "Tiếp tục",
           onOk: () => {
             localStorage.clear();
             navigate("/login");
@@ -204,7 +201,7 @@ const ProfilePage = () => {
         });
       }, 300);
     } catch (error: any) {
-      toast.error(error?.response?.data?.message || "An error occurred.");
+      toast.error(error?.response?.data?.message || "Đã xảy ra lỗi.");
     } finally {
       setLoading(false);
     }
@@ -213,10 +210,9 @@ const ProfilePage = () => {
   return (
     <div style={containerStyle}>
       <div style={wrapStyle}>
-        <Card  variant="outlined" style={headerCardStyle}>
+        <Card variant="outlined" style={headerCardStyle}>
           <div style={headerGradientStyle}>
             <Row align="middle" gutter={[16, 16]}>
-             
               <Col flex="auto">
                 <Title level={3} style={{ color: "#fff", margin: 0 }}>
                   {formProfile.getFieldValue("fullName") || user?.userName}
@@ -238,7 +234,7 @@ const ProfilePage = () => {
                       disabled={!avatarDirty}
                       loading={savingAvatar}
                     >
-                      Save Avatar
+                      Lưu ảnh đại diện
                     </Button>
                   </Space>
                 </div>
@@ -261,7 +257,7 @@ const ProfilePage = () => {
                           height: 40,
                         }}
                       >
-                        Cancel
+                        Hủy
                       </Button>
                       <Button
                         type="primary"
@@ -272,7 +268,7 @@ const ProfilePage = () => {
                           boxShadow: "0 8px 18px rgba(0,0,0,0.18)",
                         }}
                       >
-                        Save changes
+                        Lưu thay đổi
                       </Button>
                     </>
                   ) : (
@@ -288,7 +284,7 @@ const ProfilePage = () => {
                         boxShadow: "0 10px 22px rgba(0,0,0,0.12)",
                       }}
                     >
-                      Update information
+                      Cập nhật thông tin
                     </Button>
                   )}
                   <Button
@@ -303,7 +299,7 @@ const ProfilePage = () => {
                       boxShadow: "0 10px 22px rgba(0,0,0,0.12)",
                     }}
                   >
-                    Change password
+                    Đổi mật khẩu
                   </Button>
                 </Space>
               </Col>
@@ -316,41 +312,41 @@ const ProfilePage = () => {
             ) : (
               <Row gutter={[24, 24]}>
                 <Col xs={24} md={12}>
-                 <Card
-  variant="outlined"
-  style={fieldCardStyle}
-  title="Account information"
-  styles={{
-    header: { borderBottom: "none", paddingBottom: 0 },
-    body: { paddingTop: 12 },
-  }}
->
+                  <Card
+                    variant="outlined"
+                    style={fieldCardStyle}
+                    title="Thông tin tài khoản"
+                    styles={{
+                      header: { borderBottom: "none", paddingBottom: 0 },
+                      body: { paddingTop: 12 },
+                    }}
+                  >
                     <Form form={formProfile} layout="vertical" disabled={!isEditing}>
                       <Form.Item
                         label={<span style={labelStyle}>Email</span>}
                         name="email"
                         rules={[
-                          { required: true, message: "Please enter email" },
-                          { type: "email", message: "Invalid email" },
+                          { required: true, message: "Vui lòng nhập email" },
+                          { type: "email", message: "Email không hợp lệ" },
                         ]}
                       >
                         <Input
                           prefix={<MailOutlined style={{ color: "#8c8c8c" }} />}
-                          placeholder="you@example.com"
+                          placeholder="ban@example.com"
                           disabled
                         />
                       </Form.Item>
 
                       <Form.Item
-                        label={<span style={labelStyle}>User name</span>}
+                        label={<span style={labelStyle}>Tên đăng nhập</span>}
                         name="userName"
                         rules={[
-                          { required: true, message: "Please enter username" },
+                          { required: true, message: "Vui lòng nhập tên đăng nhập" },
                         ]}
                       >
                         <Input
                           prefix={<UserOutlined style={{ color: "#8c8c8c" }} />}
-                          placeholder="username"
+                          placeholder="ten_dang_nhap"
                         />
                       </Form.Item>
 
@@ -363,34 +359,34 @@ const ProfilePage = () => {
                 </Col>
 
                 <Col xs={24} md={12}>
-                 <Card
-  variant="outlined"
-  style={fieldCardStyle}
-  title="Account information"
-  styles={{
-    header: { borderBottom: "none", paddingBottom: 0 },
-    body: { paddingTop: 12 },
-  }}
->
+                  <Card
+                    variant="outlined"
+                    style={fieldCardStyle}
+                    title="Thông tin cá nhân"
+                    styles={{
+                      header: { borderBottom: "none", paddingBottom: 0 },
+                      body: { paddingTop: 12 },
+                    }}
+                  >
                     <Form form={formProfile} layout="vertical" disabled={!isEditing}>
                       <Form.Item
-                        label={<span style={labelStyle}>Full Name</span>}
+                        label={<span style={labelStyle}>Họ và tên</span>}
                         name="fullName"
                         rules={[
-                          { required: true, message: "Please enter your full name" },
+                          { required: true, message: "Vui lòng nhập họ và tên" },
                         ]}
                       >
                         <Input
                           prefix={<UserOutlined style={{ color: "#8c8c8c" }} />}
-                          placeholder="Full Name"
+                          placeholder="Họ và tên"
                         />
                       </Form.Item>
 
                       <Form.Item
-                        label={<span style={labelStyle}>Phone</span>}
+                        label={<span style={labelStyle}>Số điện thoại</span>}
                         name="phone"
                         rules={[
-                          { required: true, message: "Please enter your phone" },
+                          { required: true, message: "Vui lòng nhập số điện thoại" },
                         ]}
                       >
                         <Input
@@ -414,14 +410,14 @@ const ProfilePage = () => {
                     type="primary"
                     style={{ height: 40 }}
                   >
-                    Update information
+                    Cập nhật thông tin
                   </Button>
                   <Button
                     icon={<KeyOutlined />}
                     onClick={handleOpenChangePassword}
                     style={{ height: 40 }}
                   >
-                    Change password
+                    Đổi mật khẩu
                   </Button>
                 </div>
               </>
@@ -430,13 +426,13 @@ const ProfilePage = () => {
         </Card>
 
         <Modal
-          title="Change password"
+          title="Đổi mật khẩu"
           open={isModalVisible}
           onCancel={handleCloseChangePassword}
           onOk={handleChangePassword}
           confirmLoading={loading}
-          okText="Change password"
-          cancelText="Cancel"
+          okText="Đổi mật khẩu"
+          cancelText="Hủy"
           styles={{
             header: { borderBottom: "none", paddingBottom: 8 },
             content: { borderRadius: 16 },
@@ -445,40 +441,40 @@ const ProfilePage = () => {
         >
           <Form layout="vertical" form={formPassword}>
             <Form.Item
-              label={<span style={labelStyle}>Current Password</span>}
+              label={<span style={labelStyle}>Mật khẩu hiện tại</span>}
               name="currentPassword"
-              rules={[{ required: true, message: "Please enter current password" }]}
+              rules={[{ required: true, message: "Vui lòng nhập mật khẩu hiện tại" }]}
             >
-              <Input.Password placeholder="Current Password" />
+              <Input.Password placeholder="Mật khẩu hiện tại" />
             </Form.Item>
             <Form.Item
-              label={<span style={labelStyle}>New Password</span>}
+              label={<span style={labelStyle}>Mật khẩu mới</span>}
               name="newPassword"
               rules={[
-                { required: true, message: "Please enter new password" },
-                { min: 6, message: "Minimum 6 characters" },
+                { required: true, message: "Vui lòng nhập mật khẩu mới" },
+                { min: 6, message: "Tối thiểu 6 ký tự" },
               ]}
             >
-              <Input.Password placeholder="New Password" />
+              <Input.Password placeholder="Mật khẩu mới" />
             </Form.Item>
             <Form.Item
-              label={<span style={labelStyle}>Confirm new password</span>}
+              label={<span style={labelStyle}>Xác nhận mật khẩu mới</span>}
               name="confirmPassword"
               dependencies={["newPassword"]}
               rules={[
-                { required: true, message: "Please confirm new password" },
+                { required: true, message: "Vui lòng xác nhận mật khẩu mới" },
                 ({ getFieldValue }) => ({
                   validator(_, value) {
                     if (!value || getFieldValue("newPassword") === value)
                       return Promise.resolve();
                     return Promise.reject(
-                      new Error("Confirm new password does not match")
+                      new Error("Xác nhận mật khẩu mới không khớp")
                     );
                   },
                 }),
               ]}
             >
-              <Input.Password placeholder="Re-enter new password" />
+              <Input.Password placeholder="Nhập lại mật khẩu mới" />
             </Form.Item>
           </Form>
         </Modal>
