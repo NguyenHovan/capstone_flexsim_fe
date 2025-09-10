@@ -4,28 +4,19 @@ import { toast } from "sonner";
 import { useNavigate, useParams } from "react-router-dom";
 import { QuizService } from "../../services/quiz.service";
 import { QuizSubmitssionService } from "../../services/quiz-submitssion.service";
-type Answer = {
-  id: string;
-  description: string;
-};
 
-type Question = {
-  id: string;
-  description: string;
-  answers: Answer[];
-};
+type Answer = { id: string; description: string; };
+type Question = { id: string; description: string; answers: Answer[]; };
+type Quiz = { id: string; title: string; questions: Question[]; };
 
-type Quiz = {
-  id: string;
-  title: string;
-  questions: Question[];
-};
+const DEFAULT_TIME = 300; // 5 phút
+
 const QuizPage = () => {
   const { id } = useParams();
   const [quizData, setQuizData] = useState<Quiz | null>(null);
   const navigate = useNavigate();
   const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [timeLeft, setTimeLeft] = useState(300);
+  const [timeLeft, setTimeLeft] = useState(DEFAULT_TIME);
   const [submitted, setSubmitted] = useState(false);
   const [result, setResult] = useState<any>(null);
   const questionRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -34,24 +25,22 @@ const QuizPage = () => {
     try {
       const response = await QuizService.getFullQuizById(id ?? "");
       setQuizData(response);
-    } catch (error) {
+    } catch (error: any) {
       console.log({ error });
+      message.error(error?.response?.data?.message || "Không thể tải bài thi");
     }
   };
+
   const submitQuiz = async (isAuto = false) => {
     if (submitted) return;
 
     const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
+    const answerArray = Object.entries(answers).map(([questionId, answerId]) => ({
+      questionId,
+      answerId,
+    }));
+    if (!quizData) return;
 
-    const answerArray = Object.entries(answers).map(
-      ([questionId, answerId]) => ({
-        questionId,
-        answerId,
-      })
-    );
-    if (!quizData) {
-      return;
-    }
     const payload = {
       quizId: quizData.id,
       accountId: currentUser.id,
@@ -59,7 +48,7 @@ const QuizPage = () => {
     };
 
     if (!isAuto) {
-      const check = window.confirm("Do you want to submit?");
+      const check = window.confirm("Bạn có chắc muốn nộp bài?");
       if (!check) return;
     }
 
@@ -68,15 +57,13 @@ const QuizPage = () => {
     try {
       const res = await QuizSubmitssionService.submitQuiz(payload);
       setResult(res);
-
-      toast.success(
-        isAuto ? "Hết giờ, bài đã được nộp tự động" : "Nộp bài thành công"
-      );
+      toast.success(isAuto ? "Hết giờ, bài đã được nộp tự động." : "Nộp bài thành công.");
     } catch (error) {
-      toast.error("Nộp bài thất bại");
+      toast.error("Nộp bài thất bại.");
       setSubmitted(false);
     }
   };
+
   useEffect(() => {
     if (submitted) return;
     if (timeLeft <= 0) {
@@ -85,10 +72,14 @@ const QuizPage = () => {
     }
     const timer = setInterval(() => setTimeLeft((prev) => prev - 1), 1000);
     return () => clearInterval(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timeLeft, submitted]);
+
   useEffect(() => {
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
   const handleSubmit = () => submitQuiz(false);
 
   const handleAnswerChange = (questionId: string, answerId: string) => {
@@ -105,23 +96,33 @@ const QuizPage = () => {
 
   const handleReset = () => {
     setAnswers({});
-    setTimeLeft(300);
+    setTimeLeft(DEFAULT_TIME);
     setSubmitted(false);
+    setResult(null);
     message.info("Đã làm mới bài thi!");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const formatTime = (seconds: number) => {
-    const m = Math.floor(seconds / 60)
-      .toString()
-      .padStart(2, "0");
+    const m = Math.floor(seconds / 60).toString().padStart(2, "0");
     const s = (seconds % 60).toString().padStart(2, "0");
     return `${m}:${s}`;
   };
 
-  const scrollToQuestion = (id: string) => {
-    questionRefs.current[id]?.scrollIntoView({ behavior: "smooth" });
+  const scrollToQuestion = (qid: string) => {
+    questionRefs.current[qid]?.scrollIntoView({ behavior: "smooth" });
   };
+
+  if (!quizData) {
+    return (
+      <div style={{ padding: 24, display: "flex", justifyContent: "center" }}>
+        <Card style={{ maxWidth: 600, width: "100%" }}>Đang tải bài thi…</Card>
+      </div>
+    );
+  }
+
   if (submitted && result) {
+    const timeUsed = DEFAULT_TIME - Math.max(timeLeft, 0);
     return (
       <div style={{ padding: 24, display: "flex", justifyContent: "center" }}>
         <Card
@@ -132,10 +133,7 @@ const QuizPage = () => {
             boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
           }}
         >
-          <Typography.Title
-            level={3}
-            style={{ textAlign: "center", marginBottom: 24 }}
-          >
+          <Typography.Title level={3} style={{ textAlign: "center", marginBottom: 24 }}>
             Kết quả bài thi
           </Typography.Title>
 
@@ -152,11 +150,10 @@ const QuizPage = () => {
               <strong>Điểm số:</strong> {result.score}
             </Typography.Paragraph>
             <Typography.Paragraph style={{ fontSize: 16 }}>
-              <strong>Số câu đúng:</strong> {result.totalCorrect}/
-              {result.totalQuestions}
+              <strong>Số câu đúng:</strong> {result.totalCorrect}/{result.totalQuestions}
             </Typography.Paragraph>
             <Typography.Paragraph style={{ fontSize: 16 }}>
-              <strong>Thời gian làm bài:</strong> {formatTime(timeLeft)}
+              <strong>Thời gian làm bài:</strong> {formatTime(timeUsed)}
             </Typography.Paragraph>
           </Card>
 
@@ -164,11 +161,7 @@ const QuizPage = () => {
             <Button type="primary" size="large" onClick={handleReset}>
               Làm lại bài
             </Button>
-            <Button
-              danger
-              size="large"
-              onClick={() => navigate("/course-list")}
-            >
+            <Button danger size="large" onClick={() => navigate("/course-list")}>
               Quay về
             </Button>
           </Flex>
@@ -176,11 +169,12 @@ const QuizPage = () => {
       </div>
     );
   }
+
   return (
     <div style={{ display: "flex", gap: 20, padding: 20 }}>
       {/* Cột trái - Câu hỏi */}
       <div style={{ flex: 3 }}>
-        {quizData?.questions?.map((q: any, idx: number) => (
+        {quizData.questions?.map((q, idx) => (
           <Card
             key={q.id}
             ref={(el) => {
@@ -201,12 +195,8 @@ const QuizPage = () => {
               value={answers[q.id]}
               disabled={submitted}
             >
-              {q.answers.map((a: any) => (
-                <Radio
-                  key={a.id}
-                  value={a.id}
-                  style={{ display: "block", margin: "8px 0" }}
-                >
+              {q.answers.map((a) => (
+                <Radio key={a.id} value={a.id} style={{ display: "block", margin: "8px 0" }}>
                   {a.description}
                 </Radio>
               ))}
@@ -215,6 +205,7 @@ const QuizPage = () => {
         ))}
       </div>
 
+      {/* Cột phải - Thời gian & điều hướng nhanh */}
       <div
         style={{
           flex: 1,
@@ -241,25 +232,16 @@ const QuizPage = () => {
           {formatTime(timeLeft)}
         </div>
 
-        <Button
-          type="primary"
-          block
-          onClick={handleSubmit}
-          disabled={submitted}
-          style={{ marginBottom: 10 }}
-        >
+        <Button type="primary" block onClick={handleSubmit} disabled={submitted} style={{ marginBottom: 10 }}>
           Nộp bài
         </Button>
-
         <Button danger block onClick={handleReset} style={{ marginBottom: 20 }}>
           Làm lại
         </Button>
 
         <Typography.Text strong>Danh sách câu hỏi</Typography.Text>
-        <div
-          style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 12 }}
-        >
-          {quizData?.questions?.map((q: any, idx: number) => {
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 12 }}>
+          {quizData.questions?.map((q, idx) => {
             const isAnswered = !!answers[q.id];
             return (
               <div
@@ -277,6 +259,7 @@ const QuizPage = () => {
                   color: "white",
                   fontWeight: "bold",
                 }}
+                title={isAnswered ? "Đã trả lời" : "Chưa trả lời"}
               >
                 {idx + 1}
               </div>

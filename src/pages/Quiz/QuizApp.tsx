@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Card, Button, Radio, Row, Col, Badge, Empty } from "antd";
+import { useState, useEffect } from "react";
+import { Card, Button, Radio, Row, Col, Badge, Empty, message } from "antd";
 import { useParams } from "react-router-dom";
 import { LessonService } from "../../services/lesson.service";
 
@@ -13,7 +13,7 @@ interface Quiz {
 export default function QuizApp() {
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [currentQ, setCurrentQ] = useState(0);
-  const [answers, setAnswers] = useState<number[]>([]);
+  const [answers, setAnswers] = useState<(number | null)[]>([]);
   const { id } = useParams();
 
   const fetchQuizLesson = async () => {
@@ -25,14 +25,16 @@ export default function QuizApp() {
       } else {
         setQuizzes([]);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.log({ error });
+      message.error(error?.response?.data?.message || "Tải quiz thất bại");
       setQuizzes([]);
     }
   };
 
   useEffect(() => {
     fetchQuizLesson();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const handleAnswer = (value: number) => {
@@ -55,12 +57,13 @@ export default function QuizApp() {
     <div className="container">
       <Row gutter={16} style={{ padding: 24 }}>
         <Col xs={24} md={16}>
-          <Card title={`Quiz - Q ${currentQ + 1} / ${quizzes.length}`}>
+          <Card title={`Câu hỏi ${currentQ + 1} / ${quizzes.length}`}>
             <p
               style={{
                 backgroundColor: "#f6ffed",
                 padding: 12,
                 borderRadius: 6,
+                marginBottom: 12,
               }}
             >
               {currentQuiz.quizName}
@@ -95,22 +98,23 @@ export default function QuizApp() {
                 onClick={() => setCurrentQ((prev) => Math.max(prev - 1, 0))}
                 disabled={currentQ === 0}
               >
-                Previous
+                Trước
               </Button>
               <Button
                 onClick={() =>
                   setCurrentQ((prev) => Math.min(prev + 1, quizzes.length - 1))
                 }
                 disabled={currentQ === quizzes.length - 1}
+                type="primary"
               >
-                Next
+                Tiếp
               </Button>
             </div>
           </Card>
         </Col>
 
         <Col xs={24} md={8}>
-          <Card title="Quiz Status">
+          <Card title="Trạng thái bài làm">
             <Row gutter={[8, 8]}>
               {quizzes.map((_, idx) => {
                 const isAnswered = answers[idx] !== null;
@@ -118,16 +122,14 @@ export default function QuizApp() {
                 return (
                   <Col span={6} key={idx}>
                     <Badge
-                      color={
-                        isCurrent ? "green" : isAnswered ? "blue" : "default"
-                      }
+                      color={isCurrent ? "green" : isAnswered ? "blue" : "default"}
                       text={
                         <Button
                           size="small"
                           type={isCurrent ? "primary" : "default"}
                           onClick={() => setCurrentQ(idx)}
                         >
-                          Q{idx + 1}
+                          C{idx + 1}
                         </Button>
                       }
                     />
