@@ -224,7 +224,7 @@ const AdminOverview: React.FC = () => {
         });
       } catch (e) {
         console.error(e);
-        toast.error("Không tải được dữ liệu tổng quan");
+        toast.error("Không tải được dữ liệu thống kê");
       } finally {
         if (mounted) setLoading(false);
       }
@@ -731,9 +731,9 @@ const AdminOverview: React.FC = () => {
       <Content className="purple-container">
         <div className="purple-header">
           <Title level={4} className="purple-title">
-            <AimOutlined /> Trang tổng quan
+            <AimOutlined /> Trang thống kê
           </Title>
-          <span className="purple-overview">Tổng quan</span>
+          <span className="purple-overview">Thống kê</span>
         </div>
 
         <Spin spinning={loading}>

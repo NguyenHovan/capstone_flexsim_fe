@@ -10,7 +10,6 @@ export type UploadCloudProps = {
   onChange?: (url: string) => void;
   disabled?: boolean;
   onUploadedRaw?: (raw: any) => void;
-  /** trả file gốc cho FE để gửi vào API create/update */
   onFileChange?: (file: File | null) => void;
 };
 
@@ -26,7 +25,6 @@ const UploadCloudinary: React.FC<UploadCloudProps> = ({ value, onChange, disable
     try {
       setUploading(true);
 
-      // đưa file gốc ra ngoài
       onFileChange?.(file as File);
 
       const fd = new FormData();

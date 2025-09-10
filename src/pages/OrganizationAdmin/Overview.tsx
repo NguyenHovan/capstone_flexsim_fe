@@ -205,7 +205,7 @@ const OrganizationAdminOverview: React.FC = () => {
 
         if (!mounted) return;
 
-        // Tổng quan
+        
         setTotals({
           students: students.length,
           instructors: instructors.length,
@@ -603,8 +603,8 @@ const OrganizationAdminOverview: React.FC = () => {
       <Content className="purple-container">
         {/* Header */}
         <div className="purple-header">
-          <Title level={4} className="purple-title"><AimOutlined /> Trang tổng quan</Title>
-          <span className="purple-overview">Tổng quan</span>
+          <Title level={4} className="purple-title"><AimOutlined /> Trang thống kê</Title>
+          <span className="purple-overview">Thống kê</span>
         </div>
 
         {/* Thanh lọc */}

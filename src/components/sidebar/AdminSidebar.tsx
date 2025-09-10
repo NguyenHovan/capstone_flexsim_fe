@@ -28,7 +28,7 @@ const AdminSidebar: React.FC = () => {
   };
 
   const menuItems = [
-    { label: "Tổng quan",              icon: <HomeOutlined />,       path: "/admin/" },
+    { label: "Thống kê",              icon: <HomeOutlined />,       path: "/admin/" },
     { label: "Quản lý Tổ chức",  icon: <TeamOutlined />,       path: "/admin/organization-manager" },
     { label: "Quản lý Người dùng",          icon: <UserOutlined />,       path: "/admin/user-manager" },
     { label: "Quản lý Không gian làm việc",     icon: <AppstoreOutlined />,   path: "/admin/workspace-manager" },

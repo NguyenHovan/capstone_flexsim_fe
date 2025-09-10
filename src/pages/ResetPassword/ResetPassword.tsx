@@ -19,11 +19,11 @@ const PasswordChecklist: React.FC<{ value: string }> = ({ value }) => {
   );
   return (
     <ul className="rp-checklist">
-      {Item(ok.len, "Minimum 8 characters")}
-      {Item(ok.upper, "One uppercase")}
-      {Item(ok.lower, "One lowercase")}
-      {Item(ok.num, "One number")}
-      {Item(ok.special, "One special character")}
+      {Item(ok.len, "Tối thiểu 8 ký tự")}
+      {Item(ok.upper, "Ít nhất 1 chữ hoa")}
+      {Item(ok.lower, "Ít nhất 1 chữ thường")}
+      {Item(ok.num, "Ít nhất 1 chữ số")}
+      {Item(ok.special, "Ít nhất 1 ký tự đặc biệt")}
     </ul>
   );
 };
@@ -40,20 +40,20 @@ const ResetPasswordPage: React.FC = () => {
 
   const onFinish = async (v: FormValues) => {
     if (!token) {
-      message.error("Invalid or missing reset token.");
+      message.error("Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.");
       return;
     }
     if (v.newPassword !== v.confirmPassword) {
-      message.error("Passwords do not match.");
+      message.error("Mật khẩu xác nhận không khớp.");
       return;
     }
     try {
       setLoading(true);
-      await AccountService.resetPassword({ token, newPassword: v.newPassword })
-      message.success("Password has been reset successfully.");
+      await AccountService.resetPassword({ token, newPassword: v.newPassword });
+      message.success("Đặt lại mật khẩu thành công.");
       navigate("/login");
     } catch (e: any) {
-      message.error(e?.message || "Reset password failed.");
+      message.error(e?.message || "Đặt lại mật khẩu thất bại.");
     } finally {
       setLoading(false);
     }
@@ -62,19 +62,22 @@ const ResetPasswordPage: React.FC = () => {
   return (
     <div className="rp-wrapper">
       <Card className="rp-card" bordered={false}>
-        <Title level={3} className="rp-title">Reset Password</Title>
+        <Title level={3} className="rp-title">Đặt lại mật khẩu</Title>
 
         {!token && (
           <Text type="danger" style={{ display: "block", textAlign: "center", marginBottom: 12 }}>
-            The reset link is invalid or expired. Please request a new one.
+            Liên kết không hợp lệ hoặc đã hết hạn. Vui lòng yêu cầu liên kết mới.
           </Text>
         )}
 
         <Form<FormValues> layout="vertical" form={form} onFinish={onFinish}>
           <Form.Item
             name="newPassword"
-            label={<Text strong>New password</Text>}
-            rules={[{ required: true, message: "Required" }, { min: 8, message: "At least 8 characters" }]}
+            label={<Text strong>Mật khẩu mới</Text>}
+            rules={[
+              { required: true, message: "Vui lòng nhập mật khẩu mới" },
+              { min: 8, message: "Tối thiểu 8 ký tự" },
+            ]}
           >
             <Input.Password autoComplete="new-password" />
           </Form.Item>
@@ -83,15 +86,15 @@ const ResetPasswordPage: React.FC = () => {
 
           <Form.Item
             name="confirmPassword"
-            label={<Text strong>Confirm new password</Text>}
+            label={<Text strong>Xác nhận mật khẩu mới</Text>}
             dependencies={["newPassword"]}
-            rules={[{ required: true, message: "Required" }]}
+            rules={[{ required: true, message: "Vui lòng xác nhận mật khẩu" }]}
           >
             <Input.Password autoComplete="new-password" />
           </Form.Item>
 
           <Button type="primary" htmlType="submit" size="large" block disabled={!token} loading={loading}>
-            Change Password
+            Đổi mật khẩu
           </Button>
         </Form>
       </Card>

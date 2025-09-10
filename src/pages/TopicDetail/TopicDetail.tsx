@@ -590,30 +590,30 @@ const TopicDetail = () => {
                                   justifyContent: "space-between",
                                   alignItems: "center",
                                 }}
-                                actions={[
+                               actions={[
                                   <a
-                                    key="dl"
-                                    href={item.fileUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
+                                   key="dl"
+                                   href={item.fileUrl}
+                                   target="_blank"
+                                   rel="noopener noreferrer"
                                   >
-                                    Download
+                                  Tải xuống
                                   </a>,
-                                  myLessonSubmit && (
-                                    <Button
-                                      key="edit"
-                                      type="link"
-                                      onClick={() => {
-                                        setEditingSubmission(item);
-                                        setEditNote(item.note || "");
-                                        setEditFile(null);
-                                        setIsModalOpen(true);
-                                      }}
-                                    >
-                                      Sửa
-                                    </Button>
-                                  ),
-                                ]}
+                              myLessonSubmit && (
+                                <Button
+                                   key="edit"
+                                   type="link"
+                                   onClick={() => {
+                                   setEditingSubmission(item);
+                                   setEditNote(item.note || "");
+                                   setEditFile(null);
+                                   setIsModalOpen(true);
+                              }}
+                              >
+                              Sửa
+                            </Button>
+                           ),
+                            ]}
                               >
                                 <div>
                                   <Typography.Text strong>
@@ -624,7 +624,7 @@ const TopicDetail = () => {
                                       type="secondary"
                                       style={{ margin: 0 }}
                                     >
-                                      Note: {item.note}
+                                      Ghi chú: {item.note}
                                     </Typography.Paragraph>
                                   )}
                                   {typeof item.totalScore !== "undefined" && (
@@ -632,8 +632,7 @@ const TopicDetail = () => {
                                       type="secondary"
                                       style={{ margin: 0 }}
                                     >
-                                      Score:{" "}
-                                      <Tag color="blue">{item.totalScore}</Tag>
+                                      Điểm: <Tag color="blue">{item.totalScore}</Tag>
                                     </Typography.Paragraph>
                                   )}
                                   {item.submitTime && (
@@ -709,7 +708,7 @@ const TopicDetail = () => {
             {/* Quizzes */}
             {selectedLesson?.quizzes?.length ? (
               <>
-                <Typography.Title level={5}>Quizzes</Typography.Title>
+                <Typography.Title level={5}>Bài kiểm tra</Typography.Title>
                 <List
                   itemLayout="horizontal"
                   dataSource={selectedLesson.quizzes}
@@ -820,7 +819,7 @@ const TopicDetail = () => {
                                 ).style.boxShadow = "0 3px 6px rgba(0,0,0,0.1)")
                               }
                             >
-                              Review Quiz
+                              Xem lại
                             </Button>
                           ) : null}
 
@@ -865,11 +864,11 @@ const TopicDetail = () => {
               onClick={handleComplete}
               disabled={getDisabled()}
             >
-              Completed
+              Hoàn thành
             </Button>
           </>
         ) : (
-          <Typography.Text>No lesson selected</Typography.Text>
+          <Typography.Text>Chưa chọn bài học</Typography.Text>
         )}
       </div>
     </div>

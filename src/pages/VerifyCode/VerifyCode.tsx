@@ -14,7 +14,7 @@ const VerifyCodePage = () => {
     const raw = sessionStorage.getItem("pendingVerify");
     const data = raw ? JSON.parse(raw) : null;
     if (!data?.userName) {
-      toast.warning("Session expired. Please login again.");
+      toast.warning("Phiên xác thực đã hết hạn. Vui lòng đăng nhập lại.");
       navigate("/login", { replace: true });
       return;
     }
@@ -23,11 +23,11 @@ const VerifyCodePage = () => {
 
   const handleVerify = async () => {
     if (!otp.trim()) {
-      toast.warning("Please enter the verification code.");
+      toast.warning("Vui lòng nhập mã xác thực.");
       return;
     }
     try {
-      await AuthService.verifyEmail(otp.trim()); 
+      await AuthService.verifyEmail(otp.trim());
       const rawU = localStorage.getItem("currentUser");
       if (rawU) {
         try {
@@ -37,26 +37,26 @@ const VerifyCodePage = () => {
         } catch {}
       }
       sessionStorage.removeItem("pendingVerify");
-      toast.success("Email verified successfully! Please login again.");
+      toast.success("Xác thực email thành công! Vui lòng đăng nhập lại.");
       navigate("/login", { replace: true });
     } catch (err: any) {
       const msg =
         err?.response?.data?.message ||
         (typeof err?.response?.data === "string" ? err.response.data : "") ||
-        "Invalid or expired code.";
+        "Mã xác thực không hợp lệ hoặc đã hết hạn.";
       toast.error(msg);
     }
   };
 
   const handleResend = async () => {
     try {
-      await AuthService.resendVerify(userName); 
-      toast.success("Verification code has been resent.");
+      await AuthService.resendVerify(userName);
+      toast.success("Mã xác thực đã được gửi lại.");
     } catch (err: any) {
       const msg =
         err?.response?.data?.message ||
         (typeof err?.response?.data === "string" ? err.response.data : "") ||
-        "Failed to resend code.";
+        "Gửi lại mã thất bại.";
       toast.error(msg);
     }
   };
@@ -65,26 +65,33 @@ const VerifyCodePage = () => {
     <div className="verify-wrapper">
       <div className="verify-card">
         <div className="verify-left">
-          <span className="back" onClick={() => navigate("/login")}>&larr; Back to Login</span>
-          <h2>Verify code</h2>
-          <p>An authentication code has been sent to your email.</p>
+          <span className="back" onClick={() => navigate("/login")}>
+            &larr; Quay lại đăng nhập
+          </span>
+          <h2>Xác minh mã</h2>
+          <p>Một mã xác thực đã được gửi tới email của bạn.</p>
 
           <input
             type="text"
-            placeholder="Enter code"
+            placeholder="Nhập mã xác thực"
             value={otp}
             onChange={(e) => setOtp(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleVerify()}
           />
 
           <p className="resend-text">
-            Didn’t receive a code? <span className="resend" onClick={handleResend}>Resend</span>
+            Chưa nhận được mã?{" "}
+            <span className="resend" onClick={handleResend}>
+              Gửi lại
+            </span>
           </p>
 
-          <button className="verify-btn" onClick={handleVerify}>Verify</button>
+          <button className="verify-btn" onClick={handleVerify}>
+            Xác minh
+          </button>
         </div>
         <div className="verify-right">
-          <img src={verifyImg} alt="Verify" />
+          <img src={verifyImg} alt="Xác minh" />
         </div>
       </div>
     </div>

@@ -38,7 +38,7 @@ const OrganizationAdminSidebar: React.FC = () => {
   };
 
   const menuItems: MenuItem[] = [
-    { label: "Tổng quan",          icon: <HomeOutlined />,           path: "/organizationAdmin/" },
+    { label: "Thống kê",          icon: <HomeOutlined />,           path: "/organizationAdmin/" },
     { label: "Quản lí người dùng",      icon: <TeamOutlined />,           path: "/organizationAdmin/user-manager" },
     { label: "Quản lí không gian làm việc", icon: <AppstoreOutlined />,       path: "/organizationAdmin/workspace-manager" },
     { label: "Quản lý gói đăng ký", icon: <CrownOutlined />,          path: "/organizationAdmin/subscription" },
