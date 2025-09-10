@@ -13,9 +13,7 @@ const MyCourse = () => {
     try {
       const data = localStorage.getItem("currentUser");
       const user = data ? JSON.parse(data) : null;
-      const res = await EnrollmentRequestService.enrollmentRequestStudent(
-        user.id
-      );
+      const res = await EnrollmentRequestService.enrollmentRequestStudent(user.id);
       setMyCourses(res?.data || []);
     } catch (error) {
       console.log({ error });
@@ -31,7 +29,7 @@ const MyCourse = () => {
   return (
     <div>
       <h2 style={{ fontSize: 24, fontWeight: 600, marginBottom: 24 }}>
-        My Courses
+        Khoá học của tôi
       </h2>
 
       {loading ? null : myCourses?.length > 0 ? (
@@ -59,7 +57,7 @@ const MyCourse = () => {
           ))}
         </Row>
       ) : (
-        <Empty description="You haven't enrolled in any courses yet." />
+        <Empty description="Bạn chưa đăng ký khoá học nào." />
       )}
     </div>
   );

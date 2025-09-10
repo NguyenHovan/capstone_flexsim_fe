@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Button, message, Tag, Tooltip, Typography } from "antd";
-import { CopyOutlined} from "@ant-design/icons";
+import { CopyOutlined } from "@ant-design/icons";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { PaymentService } from "../../services/payment.service";
 import { OrderService } from "../../services/order.service";
@@ -13,7 +13,7 @@ import {
   loadOrderId,
   saveAccountId,
 } from "../../utils/payParams";
-import "./paymentResulf.css";
+import "./paymentResulf.css"; // ⚠️ nếu file thật là paymentResult.css, đổi lại import
 
 const { Text } = Typography;
 
@@ -78,9 +78,9 @@ const PaymentSuccess: React.FC = () => {
   };
 
   const refreshStatus = async () => {
-    if (!orderCode) return message.warning("Thiếu Payment ID (orderCode)");
+    if (!orderCode) return message.warning("Thiếu mã thanh toán (orderCode).");
     const ocNum = Number(orderCode);
-    if (!Number.isFinite(ocNum)) return message.error("orderCode không hợp lệ");
+    if (!Number.isFinite(ocNum)) return message.error("orderCode không hợp lệ.");
 
     try {
       setSyncing(true);
@@ -121,7 +121,7 @@ const PaymentSuccess: React.FC = () => {
         return;
       }
     } catch (e: any) {
-      const msg = e?.response?.data?.message || e?.message || "Không thể xác nhận thanh toán";
+      const msg = e?.response?.data?.message || e?.message || "Không thể xác nhận thanh toán.";
       message.error(msg);
     } finally {
       setSyncing(false);
@@ -130,15 +130,16 @@ const PaymentSuccess: React.FC = () => {
 
   useEffect(() => {
     refreshStatus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const copy = async (text?: string) => {
     if (!text) return;
     try {
       await navigator.clipboard.writeText(String(text));
-      message.success("Đã sao chép");
+      message.success("Đã sao chép.");
     } catch {
-      message.warning("Không thể sao chép");
+      message.warning("Không thể sao chép.");
     }
   };
 
@@ -153,40 +154,53 @@ const PaymentSuccess: React.FC = () => {
       <div className={`payres-card success ${syncing ? "is-loading" : ""}`}>
         <div className="payres-head">
           <div className="payres-logo" aria-hidden>LS</div>
-          <div className="payres-headtext"><h4>LogiSimEdu</h4><span>Payment result</span></div>
+          <div className="payres-headtext">
+            <h4>LogiSimEdu</h4>
+            <span>Kết quả thanh toán</span>
+          </div>
         </div>
 
-        <div className="payres-badge">
-          <svg viewBox="0 0 24 24" className="icon" aria-hidden>
+        <div className="payres-badge" aria-hidden>
+          <svg viewBox="0 0 24 24" className="icon">
             <circle cx="12" cy="12" r="11" />
             <path d="M7 12l3 3 7-7" fill="none" strokeWidth="2" strokeLinecap="round" />
           </svg>
         </div>
 
-        <h2 className="payres-title">Payment Successful</h2>
+        <h2 className="payres-title">Thanh toán thành công</h2>
         <p className="payres-sub" aria-live="polite">
-          {syncing ? "Đang xác nhận giao dịch…" : "Giao dịch được xác nhận thành công."}
+          {syncing ? "Đang xác nhận giao dịch…" : "Giao dịch đã được xác nhận thành công."}
         </p>
 
         <div className="payres-divider" />
         <div className="payres-rows">
           <div className="row">
-            <span>Order ID</span>
+            <span>Mã đơn hàng</span>
             <div className="row-end">
               <Text className="mono">{orderId || "-"}</Text>
-              <Tooltip title="Copy"><Button type="text" size="small" icon={<CopyOutlined />} onClick={() => copy(orderId)} /></Tooltip>
+              <Tooltip title="Sao chép">
+                <Button type="text" size="small" icon={<CopyOutlined />} onClick={() => copy(orderId)} />
+              </Tooltip>
             </div>
           </div>
           <div className="row">
-            <span>Account ID</span>
+            <span>Mã tài khoản</span>
             <div className="row-end">
               <Text className="mono">{accountId || "-"}</Text>
-              <Tooltip title="Copy"><Button type="text" size="small" icon={<CopyOutlined />} onClick={() => copy(accountId)} /></Tooltip>
+              <Tooltip title="Sao chép">
+                <Button type="text" size="small" icon={<CopyOutlined />} onClick={() => copy(accountId)} />
+              </Tooltip>
             </div>
           </div>
           <div className="row">
-            <span>Status</span>
-            <strong>{status !== undefined ? <Tag color={tagColor(status)}>{getOrderStatusLabel(status)}</Tag> : "—"}</strong>
+            <span>Trạng thái</span>
+            <strong>
+              {status !== undefined ? (
+                <Tag color={tagColor(status)}>{getOrderStatusLabel(status)}</Tag>
+              ) : (
+                "—"
+              )}
+            </strong>
           </div>
         </div>
 

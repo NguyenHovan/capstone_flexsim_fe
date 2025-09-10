@@ -40,7 +40,7 @@ const About = () => {
           form.setFieldsValue(res);
         })
         .catch(() => {
-          message.error("Không thể tải thông tin user");
+          message.error("Không thể tải thông tin người dùng.");
         });
     }
   }, [userId, form]);
@@ -49,7 +49,7 @@ const About = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Preview ngay lập tức
+    // Xem trước ngay
     const reader = new FileReader();
     reader.onload = () => {
       setAvatarUrl(reader.result as string);
@@ -60,9 +60,9 @@ const About = () => {
     try {
       const url = await UploadService.uploadImage(file);
       setAvatarUrl(url);
-      toast.success("Tải ảnh thành công");
+      toast.success("Tải ảnh thành công.");
     } catch {
-      toast.error("Tải ảnh thất bại");
+      toast.error("Tải ảnh thất bại.");
     }
   };
 
@@ -98,7 +98,7 @@ const About = () => {
         }}
       >
         <div style={{ fontSize: 18, fontWeight: 500 }}>
-          Welcome to LogiSimEdu, {user?.fullName}
+          Chào mừng đến LogiSimEdu, {user?.fullName}
         </div>
 
         {/* Click vào avatar để upload */}
@@ -117,7 +117,7 @@ const About = () => {
           />
         </div>
 
-        {/* Input file hidden */}
+        {/* Input file ẩn */}
         <input
           type="file"
           accept="image/*"
@@ -133,30 +133,28 @@ const About = () => {
           <Row gutter={[32, 16]}>
             <Col xs={24} md={12}>
               <Form.Item name="email" label="Email">
-                <Input />
+                <Input placeholder="nhapemail@vidu.com" />
               </Form.Item>
-              <Form.Item name="phone" label="Phone">
-                <Input />
+              <Form.Item name="phone" label="Số điện thoại">
+                <Input placeholder="Ví dụ: 0987 654 321" />
               </Form.Item>
               <Form.Item
                 name="address"
-                label="Address"
-                rules={[
-                  { required: true, message: "Please field address required" },
-                ]}
+                label="Địa chỉ"
+                rules={[{ required: true, message: "Vui lòng nhập địa chỉ" }]}
               >
-                <Input />
+                <Input placeholder="Nhập địa chỉ" />
               </Form.Item>
             </Col>
             <Col xs={24} md={12}>
-              <Form.Item name="fullName" label="Full name">
-                <Input />
+              <Form.Item name="fullName" label="Họ và tên">
+                <Input placeholder="Nhập họ và tên" />
               </Form.Item>
-              <Form.Item name="gender" label="Gender">
-                <Select>
-                  <Option value={0}>Male</Option>
-                  <Option value={1}>Female</Option>
-                  <Option value={2}>Other</Option>
+              <Form.Item name="gender" label="Giới tính">
+                <Select placeholder="Chọn giới tính">
+                  <Option value={0}>Nam</Option>
+                  <Option value={1}>Nữ</Option>
+                  <Option value={2}>Khác</Option>
                 </Select>
               </Form.Item>
             </Col>

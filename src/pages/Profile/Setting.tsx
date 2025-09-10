@@ -8,14 +8,14 @@ const Setting = () => {
   const handleSave = async () => {
     try {
       const values = await form.validateFields();
-      console.log("Form values:", values);
+      console.log("Giá trị form:", values);
       setLoading(true);
       setTimeout(() => {
         setLoading(false);
-        alert("Saved successfully!");
+        alert("Lưu cài đặt thành công!");
       }, 1000);
     } catch (err) {
-      console.log("Validation failed:", err);
+      console.log("Xác thực không hợp lệ:", err);
     }
   };
 
@@ -25,7 +25,7 @@ const Setting = () => {
 
   return (
     <Card
-      title="Account Settings"
+      title="Cài đặt tài khoản"
       style={{
         maxWidth: 600,
         margin: "0 auto",
@@ -34,43 +34,42 @@ const Setting = () => {
       }}
     >
       <Form layout="vertical" form={form}>
-        <Form.Item label="Username" name="username">
-          <Input />
+        <Form.Item label="Tên đăng nhập" name="username">
+          <Input placeholder="Nhập tên đăng nhập" />
         </Form.Item>
 
-        <Form.Item label="Fullname" name="fullname">
-          <Input />
+        <Form.Item label="Họ và tên" name="fullname">
+          <Input placeholder="Nhập họ và tên" />
         </Form.Item>
 
-        <Form.Item label="Organization" name="organization">
-          <Input />
+        <Form.Item label="Tổ chức" name="organization">
+          <Input placeholder="Nhập tên tổ chức" />
         </Form.Item>
 
         <Form.Item label="Email" name="email">
-          <Input type="email" />
+          <Input type="email" placeholder="you@example.com" />
         </Form.Item>
 
-        <Form.Item label="Phone" name="phone">
-          <Input />
+        <Form.Item label="Số điện thoại" name="phone">
+          <Input placeholder="Ví dụ: 0987 654 321" />
         </Form.Item>
 
-        {/* Optional: Thêm các trường bạn ghi chú */}
-        <Form.Item label="Avatar URL" name="avatarUrl">
-          <Input />
+        <Form.Item label="Ảnh đại diện (URL)" name="avatarUrl">
+          <Input placeholder="https://..." />
         </Form.Item>
 
-        <Form.Item label="Address" name="address">
-          <Input />
+        <Form.Item label="Địa chỉ" name="address">
+          <Input placeholder="Nhập địa chỉ" />
         </Form.Item>
 
-        <Form.Item label="Gender" name="gender">
-          <Input />
+        <Form.Item label="Giới tính" name="gender">
+          <Input placeholder="Nam/Nữ/Khác" />
         </Form.Item>
 
         <Row justify="end" gutter={16}>
           <Col>
             <Button onClick={handleCancel} danger>
-              Cancel
+              Hủy
             </Button>
           </Col>
           <Col>
@@ -80,7 +79,7 @@ const Setting = () => {
               loading={loading}
               style={{ background: "#00796B", borderColor: "#00796B" }}
             >
-              Save
+              Lưu
             </Button>
           </Col>
         </Row>

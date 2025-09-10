@@ -9,22 +9,26 @@ const Sidebar = () => {
   const location = useLocation();
   const { user } = useAuth();
   const [avatar, setAvatar] = useState<string | null>(null);
+
   const fetchUserCurrent = async () => {
     if (user) {
       const response = await AccountService.getAccountById(user.id);
       setAvatar(response?.avtUrl || null);
     }
   };
+
   useEffect(() => {
     fetchUserCurrent();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
   const menuItems = [
-    { label: "Profile", path: "/profile" },
-    { label: "Change Password", path: "/change-password" },
-    { label: "Change Email", path: "/change-email" },
-    { label: "My Course", path: "/my-course" },
-    { label: "My Certificate", path: "/my-certificate" },
-    { label: "My Class", path: "/my-class" },
+    { label: "Hồ sơ", path: "/profile" },
+    { label: "Đổi mật khẩu", path: "/change-password" },
+    { label: "Đổi email", path: "/change-email" },
+    { label: "Khoá học của tôi", path: "/my-course" },
+    { label: "Chứng chỉ của tôi", path: "/my-certificate" },
+    { label: "Lớp học của tôi", path: "/my-class" },
   ];
 
   return (
@@ -42,7 +46,7 @@ const Sidebar = () => {
     >
       {/* Avatar */}
       <Avatar
-        src={avatar || "/avatar.png"} // hoặc thay bằng ảnh từ props hoặc URL khác
+        src={avatar || "/avatar.png"}
         size={64}
         style={{ marginBottom: 32 }}
       />

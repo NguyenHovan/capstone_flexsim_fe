@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Button, message, Tag, Tooltip, Typography } from "antd";
-import { CopyOutlined} from "@ant-design/icons";
+import { CopyOutlined } from "@ant-design/icons";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { PaymentService } from "../../services/payment.service";
 import { OrderService } from "../../services/order.service";
@@ -13,7 +13,7 @@ import {
   loadOrderId,
   saveAccountId,
 } from "../../utils/payParams";
-import "./paymentResulf.css";
+import "./paymentResulf.css"; // ⚠️ Nếu file là paymentResult.css, đổi lại import
 
 const { Text } = Typography;
 
@@ -25,7 +25,8 @@ const ORDER_MANAGER_URL = (() => {
     : "https://capstone-flexsim-fe.vercel.app/organizationAdmin/order-manager";
 })();
 
-const tagColor = (s?: OrderStatusCode) => (s === 1 ? "green" : s === 2 ? "volcano" : "gold");
+const tagColor = (s?: OrderStatusCode) =>
+  s === 1 ? "green" : s === 2 ? "volcano" : "gold";
 
 const getCurrentUserId = () => {
   try {
@@ -47,7 +48,9 @@ const extractFromUpdate = (res: any) => {
         p?.order?.id ??
         p?.data?.id ??
         p?.data?.orderId) as string | undefined,
-    accountId: (p?.accountId ?? p?.order?.accountId ?? p?.data?.accountId) as string | undefined,
+    accountId: (p?.accountId ?? p?.order?.accountId ?? p?.data?.accountId) as
+      | string
+      | undefined,
   };
 };
 
@@ -61,8 +64,14 @@ const PaymentFail: React.FC = () => {
   const [orderId, setOrderId] = useState<string | undefined>(undefined);
   const [accountId, setAccountId] = useState<string | undefined>(undefined);
 
-  const orderCodeFromUrl = useMemo(() => sp.get("orderCode") || getQueryParam("orderCode"), [sp]);
-  const orderCode = useMemo(() => orderCodeFromUrl || loadOrderCode(), [orderCodeFromUrl]);
+  const orderCodeFromUrl = useMemo(
+    () => sp.get("orderCode") || getQueryParam("orderCode"),
+    [sp]
+  );
+  const orderCode = useMemo(
+    () => orderCodeFromUrl || loadOrderCode(),
+    [orderCodeFromUrl]
+  );
 
   useEffect(() => {
     if (orderCodeFromUrl) saveOrderCode(orderCodeFromUrl);
@@ -71,16 +80,20 @@ const PaymentFail: React.FC = () => {
   const findOrderByCode = async (ocNum: number) => {
     try {
       const all = await OrderService.getAll();
-      return all.find((o: any) => Number(o?.orderCode) === ocNum || String(o?.orderCode) === String(ocNum));
+      return all.find(
+        (o: any) =>
+          Number(o?.orderCode) === ocNum ||
+          String(o?.orderCode) === String(ocNum)
+      );
     } catch {
       return undefined;
     }
   };
 
   const refreshStatus = async () => {
-    if (!orderCode) return message.warning("Thiếu Payment ID (orderCode)");
+    if (!orderCode) return message.warning("Thiếu mã thanh toán (orderCode).");
     const ocNum = Number(orderCode);
-    if (!Number.isFinite(ocNum)) return message.error("orderCode không hợp lệ");
+    if (!Number.isFinite(ocNum)) return message.error("orderCode không hợp lệ.");
 
     try {
       setSyncing(true);
@@ -107,8 +120,7 @@ const PaymentFail: React.FC = () => {
         try {
           const o = await OrderService.getById(oid);
           aid = (o as any)?.accountId as string | undefined;
-        } catch {
-        }
+        } catch {}
       }
       if (!aid) aid = getCurrentUserId();
 
@@ -120,7 +132,8 @@ const PaymentFail: React.FC = () => {
         return;
       }
     } catch (e: any) {
-      const msg = e?.response?.data?.message || e?.message || "Không thể cập nhật trạng thái";
+      const msg =
+        e?.response?.data?.message || e?.message || "Không thể cập nhật trạng thái.";
       message.error(msg);
     } finally {
       setSyncing(false);
@@ -129,21 +142,24 @@ const PaymentFail: React.FC = () => {
 
   useEffect(() => {
     refreshStatus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const copy = async (text?: string) => {
     if (!text) return;
     try {
       await navigator.clipboard.writeText(String(text));
-      message.success("Đã sao chép");
+      message.success("Đã sao chép.");
     } catch {
-      message.warning("Không thể sao chép");
+      message.warning("Không thể sao chép.");
     }
   };
 
   const goToOrder = () => {
-    const sameOrigin = window.location.origin === new URL(ORDER_MANAGER_URL).origin;
-    if (sameOrigin) navigate("/organizationAdmin/order-manager", { replace: true });
+    const sameOrigin =
+      window.location.origin === new URL(ORDER_MANAGER_URL).origin;
+    if (sameOrigin)
+      navigate("/organizationAdmin/order-manager", { replace: true });
     else window.location.assign(ORDER_MANAGER_URL);
   };
 
@@ -151,41 +167,73 @@ const PaymentFail: React.FC = () => {
     <div className="payres-page">
       <div className={`payres-card fail ${syncing ? "is-loading" : ""}`}>
         <div className="payres-head">
-          <div className="payres-logo" aria-hidden>LS</div>
-          <div className="payres-headtext"><h4>LogiSimEdu</h4><span>Payment result</span></div>
+          <div className="payres-logo" aria-hidden>
+            LS
+          </div>
+          <div className="payres-headtext">
+            <h4>LogiSimEdu</h4>
+            <span>Kết quả thanh toán</span>
+          </div>
         </div>
 
-        <div className="payres-badge">
-          <svg viewBox="0 0 24 24" className="icon" aria-hidden>
+        <div className="payres-badge" aria-hidden>
+          <svg viewBox="0 0 24 24" className="icon">
             <circle cx="12" cy="12" r="11" />
-            <path d="M8 8l8 8M16 8l-8 8" fill="none" strokeWidth="2" strokeLinecap="round" />
+            <path
+              d="M8 8l8 8M16 8l-8 8"
+              fill="none"
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
           </svg>
         </div>
 
-        <h2 className="payres-title">Payment Failed</h2>
+        <h2 className="payres-title">Thanh toán thất bại</h2>
         <p className="payres-sub" aria-live="polite">
-          {syncing ? "Đang kiểm tra trạng thái…" : "Thanh toán chưa thành công hoặc đã bị hủy."}
+          {syncing
+            ? "Đang kiểm tra trạng thái…"
+            : "Thanh toán chưa thành công hoặc đã bị hủy."}
         </p>
 
         <div className="payres-divider" />
         <div className="payres-rows">
           <div className="row">
-            <span>Order ID</span>
+            <span>Mã đơn hàng</span>
             <div className="row-end">
               <Text className="mono">{orderId || "-"}</Text>
-              <Tooltip title="Copy"><Button type="text" size="small" icon={<CopyOutlined />} onClick={() => copy(orderId)} /></Tooltip>
+              <Tooltip title="Sao chép">
+                <Button
+                  type="text"
+                  size="small"
+                  icon={<CopyOutlined />}
+                  onClick={() => copy(orderId)}
+                />
+              </Tooltip>
             </div>
           </div>
           <div className="row">
-            <span>Account ID</span>
+            <span>Mã tài khoản</span>
             <div className="row-end">
               <Text className="mono">{accountId || "-"}</Text>
-              <Tooltip title="Copy"><Button type="text" size="small" icon={<CopyOutlined />} onClick={() => copy(accountId)} /></Tooltip>
+              <Tooltip title="Sao chép">
+                <Button
+                  type="text"
+                  size="small"
+                  icon={<CopyOutlined />}
+                  onClick={() => copy(accountId)}
+                />
+              </Tooltip>
             </div>
           </div>
           <div className="row">
-            <span>Status</span>
-            <strong>{status !== undefined ? <Tag color={tagColor(status)}>{getOrderStatusLabel(status)}</Tag> : "—"}</strong>
+            <span>Trạng thái</span>
+            <strong>
+              {status !== undefined ? (
+                <Tag color={tagColor(status)}>{getOrderStatusLabel(status)}</Tag>
+              ) : (
+                "—"
+              )}
+            </strong>
           </div>
         </div>
 

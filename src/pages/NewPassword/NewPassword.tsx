@@ -10,18 +10,18 @@ const NewPasswordPage = () => {
     e.preventDefault();
 
     if (password.length < 8) {
-      setError("Password must be at least 8 characters.");
+      setError("Mật khẩu phải có ít nhất 8 ký tự.");
       return;
     }
 
     if (password !== confirm) {
-      setError("Passwords do not match.");
+      setError("Mật khẩu xác nhận không khớp.");
       return;
     }
 
     setError("");
-    console.log("New Password:", password);
-    alert("Password changed successfully!");
+    console.log("Mật khẩu mới:", password);
+    alert("Đổi mật khẩu thành công!");
     setPassword("");
     setConfirm("");
   };
@@ -29,25 +29,25 @@ const NewPasswordPage = () => {
   return (
     <div className="custom-wrapper">
       <div className="custom-form-box">
-        <h2>Set New Password</h2>
-        <p>Please enter your new password below.</p>
+        <h2>Đặt mật khẩu mới</h2>
+        <p>Vui lòng nhập mật khẩu mới của bạn bên dưới.</p>
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label>New Password</label>
+            <label>Mật khẩu mới</label>
             <input
               type="password"
-              placeholder="Enter new password"
+              placeholder="Nhập mật khẩu mới"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
 
           <div className="form-group">
-            <label>Confirm Password</label>
+            <label>Xác nhận mật khẩu</label>
             <input
               type="password"
-              placeholder="Confirm new password"
+              placeholder="Nhập lại mật khẩu mới"
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
             />
@@ -56,7 +56,7 @@ const NewPasswordPage = () => {
           {error && <p className="error-message">{error}</p>}
 
           <button type="submit" className="submit-button">
-            Change Password
+            Đổi mật khẩu
           </button>
         </form>
       </div>

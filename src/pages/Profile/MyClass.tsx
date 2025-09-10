@@ -36,7 +36,7 @@ const MyClass = () => {
   return (
     <div>
       <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24 }}>
-        My Classes
+        Lớp học của tôi
       </h2>
       <Row gutter={[24, 24]}>
         {classes.map((cls) => (
@@ -72,9 +72,9 @@ const MyClass = () => {
                 description={
                   <div style={{ marginTop: 8 }}>
                     <p style={{ fontSize: 14, color: "#555", minHeight: 40 }}>
-                      {cls.course?.description || "No description"}
+                      {cls.course?.description || "Không có mô tả"}
                     </p>
-                    <Tag color="blue">{cls.numberOfStudent} students</Tag>
+                    <Tag color="blue">{cls.numberOfStudent} học viên</Tag>
                   </div>
                 }
               />
@@ -90,7 +90,7 @@ const MyClass = () => {
                   }}
                   onClick={() => handleViewClass(cls)}
                 >
-                  View Class
+                  Xem danh sách
                 </Button>
               </div>
             </Card>
@@ -99,10 +99,8 @@ const MyClass = () => {
       </Row>
 
       <Modal
-        title={
-          currentClass ? `${currentClass.className} - Students` : "Students"
-        }
-        visible={modalVisible}
+        title={currentClass ? `${currentClass.className} - Học viên` : "Học viên"}
+        open={modalVisible} // nếu dùng AntD v4 thì đổi về `visible={modalVisible}`
         onCancel={() => setModalVisible(false)}
         footer={null}
         width={600}
