@@ -481,7 +481,7 @@ const UserManager: React.FC = () => {
         <Row
           justify="space-between"
           align="middle"
-          style={{ marginBottom: 12, padding: "0 24px" }}
+          style={{ marginBottom: 20, padding: "0 30px" }}
         >
           <Col>
             <Title

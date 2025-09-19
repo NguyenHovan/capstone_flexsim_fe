@@ -175,9 +175,9 @@ const OrganizationManager: React.FC = () => {
   return (
     <Layout>
       <Content>
-        <Row justify="space-between" align="middle" style={{ marginBottom: '20px', padding: '0 24px' }}>
+        <Row justify="space-between" align="middle" style={{ marginBottom: 20, padding: "0 30px" }}>
           <Col>
-            <Title level={2}>Quản lí người dùng</Title>
+            <Title level={2}>Quản lí tổ chức</Title>
           </Col>
           <Col>
             <Space>

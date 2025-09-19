@@ -81,6 +81,9 @@ const WorkspaceOrganization: React.FC = () => {
   const [createForm] = Form.useForm();
   const [updateForm] = Form.useForm();
 
+  const [deleteVisible, setDeleteVisible] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+
   const [searchText, setSearchText] = useState("");
   const [statusFilter] = useState<string | null>(null);
 
@@ -273,26 +276,27 @@ const WorkspaceOrganization: React.FC = () => {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    Modal.confirm({
-      title: "Xoá không gian?",
-      content: "Hành động này không thể hoàn tác.",
-      okText: "Xoá",
-      okButtonProps: { danger: true },
-      cancelText: "Huỷ",
-      onOk: async () => {
-        setLoading(true);
-        try {
-          await WorkspaceService.deleteWorkspace(id);
-          await fetchList({ silent: true });
-          message.success("Xoá không gian thành công.");
-        } catch (err) {
-          showErrorMessage(err, "Xoá không gian thất bại.");
-        } finally {
-          setLoading(false);
-        }
-      },
-    });
+ const handleDelete = (id: string) => {
+    console.log("handleDelete called with id:", id);
+    setDeleteId(id);
+    setDeleteVisible(true);
+  };
+
+  const onDelete = async () => {
+    if (!deleteId) return;
+    setLoading(true);
+    try {
+      await WorkspaceService.deleteWorkspace(deleteId);
+      await fetchList({ silent: true });
+      message.success("Xoá không gian thành công.");
+      setDeleteVisible(false);
+      setDeleteId(null);
+    } catch (err: any) {
+      console.error("Delete failed:", err.response?.data || err.message || err);
+      message.error("Xoá không gian thất bại.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleView = async (rec: Workspace) => {
@@ -539,7 +543,7 @@ const WorkspaceOrganization: React.FC = () => {
           setImgUrlCreate("");
           setImgFileCreate(null);
         }}
-        destroyOnClose
+        destroyOnHidden
         width={520}
       >
         <Form form={createForm} layout="vertical" onFinish={onCreate}>
@@ -605,7 +609,7 @@ const WorkspaceOrganization: React.FC = () => {
           setImgFileUpdate(null);
           setSelected(null);
         }}
-        destroyOnClose
+        destroyOnHidden
         width={520}
       >
         <Form form={updateForm} layout="vertical" onFinish={onUpdate}>
@@ -651,6 +655,41 @@ const WorkspaceOrganization: React.FC = () => {
           </Row>
         </Form>
       </Modal>
+      <Modal
+  title="Xoá không gian làm việc"
+  open={deleteVisible}
+  onCancel={() => {
+    setDeleteVisible(false);
+    setDeleteId(null);
+  }}
+  footer={null}
+  destroyOnHidden
+  width={400}
+>
+  <p>Bạn có chắc chắn muốn xoá không gian này? Hành động này không thể hoàn tác.</p>
+  <Row justify="end" gutter={8}>
+    <Col>
+      <Button
+        onClick={() => {
+          setDeleteVisible(false);
+          setDeleteId(null);
+        }}
+      >
+        Huỷ
+      </Button>
+    </Col>
+    <Col>
+      <Button
+        type="primary"
+        danger
+        loading={loading}
+        onClick={onDelete}
+      >
+        Xoá
+      </Button>
+    </Col>
+  </Row>
+</Modal>
 
       {/* VIEW */}
       <Modal
@@ -661,7 +700,7 @@ const WorkspaceOrganization: React.FC = () => {
           setViewVisible(false);
           setViewData(null);
         }}
-        destroyOnClose
+        destroyOnHidden
         width={700}
       >
         {viewData ? (

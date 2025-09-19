@@ -1,4 +1,4 @@
-import { Table, Input, Button, Space, Tooltip, Modal, Form } from "antd";
+import { Table, Input, Button, Space, Tooltip, Modal, Form, Row, Col } from "antd";
 import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -7,15 +7,23 @@ import { SceneService } from "../../../services/scene.service";
 const SceneManagement = () => {
   const [dataSource, setDataSource] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+
+  // State cho modal create/update
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedSceneId, setSelectedSceneId] = useState<string | null>(null);
+
+  // State cho modal delete
+  const [deleteVisible, setDeleteVisible] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+
   const [form] = Form.useForm();
 
   useEffect(() => {
     fetchScenes();
   }, []);
 
+  // ===== Fetch danh sách scene =====
   const fetchScenes = async () => {
     try {
       setLoading(true);
@@ -28,12 +36,14 @@ const SceneManagement = () => {
     }
   };
 
+  // ===== Thêm scene =====
   const handleAdd = () => {
     form.resetFields();
     setIsEditing(false);
     setIsModalVisible(true);
   };
 
+  // ===== Sửa scene =====
   const handleEdit = (record: any) => {
     setIsEditing(true);
     setSelectedSceneId(record.id);
@@ -44,40 +54,37 @@ const SceneManagement = () => {
     setIsModalVisible(true);
   };
 
-  const handleDelete = async (id: string) => {
-    Modal.confirm({
-      title: "Bạn có chắc muốn xoá bối cảnh này?",
-      onOk: async () => {
-        try {
-          await SceneService.deleteScene(id);
-          toast.success("Xoá bối cảnh thành công!");
-          fetchScenes();
-        } catch (err) {
-          toast.error("Xoá bối cảnh thất bại!");
-        }
-      },
-    });
+  // ===== Mở modal delete =====
+  const handleDelete = (id: string) => {
+    setDeleteId(id);
+    setDeleteVisible(true);
   };
 
+  // ===== Xác nhận xoá scene =====
+  const onDelete = async () => {
+    if (!deleteId) return;
+    setLoading(true);
+    try {
+      await SceneService.deleteScene(deleteId);
+      toast.success("Xoá bối cảnh thành công!");
+      setDeleteVisible(false);
+      setDeleteId(null);
+      fetchScenes();
+    } catch (err: any) {
+      console.error("Delete scene failed:", err.response?.data || err.message || err);
+      toast.error("Xoá bối cảnh thất bại!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ===== Submit create/update =====
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
       const formData = new FormData();
       formData.append("sceneName", values.sceneName);
       formData.append("description", values.description);
-
-      // const imageFile = values.imgUrl?.[0];
-      // if (imageFile?.originFileObj) {
-      //   // Nếu là ảnh mới
-      //   formData.append("imgUrl", imageFile.originFileObj);
-      // } else if (imageFile?.url) {
-      //   // Nếu là ảnh cũ → fetch ảnh từ URL về dạng blob
-      //   const response = await fetch(imageFile.url);
-      //   const blob = await response.blob();
-      //   const filename = imageFile.name || "existing-image.jpg";
-      //   const file = new File([blob], filename, { type: blob.type });
-      //   formData.append("imgUrl", file);
-      // }
 
       if (isEditing && selectedSceneId) {
         await SceneService.updateScene(selectedSceneId, formData);
@@ -93,6 +100,7 @@ const SceneManagement = () => {
     }
   };
 
+  // ===== Cấu hình cột table =====
   const columns = [
     {
       title: "Tên bối cảnh",
@@ -102,13 +110,6 @@ const SceneManagement = () => {
       title: "Mô tả",
       dataIndex: "description",
     },
-    // {
-    //   title: "Ảnh",
-    //   dataIndex: "imgUrl",
-    //   render: (url: string) => (
-    //     <img src={url} alt="scene" width={50} height={50} />
-    //   ),
-    // },
     {
       title: "Thao tác",
       render: (_: any, record: any) => (
@@ -127,10 +128,9 @@ const SceneManagement = () => {
     },
   ];
 
-  // const normFile = (e: any) => (Array.isArray(e) ? e : e?.fileList || []);
-
   return (
     <div>
+      {/* Thanh header: search + thêm */}
       <div className="header-section" style={{ marginBottom: 16 }}>
         <Input.Search placeholder="Tìm kiếm bối cảnh" style={{ width: 250 }} />
         <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
@@ -138,6 +138,7 @@ const SceneManagement = () => {
         </Button>
       </div>
 
+      {/* Bảng danh sách */}
       <Table
         columns={columns as any}
         dataSource={dataSource}
@@ -147,6 +148,7 @@ const SceneManagement = () => {
         bordered
       />
 
+      {/* CREATE / UPDATE Modal */}
       <Modal
         open={isModalVisible}
         title={isEditing ? "Sửa bối cảnh" : "Thêm bối cảnh"}
@@ -171,18 +173,39 @@ const SceneManagement = () => {
           >
             <Input.TextArea rows={3} />
           </Form.Item>
-
-          {/* <Form.Item
-            label="Ảnh đại diện"
-            name="imgUrl"
-            valuePropName="fileList"
-            getValueFromEvent={normFile}
-          >
-            <Upload listType="picture" maxCount={1} beforeUpload={() => false}>
-              <Button icon={<UploadOutlined />}>Chọn ảnh</Button>
-            </Upload>
-          </Form.Item> */}
         </Form>
+      </Modal>
+
+      {/* DELETE Modal */}
+      <Modal
+        title="Xoá bối cảnh"
+        open={deleteVisible}
+        onCancel={() => {
+          setDeleteVisible(false);
+          setDeleteId(null);
+        }}
+        footer={null}
+        destroyOnClose
+        width={400}
+      >
+        <p>Bạn có chắc chắn muốn xoá bối cảnh này? Hành động này không thể hoàn tác.</p>
+        <Row justify="end" gutter={8}>
+          <Col>
+            <Button
+              onClick={() => {
+                setDeleteVisible(false);
+                setDeleteId(null);
+              }}
+            >
+              Huỷ
+            </Button>
+          </Col>
+          <Col>
+            <Button type="primary" danger loading={loading} onClick={onDelete}>
+              Xoá
+            </Button>
+          </Col>
+        </Row>
       </Modal>
     </div>
   );

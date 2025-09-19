@@ -107,13 +107,14 @@ export const WorkspaceService = {
     }
   },
 
-  async deleteWorkspace(id: string): Promise<void> {
-    try {
-      await axiosInstance.delete(`${API.DELETE_WORKSPACE}/${id}`);
-    } catch (err) {
-      const msg = getErrorMessage(err);
-      console.error('Error deleting workspace:', msg);
-      throw new Error(msg);
-    }
-  },
+ async deleteWorkspace(id: string): Promise<void> {
+  try {
+    console.log("DELETE URL:", `${API.DELETE_WORKSPACE}/${id}`);
+    await axiosInstance.delete(`${API.DELETE_WORKSPACE}/${id}`);
+  } catch (err: any) {
+    console.error("Error deleting workspace:", err.response?.data || err.message);
+    throw err;
+  }
+}
+
 };
