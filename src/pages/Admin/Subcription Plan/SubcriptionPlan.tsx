@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { Card, Table, Button, Modal, Form, Input, InputNumber, Switch, Space, Typography, message, Popconfirm } from "antd";
+import { 
+  Card, Table, Button, Modal, Form, Input, InputNumber, 
+  Switch, Space, Typography, message 
+} from "antd";
 import type { ColumnsType } from "antd/es/table";
 import type { SubscriptionPlan } from "../../../types/subscriptionPlan";
 import { SubscriptionPlanService } from "../../../services/subscriptionPlan.service";
@@ -11,6 +14,8 @@ const SubscriptionPlanAdmin: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<SubscriptionPlan | null>(null);
+  const [deleteVisible, setDeleteVisible] = useState(false); // modal xóa
+  const [deleteId, setDeleteId] = useState<string | null>(null); // id đang chọn xoá
   const [form] = Form.useForm();
 
   const load = async () => {
@@ -45,9 +50,12 @@ const SubscriptionPlanAdmin: React.FC = () => {
       render: (_, row) => (
         <Space>
           <Button onClick={() => onEdit(row)}>Sửa</Button>
-          <Popconfirm title="Xóa gói đăng ký này?" onConfirm={() => onDelete(row.id)}>
-            <Button danger>Xóa</Button>
-          </Popconfirm>
+          <Button danger onClick={() => {
+            setDeleteId(row.id);
+            setDeleteVisible(true);
+          }}>
+            Xóa
+          </Button>
         </Space>
       ),
     },
@@ -66,10 +74,13 @@ const SubscriptionPlanAdmin: React.FC = () => {
     setOpen(true);
   };
 
-  const onDelete = async (id: string) => {
+  const onDelete = async () => {
+    if (!deleteId) return;
     try {
-      await SubscriptionPlanService.delete(id);
+      await SubscriptionPlanService.delete(deleteId);
       message.success("Đã xóa thành công");
+      setDeleteVisible(false);
+      setDeleteId(null);
       load();
     } catch (e: any) {
       message.error(e?.message || "Xóa thất bại");
@@ -111,6 +122,7 @@ const SubscriptionPlanAdmin: React.FC = () => {
         sticky  
       />
 
+      {/* Modal Create/Update */}
       <Modal
         title={editing ? "Chỉnh sửa" : "Thêm gói đăng ký"}
         open={open}
@@ -126,19 +138,44 @@ const SubscriptionPlanAdmin: React.FC = () => {
           <Form.Item name="price" label="Giá" rules={[{ required: true, message: "Nhập giá gói đăng ký" }]}>
             <InputNumber min={0} style={{ width: "100%" }} />
           </Form.Item>
-          <Form.Item name="durationInMonths" label="Thời hạn gói (tháng)" rules={[{ required: true }]}>
+          <Form.Item name="durationInMonths" label="Thời hạn gói (tháng)" rules={[{ required: true }]} >
             <InputNumber min={1} style={{ width: "100%" }} />
           </Form.Item>
-          <Form.Item name="maxWorkSpaces" label="Số lượng không gian làm việc tối đa " rules={[{ required: true }]}>
+          <Form.Item name="maxWorkSpaces" label="Số lượng không gian làm việc tối đa " rules={[{ required: true }]} >
             <InputNumber min={1} style={{ width: "100%" }} />
           </Form.Item>
           <Form.Item name="description" label="Mô tả">
-            <Input.TextArea rows={3}  />
+            <Input.TextArea rows={3} />
           </Form.Item>
           <Form.Item name="isActive" label="Trạng thái" valuePropName="checked">
             <Switch />
           </Form.Item>
         </Form>
+      </Modal>
+
+      {/* Modal Delete */}
+      <Modal
+        title="Xóa gói đăng ký"
+        open={deleteVisible}
+        onCancel={() => {
+          setDeleteVisible(false);
+          setDeleteId(null);
+        }}
+        footer={null}
+        width={400}
+      >
+        <p>Bạn có chắc chắn muốn xóa gói đăng ký này? Hành động này không thể hoàn tác.</p>
+        <Space style={{ display: "flex", justifyContent: "flex-end" }}>
+          <Button onClick={() => {
+            setDeleteVisible(false);
+            setDeleteId(null);
+          }}>
+            Hủy
+          </Button>
+          <Button type="primary" danger loading={loading} onClick={onDelete}>
+            Xóa
+          </Button>
+        </Space>
       </Modal>
     </Card>
   );

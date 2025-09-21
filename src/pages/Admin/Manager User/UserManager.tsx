@@ -732,11 +732,11 @@ const UserManager: React.FC = () => {
               name="password"
               label="Password"
               rules={[
-                { required: true, message: "Please enter password" },
+                { required: true, message: "Vui lòng nhập mật khẩu" },
                 {
                   pattern: PASSWORD_REGEX,
                   message:
-                    "Password must be at least 6 characters and include uppercase, lowercase, number, and special character",
+                    "Mật khẩu phải có ít nhất 6 ký tự và bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt",
                 },
               ]}
             >
@@ -761,21 +761,21 @@ const UserManager: React.FC = () => {
         {/* Confirm delete */}
         <Modal
           open={isDeleteConfirmVisible}
-          title="Confirm Delete"
+          title="Xác nhận Xóa"
           onOk={confirmDeleteUser}
           onCancel={cancelDeleteUser}
-          okText="Delete"
+          okText="Xóa"
           okButtonProps={{ danger: true }}
           confirmLoading={loading}
         >
           <p>
-            Are you sure you want to delete this user?
+            Bạn có chắc chắn muốn xóa người dùng này không?
             <br />
             <b>
               {userToDelete?.fullName || ""} ({userToDelete?.email || ""})
             </b>
             <br />
-            This action cannot be undone.
+            Không thể hoàn tác hành động này.
           </p>
         </Modal>
       </Content>

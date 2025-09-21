@@ -13,7 +13,7 @@ import {
   Modal,
   Button,
 } from "antd";
-import { DeleteOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
+import { DeleteOutlined } from "@ant-design/icons";
 import type { ColumnsType, TableProps } from "antd/es/table";
 import dayjs from "dayjs";
 
@@ -26,9 +26,9 @@ const { Title, Text } = Typography;
 const { Search } = Input;
 
 const STATUS_OPTIONS: { label: string; value: OrderStatusCode; color: string }[] = [
-  { value: 0, label: "PENDING",   color: "gold"   },
-  { value: 1, label: "PAID",      color: "green"  },
-  { value: 2, label: "CANCELLED", color: "red"    },
+  { value: 0, label: "PENDING", color: "gold" },
+  { value: 1, label: "PAID", color: "green" },
+  { value: 2, label: "CANCELLED", color: "red" },
 ];
 
 const statusColor = (s?: OrderStatusCode) =>
@@ -51,6 +51,9 @@ const OrderAdmin: React.FC = () => {
   const [updateTarget, setUpdateTarget] = useState<Order | null>(null);
   const [updateNewStatus, setUpdateNewStatus] = useState<OrderStatusCode>(0);
 
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Order | null>(null);
+
   const loadOrders = async () => {
     setLoading(true);
     try {
@@ -63,7 +66,9 @@ const OrderAdmin: React.FC = () => {
     }
   };
 
-  useEffect(() => { loadOrders(); }, []);
+  useEffect(() => {
+    loadOrders();
+  }, []);
 
   const filteredData = useMemo(() => {
     let data = orders;
@@ -88,8 +93,8 @@ const OrderAdmin: React.FC = () => {
   const doUpdateStatus = async (row: Order, newStatus: OrderStatusCode) => {
     setUpdatingId(row.id);
     try {
-      const hide = message.loading("Cập nhật trang thái...", 0) as any;
-      await OrderService.updateStatus(row.id, newStatus); 
+      const hide = message.loading("Cập nhật trạng thái...", 0) as any;
+      await OrderService.updateStatus(row.id, newStatus);
       if (typeof hide === "function") hide();
       message.success("Cập nhật trạng thái thành công");
       await loadOrders();
@@ -128,13 +133,16 @@ const OrderAdmin: React.FC = () => {
     setUpdateTarget(null);
   };
 
-  const doDelete = async (row: Order) => {
-    setDeletingId(row.id);
+  const doDelete = async () => {
+    if (!deleteTarget) return;
+    setDeletingId(deleteTarget.id);
     try {
-      await OrderService.delete(row.id);
+      await OrderService.delete(deleteTarget.id);
       message.success("Xóa đơn hàng thành công");
-      setOrders(prev => prev.filter(o => o.id !== row.id));
+      setOrders((prev) => prev.filter((o) => o.id !== deleteTarget.id));
       await loadOrders();
+      setDeleteModalOpen(false);
+      setDeleteTarget(null);
     } catch (e: any) {
       message.error(e?.message || "Xóa đơn hàng thất bại");
     } finally {
@@ -143,35 +151,8 @@ const OrderAdmin: React.FC = () => {
   };
 
   const handleDeleteClick = (row: Order) => {
-    if (row.status !== 2) {
-      Modal.warning({
-        title: "Only CANCELLED orders can be deleted",
-        content: (
-          <span>
-            Order <Text code>{row.id}</Text> has status{" "}
-            <Tag color={statusColor(row.status)} style={{ margin: 0 }}>
-              {getOrderStatusLabel(row.status)}
-            </Tag>
-            . Please set it to <Tag color="red" style={{ margin: 0 }}>CANCELLED</Tag> first.
-          </span>
-        ),
-      });
-      return;
-    }
-
-    Modal.confirm({
-      title: "Xóa đơn hàng này?",
-      icon: <ExclamationCircleOutlined />,
-      content: (
-        <span>
-          You are deleting order <Text code>{row.id}</Text>. This action cannot be undone.
-        </span>
-      ),
-      okText: "Xóa",
-      okType: "danger",
-      cancelText: "Hủy",
-      onOk: () => doDelete(row),
-    });
+    setDeleteTarget(row);
+    setDeleteModalOpen(true);
   };
 
   const onChange: TableProps<Order>["onChange"] = () => {};
@@ -184,7 +165,9 @@ const OrderAdmin: React.FC = () => {
       width: 260,
       render: (v: string) => (
         <Tooltip title={v}>
-          <span className="oa-id-chip" title={v}>{v}</span>
+          <span className="oa-id-chip" title={v}>
+            {v}
+          </span>
         </Tooltip>
       ),
     },
@@ -198,7 +181,11 @@ const OrderAdmin: React.FC = () => {
           (row as any).subcriptionPlanName ??
           (row as any).subscriptionPlanId ??
           (row as any).subcriptionPlanId;
-        return name ? <span className="oa-plan">{name}</span> : <Text type="secondary">—</Text>;
+        return name ? (
+          <span className="oa-plan">{name}</span>
+        ) : (
+          <Text type="secondary">—</Text>
+        );
       },
     },
     {
@@ -208,9 +195,12 @@ const OrderAdmin: React.FC = () => {
       width: 120,
       align: "right",
       sorter: (a, b) =>
-        ((a as any).totalPrice ?? a.totalPrice ?? 0) - ((b as any).totalPrice ?? b.totalPrice ?? 0),
+        ((a as any).totalPrice ?? a.totalPrice ?? 0) -
+        ((b as any).totalPrice ?? b.totalPrice ?? 0),
       render: (_: any, row) => (
-        <span className="oa-price">{currency((row as any).totalPrice ?? row.totalPrice)}</span>
+        <span className="oa-price">
+          {currency((row as any).totalPrice ?? row.totalPrice)}
+        </span>
       ),
     },
     {
@@ -222,8 +212,11 @@ const OrderAdmin: React.FC = () => {
       onFilter: (value, record) => record.status === (value as number),
       render: (s: OrderStatusCode | undefined) => (
         <span className={`oa-status oa-status--${getOrderStatusLabel(s).toLowerCase()}`}>
-          <Badge status={s === 1 ? "success" : s === 2 ? "error" : "warning"} style={{ marginRight: 6 }} />
-          {getOrderStatusLabel(s)} {}
+          <Badge
+            status={s === 1 ? "success" : s === 2 ? "error" : "warning"}
+            style={{ marginRight: 6 }}
+          />
+          {getOrderStatusLabel(s)}
         </span>
       ),
     },
@@ -233,7 +226,9 @@ const OrderAdmin: React.FC = () => {
       key: "organizationId",
       width: 240,
       render: (v: string) => (
-        <Tooltip title={v}><span className="oa-dim">{v}</span></Tooltip>
+        <Tooltip title={v}>
+          <span className="oa-dim">{v}</span>
+        </Tooltip>
       ),
     },
     {
@@ -242,7 +237,9 @@ const OrderAdmin: React.FC = () => {
       key: "accountId",
       width: 240,
       render: (v: string) => (
-        <Tooltip title={v}><span className="oa-dim">{v}</span></Tooltip>
+        <Tooltip title={v}>
+          <span className="oa-dim">{v}</span>
+        </Tooltip>
       ),
     },
     {
@@ -250,8 +247,10 @@ const OrderAdmin: React.FC = () => {
       dataIndex: "createdAt",
       key: "createdAt",
       width: 180,
-      sorter: (a, b) => dayjs(a.createdAt || 0).valueOf() - dayjs(b.createdAt || 0).valueOf(),
-      render: (v?: string) => (v ? dayjs(v).format("YYYY-MM-DD HH:mm") : "—"),
+      sorter: (a, b) =>
+        dayjs(a.createdAt || 0).valueOf() - dayjs(b.createdAt || 0).valueOf(),
+      render: (v?: string) =>
+        v ? dayjs(v).format("YYYY-MM-DD HH:mm") : "—",
     },
     {
       title: "Hành động",
@@ -264,7 +263,7 @@ const OrderAdmin: React.FC = () => {
             onClick={() => openUpdateModal(row)}
             loading={updatingId === row.id}
           >
-            Cặp nhật đơn hàng
+            Cập nhật trạng thái
           </Button>
 
           <Button
@@ -272,7 +271,6 @@ const OrderAdmin: React.FC = () => {
             icon={<DeleteOutlined />}
             loading={deletingId === row.id}
             onClick={() => handleDeleteClick(row)}
-            data-can-delete={row.status === 2}
           >
             Xóa
           </Button>
@@ -284,7 +282,9 @@ const OrderAdmin: React.FC = () => {
   return (
     <Card className="oa-card">
       <div className="oa-header">
-        <Title level={4} className="oa-title">Quản lý các đơn hàng</Title>
+        <Title level={4} className="oa-title">
+          Quản lý các đơn hàng
+        </Title>
         <Space className="oa-controls" wrap>
           <Select
             allowClear
@@ -317,6 +317,7 @@ const OrderAdmin: React.FC = () => {
         className="oa-table"
       />
 
+      {/* Modal cập nhật trạng thái */}
       <Modal
         title="Cập nhật trạng thái đơn hàng"
         open={updateModalOpen}
@@ -325,7 +326,6 @@ const OrderAdmin: React.FC = () => {
         okText="Cập nhật"
         okButtonProps={{
           loading: updatingId === updateTarget?.id,
-         
         }}
         destroyOnHidden
       >
@@ -345,13 +345,69 @@ const OrderAdmin: React.FC = () => {
               <div style={{ marginTop: 8 }}>
                 <Select<OrderStatusCode>
                   value={updateNewStatus}
-                  options={STATUS_OPTIONS.map(o => ({ label: o.label, value: o.value }))}
+                  options={STATUS_OPTIONS.map((o) => ({ label: o.label, value: o.value }))}
                   onChange={(v) => setUpdateNewStatus(v)}
                   style={{ width: "100%" }}
                 />
               </div>
             </div>
           </Space>
+        )}
+      </Modal>
+
+      {/* Modal xác nhận xoá */}
+      <Modal
+        title="Xóa đơn hàng"
+        open={deleteModalOpen}
+        onCancel={() => {
+          setDeleteModalOpen(false);
+          setDeleteTarget(null);
+        }}
+        footer={null}
+        destroyOnHidden
+      >
+        {deleteTarget && (
+          <>
+            {deleteTarget.status !== 2 ? (
+              <p>
+                Đơn hàng <Text code>{deleteTarget.id}</Text> hiện có trạng thái{" "}
+                <Tag color={statusColor(deleteTarget.status)} style={{ margin: 0 }}>
+                  {getOrderStatusLabel(deleteTarget.status)}
+                </Tag>
+                . <br />
+                Chỉ có thể xoá khi trạng thái là{" "}
+                <Tag color="red" style={{ margin: 0 }}>
+                  CANCELLED
+                </Tag>.
+              </p>
+            ) : (
+              <p>
+                Bạn có chắc chắn muốn xoá đơn hàng{" "}
+                <Text code>{deleteTarget.id}</Text>? <br />
+                Hành động này không thể hoàn tác.
+              </p>
+            )}
+
+            <Space style={{ display: "flex", justifyContent: "flex-end" }}>
+              <Button
+                onClick={() => {
+                  setDeleteModalOpen(false);
+                  setDeleteTarget(null);
+                }}
+              >
+                Hủy
+              </Button>
+              <Button
+                type="primary"
+                danger
+                disabled={deleteTarget.status !== 2}
+                loading={deletingId === deleteTarget.id}
+                onClick={doDelete}
+              >
+                Xóa
+              </Button>
+            </Space>
+          </>
         )}
       </Modal>
     </Card>
