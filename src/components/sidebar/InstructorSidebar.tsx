@@ -4,6 +4,7 @@ import {
   InfoCircleOutlined,
   SettingOutlined,
   LogoutOutlined,
+  TagsOutlined,
   AppstoreOutlined,
 } from "@ant-design/icons";
 import "./instructorSidebar.css";
@@ -24,7 +25,7 @@ const sidebarItems = [
   },
   {
     key: "Categories",
-    icon: <BookOutlined />,
+    icon: <TagsOutlined />,
     label: "Danh mục khóa học",
     url: "/instructor-category",
   },

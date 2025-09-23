@@ -157,7 +157,7 @@ const CategoryManage: React.FC = () => {
         </Col>
         <Col>
           <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateVisible(true)}>
-            Tạo mới
+            Thêm Danh mục
           </Button>
         </Col>
       </Row>
