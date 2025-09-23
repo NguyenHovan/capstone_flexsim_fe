@@ -1,6 +1,6 @@
-import { Avatar, Dropdown } from "antd";
+import { Avatar, Dropdown, Button } from "antd";
 import type { MenuProps } from "antd";
-import { UserAddOutlined, UserOutlined, LogoutOutlined } from "@ant-design/icons";
+import { UserOutlined, LogoutOutlined, LoginOutlined } from "@ant-design/icons";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { useEffect, useState } from "react";
@@ -30,21 +30,9 @@ const Header = () => {
   }, [user?.id]);
 
   const menuItems: MenuProps["items"] = [
-    {
-      key: "profile",
-      icon: <UserOutlined />,
-      label: "Thông tin cá nhân",
-      onClick: () => navigate("/profile"),
-    },
-    {
-      type: "divider",
-    },
-    {
-      key: "logout",
-      icon: <LogoutOutlined />,
-      label: "Đăng xuất",
-      onClick: handleLogout,
-    },
+    { key: "profile", icon: <UserOutlined />, label: "Thông tin cá nhân", onClick: () => navigate("/profile") },
+    { type: "divider" },
+    { key: "logout", icon: <LogoutOutlined />, label: "Đăng xuất", onClick: handleLogout },
   ];
 
   const navLinks = [
@@ -52,7 +40,6 @@ const Header = () => {
     { name: "Danh mục khóa học", to: "/course-list" },
     { name: "AI Quiz", to: "/ai-quiz" },
     { name: "Giới thiệu", to: "/about" },
-    // { name: "Contact", to: "/contact" },
   ];
 
   return (
@@ -62,18 +49,12 @@ const Header = () => {
         justifyContent: "space-between",
         alignItems: "center",
         background: "linear-gradient(90deg, #059769, #feb47b)",
-        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+        boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
       }}
     >
+      {/* Logo */}
       <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          fontSize: 22,
-          padding: "12px 32px",
-          fontWeight: "bold",
-          cursor: "pointer",
-        }}
+        style={{ display: "flex", alignItems: "center", fontSize: 22, padding: "12px 32px", fontWeight: "bold", cursor: "pointer" }}
         onClick={() => navigate("/")}
       >
         <img
@@ -81,29 +62,14 @@ const Header = () => {
           style={{ width: 50, height: 50, marginRight: 12 }}
         />
         <div>
-          <span
-            style={{
-              color: "#fff",
-              textShadow: "1px 1px 4px rgba(0,0,0,0.3)",
-            }}
-          >
-            LOGISIM
-          </span>
-          <span
-            style={{
-              color: "#222",
-              background: "#fff",
-              padding: "2px 8px",
-              borderRadius: 6,
-              marginLeft: 4,
-              fontWeight: "bold",
-            }}
-          >
+          <span style={{ color: "#fff", textShadow: "1px 1px 4px rgba(0,0,0,0.3)" }}>LOGISIM</span>
+          <span style={{ color: "#222", background: "#fff", padding: "2px 8px", borderRadius: 6, marginLeft: 4, fontWeight: "bold" }}>
             EDU
           </span>
         </div>
       </div>
 
+      {/* Nav */}
       <nav style={{ display: "flex", gap: 68 }}>
         {navLinks.map((link) => {
           const isActive = location.pathname === link.to;
@@ -128,20 +94,16 @@ const Header = () => {
         })}
       </nav>
 
+      {/* Actions (right) */}
       <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 32px" }}>
         {isLoggedIn ? (
           <Dropdown menu={{ items: menuItems }} placement="bottomRight" arrow>
             <div style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
               <Avatar
                 size={40}
-                className="header-avatar"
                 src={
                   avatar ? (
-                    <img
-                      src={avatar}
-                      alt="avatar"
-                      style={{ width: "100%", height: "100%", objectFit: "contain" }}
-                    />
+                    <img src={avatar} alt="avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                   ) : undefined
                 }
                 style={{ border: "2px solid #fff", background: "#fff" }}
@@ -152,12 +114,26 @@ const Header = () => {
             </div>
           </Dropdown>
         ) : (
-          <Avatar
-            size={40}
-            icon={<UserAddOutlined />}
-            onClick={() => navigate("/login")}
-            style={{ backgroundColor: "#ff5722", cursor: "pointer", border: "2px solid #fff" }}
-          />
+          // Nút Đăng nhập (icon trước chữ, nổi bật trên nền)
+          location.pathname !== "/login" && (
+            <Button
+              shape="round"
+              size="large"
+              ghost
+              icon={<LoginOutlined />} // icon nằm TRƯỚC chữ
+              onClick={() => navigate("/login")}
+              style={{
+                color: "#fff",
+                borderColor: "#fff",
+                background: "rgba(255,255,255,0.15)",
+                backdropFilter: "blur(2px)",
+                fontWeight: 600,
+              }}
+              aria-label="Đăng nhập"
+            >
+              Đăng nhập
+            </Button>
+          )
         )}
       </div>
     </header>

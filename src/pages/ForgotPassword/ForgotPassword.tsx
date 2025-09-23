@@ -15,18 +15,18 @@ const ForgotPasswordPage = () => {
   const handleSubmit = async () => {
     const e = email.trim();
     if (!emailRegex.test(e)) {
-      toast.warning("Please enter a valid email address.");
+      toast.warning("Vui lòng nhập địa chỉ email hợp lệ.");
       return;
     }
     try {
       setLoading(true);
       await AuthService.forgotPassword({ email: e });
-      toast.success("We’ve sent a reset link to your email. Please check your inbox.");
+      toast.success("Chúng tôi đã gửi liên kết đặt lại đến email của bạn. Vui lòng kiểm tra hộp thư đến.");
 
-      // 👉 Điều hướng sang trang reset-password để người dùng dán link/token
-      navigate(`/reset-password?sent=1&email=${encodeURIComponent(e)}`);
+      // // 👉 Điều hướng sang trang reset-password để người dùng dán link/token
+      // navigate(`/reset-password?sent=1&email=${encodeURIComponent(e)}`);
     } catch (error: any) {
-      toast.error(error?.message || "Something went wrong. Please try again.");
+      toast.error(error?.message || "Có lỗi xảy ra. Vui lòng thử lại.");
       console.error(error);
     } finally {
       setLoading(false);
@@ -34,7 +34,7 @@ const ForgotPasswordPage = () => {
   };
 
   const onKeyDown = (ev: React.KeyboardEvent<HTMLInputElement>) => {
-    if (ev.key === "Enter") handleSubmit();
+    if (ev.key === "Nhập vào đây") handleSubmit();
   };
 
   const isValid = emailRegex.test(email.trim());
@@ -44,15 +44,15 @@ const ForgotPasswordPage = () => {
       <div className="forgot-card">
         <div className="forgot-left">
           <button className="back" onClick={() => navigate("/login")}>
-            ← Back to Login
+            ← Quay lại trang Đăng Nhập
           </button>
 
-          <h2>Forgot your password?</h2>
-          <p>Enter your email and we’ll email you a link to reset your password.</p>
+          <h2>Quên mật khẩu?</h2>
+          <p>Nhập email của bạn và chúng tôi sẽ gửi cho bạn liên kết để đặt lại mật khẩu.</p>
 
           <input
             type="email"
-            placeholder="Email address"
+            placeholder="Địa chỉ Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             onKeyDown={onKeyDown}
@@ -65,7 +65,7 @@ const ForgotPasswordPage = () => {
             disabled={loading || !isValid}
             aria-disabled={loading || !isValid}
           >
-            {loading ? "Sending..." : "Send reset link"}
+            {loading ? "Sending..." : "Gửi liên kết đặt lại"}
           </button>
         </div>
 

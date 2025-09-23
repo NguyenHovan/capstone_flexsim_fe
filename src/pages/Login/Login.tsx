@@ -79,14 +79,14 @@ const LoginPage = () => {
 
   const goVerify = (uName: string) => {
     sessionStorage.setItem("pendingVerify", JSON.stringify({ userName: uName }));
-    toast.info("A verification code has been sent to your email.");
+    toast.info("Mã xác minh đã được gửi đến email của bạn.");
     navigate("/verify-code", { replace: true });
   };
 
   const handleLogin = async () => {
     if (loading) return;
     if (!userName || !password) {
-      toast.warning("Please enter both username and password.");
+      toast.warning("Vui lòng nhập cả tên người dùng và mật khẩu.");
       return;
     }
 
@@ -97,7 +97,7 @@ const LoginPage = () => {
 
       const res = await AuthService.login({ userName, password });
       if (!res?.user || !res?.token) {
-        toast.error("Invalid username or password.");
+        toast.error("Tên người dùng hoặc mật khẩu không hợp lệ.");
         sessionStorage.removeItem("pendingVerify");
         return;
       }
@@ -117,7 +117,7 @@ const LoginPage = () => {
       }
 
       sessionStorage.removeItem("pendingVerify");
-      toast.success("Login successful!");
+      toast.success("Đăng nhập thành công!");
       redirectByRole(Number(res.user.roleId));
     } catch (err: any) {
       const status = err?.response?.status;
@@ -128,7 +128,7 @@ const LoginPage = () => {
         return;
       }
 
-      toast.error(serverMsg || "Login failed. Please check your credentials.");
+      toast.error(serverMsg || "Đăng nhập không thành công. Vui lòng kiểm tra thông tin đăng nhập của bạn.");
       sessionStorage.removeItem("pendingVerify");
     } finally {
       setLoading(false);
@@ -143,10 +143,10 @@ const LoginPage = () => {
 
       <div className="login-right">
         <div className="login-box">
-          <h2>Welcome Back to LogisimEdu</h2>
+          <h2>Chào mừng trở lại LogisimEdu</h2>
           <p>
-            Log in to access your logistics simulations, courses, <br />
-            and progress tracking.
+            Đăng nhập để truy cập vào các mô phỏng, khóa học hậu cần của bạn, <br />
+            và theo dõi tiến độ.
           </p>
 
           <input
@@ -195,7 +195,7 @@ const LoginPage = () => {
 
 
           <div className="forgot-password" onClick={() => navigate("/forgot-password")}>
-            Forgot password?
+            Quên mật khẩu?
           </div>
 
           <button
@@ -204,7 +204,7 @@ const LoginPage = () => {
             disabled={loading}
             aria-busy={loading}
           >
-            {loading ? "Logging in..." : "Login"}
+            {loading ? "Đang đăng nhập..." : "Đăng nhập"}
           </button>
         </div>
       </div>

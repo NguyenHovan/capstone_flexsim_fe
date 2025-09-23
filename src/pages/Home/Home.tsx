@@ -49,38 +49,38 @@ export default function HomePage() {
                 color="#f59e0b"
                 style={{ padding: "6px 12px", borderRadius: 999 }}
               >
-                <RocketFilled /> &nbsp; FlexSim + AI Platform
+                <RocketFilled /> &nbsp; Nền tảng FlexSim + AI
               </Tag>
               <Title
                 level={1}
                 style={{ marginTop: 12, fontSize: 44, lineHeight: 1.2 }}
               >
-                Effortless Practice with{" "}
-                <span className="text-gradient">FlexSim</span>
+                Thực hành{" "}
+                <span className="text-gradient">FlexSim</span> thật dễ dàng
               </Title>
               <Paragraph
                 className="description"
                 style={{ fontSize: 16, color: "#4b5563" }}
               >
-                Welcome to the most advanced logistics learning
-                platform—combining artificial intelligence (AI) and FlexSim
-                simulation to help educators and students build realistic models
-                quickly and efficiently.
+                Chào mừng đến với nền tảng học logistics tiên tiến, kết hợp trí
+                tuệ nhân tạo (AI) và mô phỏng FlexSim để giúp giảng viên và học
+                viên xây dựng mô hình chân thực một cách nhanh chóng và hiệu
+                quả.
               </Paragraph>
               <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
                 <Button type="primary" size="large" className="btn-gradient">
-                  Get Started
+                  Bắt đầu
                 </Button>
                 <Button size="large" icon={<PlayCircleFilled />}>
-                  Watch Demo
+                  Xem demo
                 </Button>
               </div>
               <div style={{ display: "flex", gap: 16, marginTop: 16 }}>
                 <Tag color="blue">
-                  <ThunderboltFilled /> Fast Prototyping
+                  <ThunderboltFilled /> Dựng mẫu nhanh
                 </Tag>
                 <Tag color="green">
-                  <SmileFilled /> Student Friendly
+                  <SmileFilled /> Thân thiện với sinh viên
                 </Tag>
               </div>
             </motion.div>
@@ -98,7 +98,7 @@ export default function HomePage() {
                     <div key={i}>
                       <motion.img
                         src={src}
-                        alt={`hero-${i + 1}`}
+                        alt={`ảnh-hero-${i + 1}`}
                         style={{
                           width: "100%",
                           height: 320,
@@ -122,16 +122,16 @@ export default function HomePage() {
             <motion.div {...fadeIn}>
               <Carousel autoplay dots className="hero-carousel">
                 <div className="carousel-slide">
-                  <img src={imageRightHome} alt="Experience realistic models" />
-                  <Text>Experience realistic models</Text>
+                  <img src={imageRightHome} alt="Trải nghiệm mô hình chân thực" />
+                  <Text>Trải nghiệm mô hình chân thực</Text>
                 </div>
                 <div className="carousel-slide">
-                  <img src={robot} alt="AI Support Illustration" />
-                  <Text>AI-assisted scenario building</Text>
+                  <img src={robot} alt="Minh hoạ hỗ trợ AI" />
+                  <Text>Xây dựng kịch bản với AI hỗ trợ</Text>
                 </div>
                 <div className="carousel-slide">
-                  <img src={service} alt="Services" />
-                  <Text>Services & training that scale</Text>
+                  <img src={service} alt="Dịch vụ" />
+                  <Text>Dịch vụ & đào tạo có thể mở rộng</Text>
                 </div>
               </Carousel>
             </motion.div>
@@ -144,19 +144,19 @@ export default function HomePage() {
           <Col xs={24} md={12}>
             <motion.div {...fadeUp}>
               <Title style={{ fontSize: 32 }}>
-                Easily create and customize scenarios
+                Tạo và tuỳ chỉnh kịch bản dễ dàng
               </Title>
               <Paragraph className="description">
-                Build realistic, customizable logistics practice scenarios with
-                AI support, enabling rapid experimentation tailored for
-                education and industry.
+                Xây dựng các kịch bản luyện tập logistics chân thực, tuỳ biến
+                cao với hỗ trợ từ AI, cho phép thử nghiệm nhanh phù hợp cả môi
+                trường giáo dục và doanh nghiệp.
               </Paragraph>
               <Row gutter={[16, 16]}>
                 {[
-                  "No-code Blocks",
-                  "Process Flow",
-                  "Experimenter",
-                  "3D Visualization",
+                  "Khối kéo-thả (no-code)",
+                  "Luồng quy trình",
+                  "Bộ thí nghiệm",
+                  "Trực quan 3D",
                 ].map((f, i) => (
                   <Col xs={12} key={i}>
                     <Card className="feature-card" bordered={false} hoverable>
@@ -164,7 +164,7 @@ export default function HomePage() {
                         {f}
                       </Title>
                       <Text type="secondary">
-                        Quickly assemble and test your ideas.
+                        Lắp ghép và kiểm thử ý tưởng nhanh chóng.
                       </Text>
                     </Card>
                   </Col>
@@ -178,7 +178,7 @@ export default function HomePage() {
               animate={{ y: [0, -12, 0] }}
               transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
             >
-              <img src={listedu} alt="listedu" className="secondary-image" />
+              <img src={listedu} alt="danh sách bài học" className="secondary-image" />
             </motion.div>
           </Col>
         </Row>
@@ -194,26 +194,26 @@ export default function HomePage() {
             >
               <img
                 src={service}
-                alt="Why Choose Illustration"
+                alt="Minh hoạ lý do lựa chọn"
                 className="secondary-image"
               />
             </motion.div>
           </Col>
           <Col xs={24} md={12}>
             <motion.div {...fadeUp}>
-              <Title className="sub-heading">Why Choose Our Services?</Title>
+              <Title className="sub-heading">Vì sao chọn dịch vụ của chúng tôi?</Title>
               <Paragraph className="description">
-                Hands-on learning, AI-powered customization, and real-world
-                application designed for both students and educators.
+                Học qua thực hành, tuỳ biến bằng AI và ứng dụng thực tế—được
+                thiết kế cho cả sinh viên và giảng viên.
               </Paragraph>
               <Row gutter={[16, 16]}>
                 {[
                   {
-                    title: "Interactive Labs",
+                    title: "Phòng lab tương tác",
                     img: logisedu_3,
                   },
                   {
-                    title: "Guided Training",
+                    title: "Đào tạo có hướng dẫn",
                     img: training,
                   },
                 ].map((item, idx) => (
@@ -227,7 +227,7 @@ export default function HomePage() {
                         title={item.title}
                         description={
                           <Text type="secondary">
-                            Engaging content, better outcomes.
+                            Nội dung cuốn hút, kết quả vượt trội.
                           </Text>
                         }
                       />
@@ -243,13 +243,13 @@ export default function HomePage() {
       <section className="testimonials-section section-spacing">
         <motion.div {...fadeIn}>
           <Title level={2} style={{ textAlign: "center" }}>
-            What Our Users Say
+            Người dùng nói gì
           </Title>
           <Paragraph
             style={{ textAlign: "center", maxWidth: 720, margin: "0 auto" }}
           >
-            Discover how students and educators enhance their logistics
-            knowledge with AI-powered simulations.
+            Khám phá cách sinh viên và giảng viên nâng cao kiến thức logistics
+            với các mô phỏng được hỗ trợ bởi AI.
           </Paragraph>
         </motion.div>
 
@@ -266,19 +266,19 @@ export default function HomePage() {
                   <Card
                     hoverable
                     className="testimonial-card"
-                    cover={<img alt="user" src={user} className="avatar-img" />}
+                    cover={<img alt="người dùng" src={user} className="avatar-img" />}
                   >
                     <Card.Meta
                       title="Minh Nguyen"
                       description={
                         <div>
                           <Text type="secondary">
-                            Logistics Student, University of Danang
+                            Sinh viên Logistics, Đại học Đà Nẵng
                           </Text>
                           <div className="rating">★★★★★</div>
                           <Text>
-                            AI-generated simulations helped me understand
-                            real-world systems faster and with confidence.
+                            Các mô phỏng do AI tạo giúp mình hiểu hệ thống thực tế
+                            nhanh hơn và tự tin hơn.
                           </Text>
                         </div>
                       }
@@ -295,18 +295,18 @@ export default function HomePage() {
           <Col xs={24} md={14}>
             <motion.div {...fadeUp}>
               <Title level={2}>
-                Ready to Level Up Your Logistics Training?
+                Sẵn sàng nâng tầm đào tạo logistics?
               </Title>
               <Paragraph>
-                Join thousands using AI and FlexSim to transform how they learn
-                and teach logistics.
+                Tham gia cùng hàng nghìn người đang sử dụng AI và FlexSim để
+                thay đổi cách học và dạy logistics.
               </Paragraph>
               <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
                 <Button type="primary" size="large" className="btn-gradient">
-                  Explore Courses
+                  Khám phá khoá học
                 </Button>
                 <Button size="large" icon={<PlayCircleFilled />}>
-                  Watch a Scenario Demo
+                  Xem demo kịch bản
                 </Button>
               </div>
             </motion.div>
