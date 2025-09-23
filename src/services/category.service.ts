@@ -45,14 +45,14 @@ export const CategoryService = {
   },
 
   async delete(id: string): Promise<void> {
-    try {
-      await axiosInstance.post(`${API.DELETE_CATEGORY}/${id}`);
-    } catch (err) {
-      const msg = getErrorMessage(err);
-      console.error("Error deleting category:", msg);
-      throw new Error(msg);
-    }
-  },
+  try {
+    await axiosInstance.delete(`${API.DELETE_CATEGORY}/${id}`);
+  } catch (err) {
+    const msg = getErrorMessage(err);
+    console.error("Error deleting category:", msg);
+    throw new Error(msg);
+  }
+},
 
   getCategoryById(id: string): Promise<Category> { return this.getById(id); },
   createCategory(body: CategoryForm): Promise<Category> { return this.create(body); },

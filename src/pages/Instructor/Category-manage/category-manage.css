@@ -1,0 +1,35 @@
+/* category-manage.css */
+
+h2 {
+  font-size: 22px;
+  font-weight: 600;
+  margin: 0;
+  color: #333;
+}
+
+.ant-card {
+  border-radius: 8px;
+}
+
+.ant-table {
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.ant-table-thead > tr > th {
+  background-color: #fafafa;
+  font-weight: 600;
+}
+
+.ant-btn {
+  border-radius: 6px;
+}
+
+.ant-modal-title {
+  font-weight: 600;
+}
+
+.ant-tag {
+  font-size: 13px;
+  padding: 2px 8px;
+}

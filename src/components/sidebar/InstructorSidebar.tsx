@@ -22,6 +22,12 @@ const sidebarItems = [
     label: "Khóa học",
     url: "/instructor-course",
   },
+  {
+    key: "Categories",
+    icon: <BookOutlined />,
+    label: "Danh mục khóa học",
+    url: "/instructor-category",
+  },
 
   // {
   //   key: "Enroll Request",

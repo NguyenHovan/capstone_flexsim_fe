@@ -60,6 +60,7 @@ import ResetPasswordPage from "../pages/ResetPassword/ResetPassword";
 import AboutLogisimEdu from "../pages/About/About";
 import InstructorDashboardPage from "../pages/Instructor/Dashboard";
 import QuizLayout from "../pages/Ai-quiz";
+import CategoryManage from "../pages/Instructor/Category-manage/Category-manage";
 
 const MainRoute = () => {
   return (
@@ -232,6 +233,7 @@ const MainRoute = () => {
             path="/instructor-lesson-submission/:id"
             element={<ClassSubmissionsTable />}
           />
+          <Route path="/instructor-category" element={<CategoryManage />} />
         </Route>
       </Route>
     </Routes>
