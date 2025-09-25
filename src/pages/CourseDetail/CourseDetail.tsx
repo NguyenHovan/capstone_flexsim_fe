@@ -85,22 +85,24 @@ const CourseDetail = () => {
 
   const fetchCourseDetail = async () => {
     try {
-      if (!id) return toast.error("Lỗi tải dữ liệu");
+      if (!id) return toast.error("Không tải được dữ liệu.");
       const res = await CourseService.getCourseById(id);
       setCourseDetail(res);
     } catch (error) {
       console.log({ error });
+      toast.error("Không tải được dữ liệu khóa học.");
     }
   };
 
   const fetchTopicByCourse = async () => {
     try {
-      if (!id) return toast.error("Lỗi tải dữ liệu");
+      if (!id) return toast.error("Không tải được dữ liệu.");
       const res = await TopicService.getTopicByCourse(id);
       setTopics(res || []);
     } catch (error) {
       console.log({ error });
       setTopics([]);
+      toast.error("Không tải được danh sách chủ đề.");
     }
   };
 
@@ -110,8 +112,9 @@ const CourseDetail = () => {
       const response = await LessonService.getLessonByTopic(selectedTopic.id);
       setLessons(response || []);
     } catch (error) {
-      console.error("Failed to fetch lessons", error);
+      console.error("Tải bài học thất bại", error);
       setLessons([]);
+      toast.error("Không tải được danh sách bài học.");
     }
   };
 
@@ -133,15 +136,16 @@ const CourseDetail = () => {
 
   const handleEnrollRequest = async () => {
     if (!courseDetail || !currentUser?.id)
-      return toast.error("Lỗi tải dữ liệu");
+      return toast.error("Không tải được dữ liệu.");
     try {
       const res = await EnrollmentRequestService.enrollmentRequest({
         studentId: currentUser.id,
         courseId: courseDetail.id,
       });
-      toast.success(res.message);
+      // res.message có thể là tiếng Anh; ta vẫn hiển thị nếu backend trả về.
+      toast.success(res?.message || "Gửi yêu cầu đăng ký thành công.");
     } catch {
-      toast.error("Học viên đã gửi yêu cầu hoặc đang theo học khóa học này");
+      toast.error("Bạn đã gửi yêu cầu hoặc đang học khóa này.");
     }
   };
 
@@ -168,7 +172,6 @@ const CourseDetail = () => {
 
   const highestCompletedIdx = useMemo(() => {
     if (!currentUser?.id) return -1;
-
     let last = -1;
     for (let i = 0; i < mergedTopics.length; i++) {
       const t = mergedTopics[i];
@@ -178,9 +181,7 @@ const CourseDetail = () => {
     return last;
   }, [mergedTopics, currentUser?.id]);
 
-  const isTopicUnlocked = (index: number) => {
-    return index <= highestCompletedIdx + 1;
-  };
+  const isTopicUnlocked = (index: number) => index <= highestCompletedIdx + 1;
 
   return (
     <div style={{ padding: "24px", maxWidth: 1200, margin: "0 auto" }}>
@@ -197,7 +198,7 @@ const CourseDetail = () => {
         <img
           className="course-thumbnail"
           src={courseDetail?.imgUrl}
-          alt="Thumbnail"
+          alt="Ảnh khóa học"
           style={{
             width: 180,
             height: 180,
@@ -224,7 +225,7 @@ const CourseDetail = () => {
               disabled={!!myProgress}
               style={{ borderRadius: "8px" }}
             >
-              Enroll Course
+              Đăng ký khóa học
             </Button>
 
             {myProgress?.status === 3 && (
@@ -239,7 +240,7 @@ const CourseDetail = () => {
                     window.open(res.fileUrl, "_blank");
                   } catch (error) {
                     console.error(error);
-                    toast.error("Your Certificate not found.");
+                    toast.error("Không tìm thấy chứng chỉ.");
                   }
                 }}
                 style={{
@@ -249,12 +250,13 @@ const CourseDetail = () => {
                   fontWeight: 600,
                 }}
               >
-                Show Certificate
+                Xem chứng chỉ
               </Button>
             )}
           </div>
         </div>
       </Card>
+
       <div
         style={{
           display: "flex",
@@ -269,25 +271,24 @@ const CourseDetail = () => {
           <strong style={{ color: "black" }}>
             {courseDetail?.instructorFullName}
           </strong>
-          <div style={{ fontSize: 12, color: "#888" }}>Lead Instructor</div>
+          <div style={{ fontSize: 12, color: "#888" }}>Giảng viên phụ trách</div>
         </div>
       </div>
 
       <Row gutter={[24, 24]}>
         <Col xs={24} md={14}>
           <div style={{ marginBottom: 16 }}>
-            <Tag color="blue">Tags</Tag>
-            <Tag color="green">Overview</Tag>
-            <Tag color="purple">Author</Tag>
-            <Tag color="orange">FAQs</Tag>
-            <Tag color="red">Announcement</Tag>
-            <Tag color="gold">Review</Tag>
+            <Tag color="green">Tổng quan</Tag>
+            <Tag color="purple">Giảng viên</Tag>
+            <Tag color="orange">Câu hỏi thường gặp</Tag>
+            <Tag color="gold">Đánh giá</Tag>
           </div>
 
-          <h3>About the Course</h3>
+          <h3>Giới thiệu về khóa học</h3>
           <p style={{ lineHeight: 1.6, color: "#333" }}>
-            {courseDetail?.description || "No description available."}
+            {courseDetail?.description || "Chưa có mô tả."}
           </p>
+
           <CourseReviewForm />
           <ReviewCardList />
         </Col>
@@ -302,12 +303,12 @@ const CourseDetail = () => {
                   backgroundColor: "#fafafa",
                 }}
               >
-                <h4 style={{ marginBottom: 16 }}>Your Progress</h4>
+                <h4 style={{ marginBottom: 16 }}>Tiến độ học tập</h4>
                 {myProgress && <CourseProgress data={myProgress} />}
               </Card>
 
               <Card
-                title="Lessons"
+                title="Chủ đề / Bài học"
                 style={{ borderRadius: 8 }}
                 bodyStyle={{ padding: 12 }}
               >
@@ -341,14 +342,14 @@ const CourseDetail = () => {
                                 style={{ fontSize: 20, color: "#1890ff" }}
                               />
                             ) : (
-                              <Tooltip title="Hoàn thành topic trước để mở">
+                              <Tooltip title="Hoàn thành chủ đề trước để mở">
                                 <LockOutlined style={{ fontSize: 20 }} />
                               </Tooltip>
                             )
                           }
-                          title={`${(index + 1).toString().padStart(2, "0")}. ${
-                            item.topicName
-                          }`}
+                          title={`${(index + 1)
+                            .toString()
+                            .padStart(2, "0")}. ${item.topicName}`}
                           description={item.description}
                         />
                       </List.Item>
@@ -362,7 +363,7 @@ const CourseDetail = () => {
 
         <Modal
           open={isModalVisible}
-          title={selectedTopic?.topicName || "Lesson Details"}
+          title={selectedTopic?.topicName || "Chi tiết chủ đề"}
           onCancel={handleCloseModal}
           footer={null}
           width={1000}
@@ -375,7 +376,7 @@ const CourseDetail = () => {
 
               {lessons && lessons.length > 0 && (
                 <List
-                  header={<strong>Lessons</strong>}
+                  header={<strong>Danh sách bài học</strong>}
                   itemLayout="horizontal"
                   dataSource={lessons}
                   renderItem={(lesson: any, index: number) => (
@@ -388,9 +389,9 @@ const CourseDetail = () => {
                     >
                       <Flex vertical style={{ width: "100%" }}>
                         <List.Item.Meta
-                          title={`${(index + 1).toString().padStart(2, "0")}. ${
-                            lesson.lessonName
-                          }`}
+                          title={`${(index + 1)
+                            .toString()
+                            .padStart(2, "0")}. ${lesson.lessonName}`}
                           description={lesson.description}
                         />
                         <Button
@@ -400,7 +401,7 @@ const CourseDetail = () => {
                             e.stopPropagation();
                           }}
                         >
-                          Learning
+                          Học ngay
                         </Button>
                       </Flex>
                     </List.Item>
@@ -409,7 +410,7 @@ const CourseDetail = () => {
               )}
 
               {(!lessons || lessons.length === 0) && (
-                <p>No lessons available.</p>
+                <p>Chưa có bài học.</p>
               )}
             </div>
           )}

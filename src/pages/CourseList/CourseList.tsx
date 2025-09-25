@@ -27,7 +27,7 @@ const CourseList = () => {
       setAllCourses(data);
       setDataSource(data);
     } catch (error) {
-      toast.error("Failed to fetch courses");
+      toast.error("Không thể tải danh sách khóa học");
     } finally {
       setLoading(false);
     }
@@ -49,7 +49,7 @@ const CourseList = () => {
       setAllCourses(data);
       setDataSource(data);
     } catch (error) {
-      toast.error("Failed to fetch courses for category");
+      toast.error("Không thể tải khóa học theo danh mục");
     } finally {
       setLoading(false);
     }
@@ -62,7 +62,7 @@ const CourseList = () => {
 
   const handleSearch = (value: string) => {
     setSearchKeyword(value);
-    setCurrentPage(1); // reset về trang 1 khi search
+    setCurrentPage(1); // reset về trang 1 khi tìm kiếm
     if (!value.trim()) {
       setDataSource(allCourses);
     } else {
@@ -83,7 +83,7 @@ const CourseList = () => {
     }
   };
 
-  // data hiển thị theo trang
+  // data hiển thị theo phân trang
   const paginatedData = dataSource.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
@@ -102,7 +102,7 @@ const CourseList = () => {
         >
           <Input
             prefix={<SearchOutlined />}
-            placeholder="Search Course"
+            placeholder="Tìm kiếm khóa học"
             value={searchKeyword}
             onChange={(e) => handleSearch(e.target.value)}
             style={{ maxWidth: 300, background: "#f5eaea", borderRadius: 20 }}
@@ -113,7 +113,7 @@ const CourseList = () => {
             style={{ flex: 1 }}
             onChange={handleTabChange}
           >
-            <TabPane tab="All" key="all" />
+            <TabPane tab="Tất cả" key="all" />
             {categories?.map((cate) => (
               <TabPane tab={cate.categoryName} key={cate.id} />
             ))}
@@ -136,7 +136,7 @@ const CourseList = () => {
             ))
           ) : (
             <Col span={24} style={{ textAlign: "center", padding: "20px 0" }}>
-              <Empty description="No courses" />
+              <Empty description="Không có khóa học nào" />
             </Col>
           )}
         </Row>

@@ -24,27 +24,27 @@ const CourseProgress: React.FC<CourseProgressProps> = ({ data }) => {
   const getStatusTag = (status: number) => {
     switch (status) {
       case 1:
-        return <Tag color="default">Not Start</Tag>;
+        return <Tag color="default">Chưa bắt đầu</Tag>;
       case 2:
-        return <Tag color="processing">Processing</Tag>;
+        return <Tag color="processing">Đang học</Tag>;
       case 3:
-        return <Tag color="success">Done</Tag>;
+        return <Tag color="success">Hoàn thành</Tag>;
       default:
         return <Tag>Không xác định</Tag>;
     }
   };
 
   return (
-    <Card title={"Course"} style={{ width: "100%", marginBottom: 16 }}>
+    <Card title={"Tiến trình khóa học"} style={{ width: "100%", marginBottom: 16 }}>
       <Space direction="vertical" style={{ width: "100%" }}>
-        <Text strong>Processing:</Text>
+        <Text strong>Tiến độ:</Text>
         <Progress percent={data.progressPercent} />
 
-        <Text strong>Status:</Text>
+        <Text strong>Trạng thái:</Text>
         {getStatusTag(data.status)}
 
         <Text type="secondary">
-          Start date: {new Date(data.createdAt).toLocaleDateString()}
+          Ngày bắt đầu: {new Date(data.createdAt).toLocaleDateString()}
         </Text>
       </Space>
     </Card>
