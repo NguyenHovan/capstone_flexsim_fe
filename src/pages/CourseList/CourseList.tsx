@@ -2,31 +2,64 @@ import { Input, Tabs, Row, Col, Empty, Spin, Pagination } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import CourseCard from "../../components/courseCard/CourseCard";
 import { CourseService } from "../../services/course.service";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
 import { CategoryService } from "../../services/category.service";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
 const { TabPane } = Tabs;
 
+// Lấy orgId từ localStorage
+function getStudentOrgIdFromStorage(): string | null {
+  const rawOrgId = localStorage.getItem("orgId");
+  if (rawOrgId) return rawOrgId;
+
+  const rawUser = localStorage.getItem("currentUser");
+  if (!rawUser) return null;
+  try {
+    const obj = JSON.parse(rawUser);
+    return obj?.organizationId ?? obj?.organization?.id ?? null;
+  } catch {
+    return null;
+  }
+}
+
 const CourseList = () => {
   const navigate = useNavigate();
+  const studentOrgId = useMemo(getStudentOrgIdFromStorage, []);
+
+  // ⚠️ Guest → toast + redirect
+  useEffect(() => {
+    if (!studentOrgId) {
+      toast.error("Vui lòng đăng nhập để xem khóa học");
+      setTimeout(() => navigate("/login", { replace: true }), 500);
+    }
+  }, [studentOrgId, navigate]);
+
   const [allCourses, setAllCourses] = useState<any[]>([]);
   const [dataSource, setDataSource] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
-
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(8);
+
+  // lọc theo org của student
+  const filterByOrg = (courses: any[]) => {
+    if (!studentOrgId) return [];
+    return courses.filter(
+      (c) => c?.instructor?.organizationId === studentOrgId
+    );
+  };
 
   const fetchCourses = async () => {
     try {
       setLoading(true);
       const data = await CourseService.getAllCourses();
-      setAllCourses(data);
-      setDataSource(data);
-    } catch (error) {
+      const filtered = filterByOrg(data);
+      setAllCourses(filtered);
+      setDataSource(filtered);
+    } catch {
       toast.error("Không thể tải danh sách khóa học");
     } finally {
       setLoading(false);
@@ -37,37 +70,27 @@ const CourseList = () => {
     try {
       const response = await CategoryService.getCategories();
       setCategories(response);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const fetchCourseByCategory = async (categoryId: string) => {
-    try {
-      setLoading(true);
-      const data = await CourseService.getCourseByCategoryId(categoryId);
-      setAllCourses(data);
-      setDataSource(data);
-    } catch (error) {
-      toast.error("Không thể tải khóa học theo danh mục");
-    } finally {
-      setLoading(false);
+    } catch (e) {
+      console.log(e);
     }
   };
 
   useEffect(() => {
-    fetchCourses();
-    fetchCategories();
-  }, []);
+    if (studentOrgId) {
+      fetchCourses();
+      fetchCategories();
+    }
+  }, [studentOrgId]);
 
   const handleSearch = (value: string) => {
     setSearchKeyword(value);
-    setCurrentPage(1); // reset về trang 1 khi tìm kiếm
+    setCurrentPage(1);
     if (!value.trim()) {
       setDataSource(allCourses);
     } else {
-      const filtered = allCourses.filter((course) =>
-        course.courseName.toLowerCase().includes(value.toLowerCase())
+      const kw = value.toLowerCase();
+      const filtered = allCourses.filter((c) =>
+        (c.courseName || "").toLowerCase().includes(kw)
       );
       setDataSource(filtered);
     }
@@ -77,13 +100,16 @@ const CourseList = () => {
     setSearchKeyword("");
     setCurrentPage(1);
     if (key === "all") {
-      fetchCourses();
+      setDataSource(allCourses);
     } else {
-      fetchCourseByCategory(key);
+      const filtered = allCourses.filter((c) => c.categoryId === key);
+      setDataSource(filtered);
     }
   };
 
-  // data hiển thị theo phân trang
+  // Nếu guest thì không render UI list
+  if (!studentOrgId) return null;
+
   const paginatedData = dataSource.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
@@ -92,27 +118,17 @@ const CourseList = () => {
   return (
     <Spin spinning={loading}>
       <div className="container">
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 24,
-            marginBottom: 24,
-          }}
-        >
+        {/* Search + Tabs */}
+        <div style={{ display: "flex", alignItems: "center", gap: 24, marginBottom: 24 }}>
           <Input
             prefix={<SearchOutlined />}
             placeholder="Tìm kiếm khóa học"
             value={searchKeyword}
             onChange={(e) => handleSearch(e.target.value)}
             style={{ maxWidth: 300, background: "#f5eaea", borderRadius: 20 }}
+            allowClear
           />
-
-          <Tabs
-            defaultActiveKey="all"
-            style={{ flex: 1 }}
-            onChange={handleTabChange}
-          >
+          <Tabs defaultActiveKey="all" style={{ flex: 1 }} onChange={handleTabChange}>
             <TabPane tab="Tất cả" key="all" />
             {categories?.map((cate) => (
               <TabPane tab={cate.categoryName} key={cate.id} />
@@ -120,8 +136,9 @@ const CourseList = () => {
           </Tabs>
         </div>
 
+        {/* Courses */}
         <Row gutter={[48, 48]}>
-          {paginatedData && paginatedData.length > 0 ? (
+          {paginatedData.length > 0 ? (
             paginatedData.map((course) => (
               <Col
                 xs={24}
@@ -141,15 +158,9 @@ const CourseList = () => {
           )}
         </Row>
 
+        {/* Pagination */}
         {dataSource.length > pageSize && (
-          <div
-            style={{
-              display: "flex",
-              textAlign: "center",
-              marginTop: 24,
-              justifyContent: "center",
-            }}
-          >
+          <div style={{ display: "flex", justifyContent: "center", marginTop: 24 }}>
             <Pagination
               current={currentPage}
               pageSize={pageSize}
