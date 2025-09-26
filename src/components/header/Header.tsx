@@ -38,7 +38,7 @@ const Header = () => {
   const navLinks = [
     { name: "Trang chủ", to: "/" },
     { name: "Danh mục khóa học", to: "/course-list" },
-    { name: "AI Quiz", to: "/ai-quiz" },
+    // { name: "AI Quiz", to: "/ai-quiz" },
     { name: "Giới thiệu", to: "/about" },
   ];
 

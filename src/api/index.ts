@@ -5,7 +5,7 @@ export const API = {
   GET_ALL_ACCOUNT_ORGID: "/api/account/get_all_by_org",
   LOGIN: "/api/account/login",
   FORGOT_PASSWORD: "/api/account/forgot_password",
-  RESET_PASSWORD: "/api/account/resest_password",
+  RESET_PASSWORD: "/api/account/reset_password",
   CHANGE_PASSWORD: "/api/account/change_password",
   REQUEST_CHANGE_EMAIL: "/api/account/request_change_email",
   UPDATE_ACCOUNT: "/api/account/update_account",

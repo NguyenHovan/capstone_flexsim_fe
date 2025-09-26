@@ -142,7 +142,7 @@ const CourseDetail = () => {
         studentId: currentUser.id,
         courseId: courseDetail.id,
       });
-      // res.message có thể là tiếng Anh; ta vẫn hiển thị nếu backend trả về.
+      // res.message có thể là tiếng Anh; ta vẫn hiển thị nếu backend trả về. 
       toast.success(res?.message || "Gửi yêu cầu đăng ký thành công.");
     } catch {
       toast.error("Bạn đã gửi yêu cầu hoặc đang học khóa này.");
