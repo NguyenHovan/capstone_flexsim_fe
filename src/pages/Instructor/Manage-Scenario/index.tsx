@@ -88,17 +88,18 @@ const ScenarioManager: React.FC = () => {
   };
 
   const columns = [
-    { title: "Tên kịch bản", dataIndex: "scenarioName", key: "scenarioName" },
+    { title: "Tên kịch bản", dataIndex: "scenarioName", key: "scenarioName", width: 220 },
     {
       title: "Mô tả",
       dataIndex: "description",
       key: "description",
+      width: 460,
       render: (text: string) => {
         if (!text) return "—";
         return (
-          <Tooltip title={text}>
+          <Tooltip title={text} placement="topLeft">
             <Typography.Paragraph
-              style={{ margin: 0, maxWidth: 420 }}
+              style={{ margin: 0, maxWidth: 440 }}
               ellipsis={{ rows: 2, expandable: false }}
             >
               {text}
@@ -111,6 +112,7 @@ const ScenarioManager: React.FC = () => {
       title: "Bối cảnh (Scene)",
       dataIndex: "sceneId",
       key: "sceneId",
+      width: 220,
       render: (id: string) => {
         const scene = scenes.find((s: any) => s.id === id || s._id === id);
         return scene ? scene.sceneName : id;
@@ -120,6 +122,7 @@ const ScenarioManager: React.FC = () => {
       title: "Tệp",
       dataIndex: "fileUrl",
       key: "fileUrl",
+      width: 160,
       render: (url: string) =>
         url ? (
           <a href={url} target="_blank" rel="noreferrer">
@@ -132,6 +135,7 @@ const ScenarioManager: React.FC = () => {
     {
       title: "Thao tác",
       key: "actions",
+      width: 180,
       render: (_: any, record: any) => (
         <div style={{ display: "flex", gap: 8 }}>
           <Button
@@ -162,7 +166,7 @@ const ScenarioManager: React.FC = () => {
             title="Xoá kịch bản?"
             okText="Xoá"
             cancelText="Hủy"
-            onConfirm={() => handleDelete(record.id)}
+            onConfirm={() => handleDelete(record.id ?? record._id)}
           >
             <Button danger size="small">
               Xoá
@@ -174,7 +178,14 @@ const ScenarioManager: React.FC = () => {
   ];
 
   return (
-    <div style={{ padding: 20 }}>
+    <div
+      style={{
+        height: "100%",
+        maxHeight: "calc(100vh - 80px)",
+        overflowY: "auto",
+        padding: 20,
+      }}
+    >
       <h2 style={{ marginBottom: 20 }}>Quản lý Kịch bản (Scenario)</h2>
 
       <Button
@@ -189,13 +200,20 @@ const ScenarioManager: React.FC = () => {
         + Thêm kịch bản
       </Button>
 
+     
       <Table
         rowKey={(r: any) => r?.id ?? r?._id}
         columns={columns as any}
         dataSource={scenarios}
         loading={loading}
+        bordered
+        scroll={{
+          x: "max-content", 
+          y: "calc(100vh - 260px)", 
+        }}
       />
 
+      
       <Modal
         title={editingScenario ? "Sửa kịch bản" : "Thêm kịch bản"}
         open={modalVisible}
@@ -206,7 +224,9 @@ const ScenarioManager: React.FC = () => {
         onOk={() => form.submit()}
         okText="Lưu"
         cancelText="Hủy"
-        destroyOnClose
+        destroyOnHidden
+        bodyStyle={{ maxHeight: "70vh", overflowY: "auto" }} 
+        styles={{ body: { maxHeight: "70vh", overflowY: "auto" } } as any} 
       >
         <Form form={form} layout="vertical" onFinish={handleSubmit}>
           <Form.Item
@@ -222,7 +242,7 @@ const ScenarioManager: React.FC = () => {
             name="description"
             rules={[{ required: true, message: "Vui lòng nhập mô tả!" }]}
           >
-            <Input.TextArea rows={3} placeholder="Mô tả ngắn về kịch bản" />
+            <Input.TextArea rows={4} placeholder="Mô tả ngắn về kịch bản" />
           </Form.Item>
 
           <Form.Item
@@ -230,7 +250,7 @@ const ScenarioManager: React.FC = () => {
             name="sceneId"
             rules={[{ required: true, message: "Vui lòng chọn bối cảnh!" }]}
           >
-            <Select placeholder="Chọn bối cảnh">
+            <Select placeholder="Chọn bối cảnh" showSearch optionFilterProp="children">
               {scenes.map((scene: any) => (
                 <Select.Option key={scene.id || scene._id} value={scene.id || scene._id}>
                   {scene.sceneName}

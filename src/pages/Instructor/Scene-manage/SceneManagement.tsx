@@ -8,12 +8,10 @@ const SceneManagement = () => {
   const [dataSource, setDataSource] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // State cho modal create/update
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedSceneId, setSelectedSceneId] = useState<string | null>(null);
 
-  // State cho modal delete
   const [deleteVisible, setDeleteVisible] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
@@ -23,12 +21,11 @@ const SceneManagement = () => {
     fetchScenes();
   }, []);
 
-  // ===== Fetch danh sách scene =====
   const fetchScenes = async () => {
     try {
       setLoading(true);
       const res = await SceneService.getAllScenes();
-      setDataSource(res);
+      setDataSource(res || []);
     } catch (e) {
       toast.error("Lỗi tải danh sách bối cảnh");
     } finally {
@@ -36,17 +33,15 @@ const SceneManagement = () => {
     }
   };
 
-  // ===== Thêm scene =====
   const handleAdd = () => {
     form.resetFields();
     setIsEditing(false);
     setIsModalVisible(true);
   };
 
-  // ===== Sửa scene =====
   const handleEdit = (record: any) => {
     setIsEditing(true);
-    setSelectedSceneId(record.id);
+    setSelectedSceneId(record.id ?? record._id);
     form.setFieldsValue({
       sceneName: record.sceneName,
       description: record.description,
@@ -54,13 +49,11 @@ const SceneManagement = () => {
     setIsModalVisible(true);
   };
 
-  // ===== Mở modal delete =====
   const handleDelete = (id: string) => {
     setDeleteId(id);
     setDeleteVisible(true);
   };
 
-  // ===== Xác nhận xoá scene =====
   const onDelete = async () => {
     if (!deleteId) return;
     setLoading(true);
@@ -71,14 +64,13 @@ const SceneManagement = () => {
       setDeleteId(null);
       fetchScenes();
     } catch (err: any) {
-      console.error("Delete scene failed:", err.response?.data || err.message || err);
+      console.error("Delete scene failed:", err?.response?.data || err?.message || err);
       toast.error("Xoá bối cảnh thất bại!");
     } finally {
       setLoading(false);
     }
   };
 
-  // ===== Submit create/update =====
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
@@ -100,18 +92,32 @@ const SceneManagement = () => {
     }
   };
 
-  // ===== Cấu hình cột table =====
   const columns = [
-    {
-      title: "Tên bối cảnh",
-      dataIndex: "sceneName",
-    },
+    { title: "Tên bối cảnh", dataIndex: "sceneName", width: 300 },
     {
       title: "Mô tả",
       dataIndex: "description",
+      width: 600,
+      render: (text: string) => (
+        <Tooltip title={text} placement="topLeft">
+          <span
+            style={{
+              display: "inline-block",
+              maxWidth: 560,
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
+            {text}
+          </span>
+        </Tooltip>
+      ),
     },
     {
       title: "Thao tác",
+      width: 140,
+      fixed: "right" as const,
       render: (_: any, record: any) => (
         <Space>
           <Tooltip title="Sửa">
@@ -120,7 +126,7 @@ const SceneManagement = () => {
           <Tooltip title="Xoá">
             <DeleteOutlined
               style={{ color: "red" }}
-              onClick={() => handleDelete(record.id)}
+              onClick={() => handleDelete(record.id ?? record._id)}
             />
           </Tooltip>
         </Space>
@@ -129,23 +135,32 @@ const SceneManagement = () => {
   ];
 
   return (
-    <div>
-      {/* Thanh header: search + thêm */}
-      <div className="header-section" style={{ marginBottom: 16 }}>
-        <Input.Search placeholder="Tìm kiếm bối cảnh" style={{ width: 250 }} />
+    <div style={{ width: "100%", overflowX: "auto" }}>
+      {/* Header */}
+      <div
+        className="header-section"
+        style={{
+          marginBottom: 16,
+          display: "flex",
+          gap: 12,
+          alignItems: "center",
+        }}
+      >
+        <Input.Search placeholder="Tìm kiếm bối cảnh" style={{ width: 280 }} />
         <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
           Thêm bối cảnh
         </Button>
       </div>
 
-      {/* Bảng danh sách */}
+      {/* Bảng có cuộn ngang */}
       <Table
         columns={columns as any}
         dataSource={dataSource}
-        pagination={{ pageSize: 6 }}
-        rowKey="id"
+        pagination={{ pageSize: 8 }}
+        rowKey={(r: any) => r?.id ?? r?._id}
         loading={loading}
         bordered
+        scroll={{ x: "max-content" }} // chỉ cuộn ngang
       />
 
       {/* CREATE / UPDATE Modal */}
@@ -171,7 +186,7 @@ const SceneManagement = () => {
             name="description"
             rules={[{ required: true, message: "Vui lòng nhập mô tả" }]}
           >
-            <Input.TextArea rows={3} />
+            <Input.TextArea rows={4} />
           </Form.Item>
         </Form>
       </Modal>
