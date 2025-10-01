@@ -33,3 +33,35 @@ h2 {
   font-size: 13px;
   padding: 2px 8px;
 }
+.showmore-btn{
+  border: 0;
+  background: transparent;
+  padding: 4px;
+  border-radius: 6px;
+  cursor: pointer;
+  line-height: 0;
+  transition: background .2s ease;
+  margin-right: 6px;
+}
+.showmore-btn:hover{ background: rgba(0,0,0,.06); }
+
+.showmore-chevron{
+  display: block;
+  transition: transform .2s ease, opacity .2s ease;
+}
+.showmore-chevron.is-expanded{ transform: rotate(180deg); }
+
+.course-card__placeholder{
+  height: 140px;
+  display:flex;align-items:center;justify-content:center;
+  background: linear-gradient(180deg,#fafafa,#f0f0f0);
+  color: rgba(0,0,0,.35);
+}
+
+@media (prefers-color-scheme: dark){
+  .showmore-btn:hover{ background: rgba(255,255,255,.08); }
+}
+.showmore-btn:focus-visible{
+  outline: 2px solid #1677ff;
+  outline-offset: 2px;
+}

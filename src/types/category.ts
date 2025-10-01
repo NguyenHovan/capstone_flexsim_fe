@@ -1,5 +1,6 @@
 export interface Category {
   id: string;
+  workSpaceId: string;
   categoryName: string;
   isActive: boolean;
   createdAt: string;

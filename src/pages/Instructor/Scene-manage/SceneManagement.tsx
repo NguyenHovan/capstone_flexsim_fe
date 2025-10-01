@@ -117,7 +117,6 @@ const SceneManagement = () => {
     {
       title: "Thao tác",
       width: 140,
-      fixed: "right" as const,
       render: (_: any, record: any) => (
         <Space>
           <Tooltip title="Sửa">
