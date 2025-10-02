@@ -1,15 +1,26 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
-  Table, Button, Modal, Form, Input, Upload, message,
-  Popconfirm, Select, Tooltip, Typography
+  Table,
+  Button,
+  Modal,
+  Form,
+  Input,
+  Upload,
+  message,
+  Popconfirm,
+  Select,
+  Tooltip,
+  Typography,
 } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { ScenarioService } from "../../../services/scenario.service";
 import { SceneService } from "../../../services/scene.service";
 import type { Scenario } from "../../../types/scenario";
 import type { Scene } from "../../../types/scene";
+import { useNavigate } from "react-router-dom";
 
 const ScenarioManager: React.FC = () => {
+  const navigate = useNavigate();
   const [scenarios, setScenarios] = useState<Scenario[]>([]);
   const [scenes, setScenes] = useState<Scene[]>([]);
   const [loading, setLoading] = useState(false);
@@ -24,7 +35,9 @@ const ScenarioManager: React.FC = () => {
       if (!raw) return null;
       const u = JSON.parse(raw);
       return u?.id || null;
-    } catch { return null; }
+    } catch {
+      return null;
+    }
   }, []);
 
   const isOwner = (row: Scenario) =>
@@ -80,12 +93,14 @@ const ScenarioManager: React.FC = () => {
       description: row.description,
       sceneId: row.sceneId,
       fileUrl: row.fileUrl
-        ? [{
-            uid: "-1",
-            name: row.fileUrl.split("/").pop() || "file",
-            status: "done",
-            url: row.fileUrl,
-          }]
+        ? [
+            {
+              uid: "-1",
+              name: row.fileUrl.split("/").pop() || "file",
+              status: "done",
+              url: row.fileUrl,
+            },
+          ]
         : [],
     });
     setModalVisible(true);
@@ -99,7 +114,7 @@ const ScenarioManager: React.FC = () => {
     try {
       await ScenarioService.deleteScenario(row.id);
       message.success("Xoá kịch bản thành công!");
-      setScenarios(prev => prev.filter(s => s.id !== row.id));
+      setScenarios((prev) => prev.filter((s) => s.id !== row.id));
     } catch {
       message.error("Xoá kịch bản thất bại!");
     }
@@ -113,7 +128,7 @@ const ScenarioManager: React.FC = () => {
 
     try {
       const fd = new FormData();
-      fd.append("instructorId", currentUserId);                // <— bắt buộc
+      fd.append("instructorId", currentUserId); // <— bắt buộc
       fd.append("sceneId", values.sceneId);
       fd.append("scenarioName", values.scenarioName);
       fd.append("description", values.description || "");
@@ -141,7 +156,12 @@ const ScenarioManager: React.FC = () => {
   };
 
   const columns = [
-    { title: "Tên kịch bản", dataIndex: "scenarioName", key: "scenarioName", width: 240 },
+    {
+      title: "Tên kịch bản",
+      dataIndex: "scenarioName",
+      key: "scenarioName",
+      width: 240,
+    },
     {
       title: "Mô tả",
       dataIndex: "description",
@@ -150,18 +170,23 @@ const ScenarioManager: React.FC = () => {
       render: (text: string) =>
         text ? (
           <Tooltip title={text} placement="topLeft">
-            <Typography.Paragraph style={{ margin: 0, maxWidth: 440 }} ellipsis={{ rows: 2 }}>
+            <Typography.Paragraph
+              style={{ margin: 0, maxWidth: 440 }}
+              ellipsis={{ rows: 2 }}
+            >
               {text}
             </Typography.Paragraph>
           </Tooltip>
-        ) : "—",
+        ) : (
+          "—"
+        ),
     },
     {
       title: "Bối cảnh",
       dataIndex: "sceneId",
       key: "sceneId",
       width: 220,
-      render: (id: string) => scenes.find(s => s.id === id)?.sceneName || id,
+      render: (id: string) => scenes.find((s) => s.id === id)?.sceneName || id,
     },
     {
       title: "Tệp",
@@ -169,7 +194,27 @@ const ScenarioManager: React.FC = () => {
       key: "fileUrl",
       width: 160,
       render: (url: string) =>
-        url ? <a href={url} target="_blank" rel="noreferrer">Xem tệp</a> : "Không có",
+        url ? (
+          <a href={url} target="_blank" rel="noreferrer">
+            Xem tệp
+          </a>
+        ) : (
+          "Không có"
+        ),
+    },
+    {
+      title: "Xem chi tiết",
+      dataIndex: "viewDetail",
+      key: "viewDetail",
+      width: 160,
+      render: (_: any, row: Scenario) => (
+        <Button
+          size="small"
+          onClick={() => navigate(`/instructor-scenario-object/${row.id}`)}
+        >
+          Xem chi tiết
+        </Button>
+      ),
     },
     {
       title: "Thao tác",
@@ -177,7 +222,11 @@ const ScenarioManager: React.FC = () => {
       width: 190,
       render: (_: any, row: Scenario) => (
         <div style={{ display: "flex", gap: 8 }}>
-          <Button size="small" disabled={!isOwner(row)} onClick={() => openEdit(row)}>
+          <Button
+            size="small"
+            disabled={!isOwner(row)}
+            onClick={() => openEdit(row)}
+          >
             Sửa
           </Button>
           <Popconfirm
@@ -197,7 +246,14 @@ const ScenarioManager: React.FC = () => {
   ];
 
   return (
-    <div style={{ height: "100%", maxHeight: "calc(100vh - 80px)", overflowY: "auto", padding: 20 }}>
+    <div
+      style={{
+        height: "100%",
+        maxHeight: "calc(100vh - 80px)",
+        overflowY: "auto",
+        padding: 20,
+      }}
+    >
       <h2 style={{ marginBottom: 20 }}>Quản lý Kịch bản (Scenario)</h2>
 
       <Button type="primary" onClick={openCreate} style={{ marginBottom: 16 }}>
@@ -216,7 +272,10 @@ const ScenarioManager: React.FC = () => {
       <Modal
         title={editingScenario ? "Sửa kịch bản" : "Thêm kịch bản"}
         open={modalVisible}
-        onCancel={() => { setModalVisible(false); setEditingScenario(null); }}
+        onCancel={() => {
+          setModalVisible(false);
+          setEditingScenario(null);
+        }}
         onOk={() => form.submit()}
         okText="Lưu"
         cancelText="Hủy"
@@ -244,7 +303,11 @@ const ScenarioManager: React.FC = () => {
             name="sceneId"
             rules={[{ required: true, message: "Vui lòng chọn bối cảnh!" }]}
           >
-            <Select placeholder="Chọn bối cảnh" showSearch optionFilterProp="children">
+            <Select
+              placeholder="Chọn bối cảnh"
+              showSearch
+              optionFilterProp="children"
+            >
               {scenes.map((s) => (
                 <Select.Option key={s.id} value={s.id}>
                   {s.sceneName}
@@ -257,7 +320,9 @@ const ScenarioManager: React.FC = () => {
             label="Tệp đính kèm"
             name="fileUrl"
             valuePropName="fileList"
-            getValueFromEvent={(e) => (Array.isArray(e) ? e : e?.fileList || [])}
+            getValueFromEvent={(e) =>
+              Array.isArray(e) ? e : e?.fileList || []
+            }
           >
             <Upload beforeUpload={() => false} maxCount={1}>
               <Button icon={<UploadOutlined />}>Chọn tệp</Button>

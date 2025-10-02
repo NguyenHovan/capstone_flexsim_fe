@@ -62,6 +62,8 @@ import InstructorDashboardPage from "../pages/Instructor/Dashboard";
 import QuizLayout from "../pages/Ai-quiz";
 import CategoryManage from "../pages/Instructor/Category-manage/Category-manage";
 import FlexsimWeb from "../pages/Flexsim-web/FlexsimWeb";
+import ScenarioObjectsPage from "../pages/Instructor/Instructor-scenario-object";
+import ScenarioObjectsView from "../pages/Scenario-object";
 
 const MainRoute = () => {
   return (
@@ -90,10 +92,14 @@ const MainRoute = () => {
         <Route path="/topic-detail/:id" element={<TopicDetail />} />
         <Route path="/quiz-review/:id" element={<QuizReview />} />
         <Route
+          path="/scenario-object-detail/:id"
+          element={<ScenarioObjectsView />}
+        />
+        <Route
           path="/profile"
           element={
             <ProfileLayout>
-              <ProfilePage/>
+              <ProfilePage />
             </ProfileLayout>
           }
         />
@@ -208,6 +214,10 @@ const MainRoute = () => {
             element={<AddStudentPage />}
           />
           <Route path="/instructor-topic" element={<TopicManagement />} />
+          <Route
+            path="/instructor-scenario-object/:id"
+            element={<ScenarioObjectsPage />}
+          />
           <Route
             path="/instructor-dashboard"
             element={<InstructorDashboardPage />}

@@ -33,6 +33,7 @@ interface Quiz {
 }
 
 interface Scenario {
+  id: string;
   scenarioName: string;
   description: string;
   fileUrl?: string;
@@ -306,7 +307,7 @@ const TopicDetail = () => {
 
     return !allConditions;
   };
-  console.log({ selectedLesson });
+
   return (
     <div
       style={{
@@ -462,6 +463,29 @@ const TopicDetail = () => {
                         Tải file xuống
                       </Button>
                     )}
+                    {selectedLesson.scenario && (
+                      <Button
+                        type="primary"
+                        size="middle"
+                        style={{
+                          borderRadius: "6px",
+                          background:
+                            "linear-gradient(90deg, #feb24fff, #fec300ff)",
+                          border: "none",
+                          color: "white",
+                          fontWeight: 600,
+                          boxShadow: "0 3px 6px rgba(0,0,0,0.1)",
+                          marginLeft: 12,
+                        }}
+                        onClick={() =>
+                          navigate(
+                            `/scenario-object-detail/${selectedLesson?.scenario?.id}`
+                          )
+                        }
+                      >
+                        Xem chi tiết
+                      </Button>
+                    )}
                   </Col>
 
                   <Col
@@ -535,6 +559,35 @@ const TopicDetail = () => {
                         toast.success(`Chọn file: ${file.name}`);
                       }}
                     />
+                    {selectedFile && (
+                      <div
+                        style={{
+                          width: "100%",
+                          marginTop: "12px",
+                          padding: "10px",
+                          borderRadius: "6px",
+                          background: "#fff",
+                          border: "1px solid #ddd",
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                        }}
+                      >
+                        <span style={{ fontSize: 14, color: "#333" }}>
+                          📎 {selectedFile.name}
+                        </span>
+                        <span
+                          style={{
+                            fontSize: 12,
+                            color: "#1677ff",
+                            cursor: "pointer",
+                          }}
+                          onClick={() => setSelectedFile(null)}
+                        >
+                          Xóa
+                        </span>
+                      </div>
+                    )}
 
                     <textarea
                       value={note}
@@ -563,12 +616,11 @@ const TopicDetail = () => {
                         width: "100%",
                       }}
                       onClick={handleSubmit}
-                      disabled={!!myLessonSubmit} // đã nộp rồi thì khoá nút nộp mới
+                      disabled={!!myLessonSubmit}
                     >
                       Nộp file
                     </Button>
 
-                    {/* Danh sách đã nộp */}
                     {selectedLesson.lessonSubmissions &&
                       selectedLesson.lessonSubmissions.length > 0 && (
                         <div style={{ width: "100%", marginTop: "24px" }}>
@@ -590,30 +642,30 @@ const TopicDetail = () => {
                                   justifyContent: "space-between",
                                   alignItems: "center",
                                 }}
-                               actions={[
+                                actions={[
                                   <a
-                                   key="dl"
-                                   href={item.fileUrl}
-                                   target="_blank"
-                                   rel="noopener noreferrer"
+                                    key="dl"
+                                    href={item.fileUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
                                   >
-                                  Tải xuống
+                                    Tải xuống
                                   </a>,
-                              myLessonSubmit && (
-                                <Button
-                                   key="edit"
-                                   type="link"
-                                   onClick={() => {
-                                   setEditingSubmission(item);
-                                   setEditNote(item.note || "");
-                                   setEditFile(null);
-                                   setIsModalOpen(true);
-                              }}
-                              >
-                              Sửa
-                            </Button>
-                           ),
-                            ]}
+                                  myLessonSubmit && (
+                                    <Button
+                                      key="edit"
+                                      type="link"
+                                      onClick={() => {
+                                        setEditingSubmission(item);
+                                        setEditNote(item.note || "");
+                                        setEditFile(null);
+                                        setIsModalOpen(true);
+                                      }}
+                                    >
+                                      Sửa
+                                    </Button>
+                                  ),
+                                ]}
                               >
                                 <div>
                                   <Typography.Text strong>
@@ -632,7 +684,8 @@ const TopicDetail = () => {
                                       type="secondary"
                                       style={{ margin: 0 }}
                                     >
-                                      Điểm: <Tag color="blue">{item.totalScore}</Tag>
+                                      Điểm:{" "}
+                                      <Tag color="blue">{item.totalScore}</Tag>
                                     </Typography.Paragraph>
                                   )}
                                   {item.submitTime && (
