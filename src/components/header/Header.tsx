@@ -27,6 +27,7 @@ const Header = () => {
 
   useEffect(() => {
     fetchUserCurrent();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
   const menuItems: MenuProps["items"] = [
@@ -35,11 +36,13 @@ const Header = () => {
     { key: "logout", icon: <LogoutOutlined />, label: "Đăng xuất", onClick: handleLogout },
   ];
 
+  // ✅ Flexsim Web dùng route nội bộ
   const navLinks = [
     { name: "Trang chủ", to: "/" },
     { name: "Danh mục khóa học", to: "/course-list" },
     { name: "AI Quiz", to: "/ai-quiz" },
     { name: "Giới thiệu", to: "/about" },
+    { name: "Flexsim Web", to: "/flexsim-web" },
   ];
 
   return (
@@ -56,10 +59,12 @@ const Header = () => {
       <div
         style={{ display: "flex", alignItems: "center", fontSize: 22, padding: "12px 32px", fontWeight: "bold", cursor: "pointer" }}
         onClick={() => navigate("/")}
+        aria-label="Trang chủ"
       >
         <img
           src="https://res.cloudinary.com/dsfrqevvg/image/upload/v1756926674/d2477089b0b74afdaf66e73fe2c218f4-free_ewplwi.png"
           style={{ width: 50, height: 50, marginRight: 12 }}
+          alt="LOGISIM EDU logo"
         />
         <div>
           <span style={{ color: "#fff", textShadow: "1px 1px 4px rgba(0,0,0,0.3)" }}>LOGISIM</span>
@@ -114,13 +119,12 @@ const Header = () => {
             </div>
           </Dropdown>
         ) : (
-          // Nút Đăng nhập (icon trước chữ, nổi bật trên nền)
           location.pathname !== "/login" && (
             <Button
               shape="round"
               size="large"
               ghost
-              icon={<LoginOutlined />} // icon nằm TRƯỚC chữ
+              icon={<LoginOutlined />}
               onClick={() => navigate("/login")}
               style={{
                 color: "#fff",

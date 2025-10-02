@@ -61,6 +61,7 @@ import AboutLogisimEdu from "../pages/About/About";
 import InstructorDashboardPage from "../pages/Instructor/Dashboard";
 import QuizLayout from "../pages/Ai-quiz";
 import CategoryManage from "../pages/Instructor/Category-manage/Category-manage";
+import FlexsimWeb from "../pages/Flexsim-web/FlexsimWeb";
 
 const MainRoute = () => {
   return (
@@ -79,6 +80,7 @@ const MainRoute = () => {
       <Route element={<LayoutMain />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/ai-quiz" element={<QuizLayout />} />
+        <Route path="/flexsim-web" element={<FlexsimWeb />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/about" element={<AboutLogisimEdu />} />
         <Route path="/new-password" element={<NewPasswordPage />} />

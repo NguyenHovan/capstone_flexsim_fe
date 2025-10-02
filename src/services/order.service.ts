@@ -70,12 +70,16 @@ export const OrderService = {
     }
   },
 
-  async delete(id: string): Promise<void> {
+     async delete(id: string): Promise<void> {
     try {
-      await axiosInstance.delete(`${API.DELETE_ORDER}/${id}`); 
-    } catch (err) {
+      await axiosInstance.delete(API.ORDER_BY_ID(id)); 
+    } catch (err: any) {
       const msg = getErrorMessage(err);
-      console.error("Error deleting order:", msg);
+      console.error("[OrderService.delete] failed:", {
+        url: API.ORDER_BY_ID(id),
+        status: err?.response?.status,
+        data: err?.response?.data
+      });
       throw new Error(msg);
     }
   },
