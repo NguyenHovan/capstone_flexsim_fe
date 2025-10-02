@@ -1,5 +1,5 @@
 import { Button, Card, Col, Row, Tag, Carousel } from "antd";
-import { Typography, message } from "antd"; // ✅ thêm message
+import { Typography} from "antd"; // ✅ thêm message
 import { motion } from "framer-motion";
 import {
   ThunderboltFilled,
