@@ -4,143 +4,118 @@
   padding: 32px 16px;
 }
 
+/* gradient text & button */
 .text-gradient {
   background: linear-gradient(90deg, #6366f1, #22c55e);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
-
 .btn-gradient {
   background: linear-gradient(90deg, #6366f1, #22c55e);
   border: none;
 }
-.btn-gradient:hover {
-  filter: brightness(0.95);
-}
+.btn-gradient:hover { filter: brightness(0.95); }
 
+/* hero */
 .hero-section {
   position: relative;
   padding: 24px 0 8px;
   background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
 }
-.hero-blob {
-  position: absolute;
-  filter: blur(60px);
-  opacity: 0.35;
-  z-index: 0;
-}
-.hero-blob--1 {
-  width: 320px;
-  height: 320px;
-  background: #a78bfa;
-  top: -40px;
-  left: -40px;
-  border-radius: 50%;
-}
-.hero-blob--2 {
-  width: 380px;
-  height: 380px;
-  background: #34d399;
-  bottom: -60px;
-  right: -60px;
-  border-radius: 50%;
-}
+.hero-blob { position: absolute; filter: blur(60px); opacity: 0.35; z-index: 0; }
+.hero-blob--1 { width: 320px; height: 320px; background: #a78bfa; top: -40px; left: -40px; border-radius: 50%; }
+.hero-blob--2 { width: 380px; height: 380px; background: #34d399; bottom: -60px; right: -60px; border-radius: 50%; }
 
-.hero-card {
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
-}
-.main-image {
+.hero-card { border-radius: 20px; overflow: hidden; box-shadow: 0 12px 32px rgba(0,0,0,0.08); }
+.main-image { width: 100%; height: auto; display: block; }
+
+/* Ảnh hero trong carousel: set height theo breakpoint qua class */
+.hero-img {
   width: 100%;
-  height: auto;
+  height: 360px;
+  object-fit: cover;
   display: block;
 }
 
-.hero-carousel .carousel-slide {
+/* Hàng nút hành động có thể wrap và full-width trên mobile */
+.action-row {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  gap: 8px;
-  padding: 8px;
+  gap: 12px;
+  flex-wrap: wrap;
 }
-.hero-carousel img {
-  height: 56px;
-  object-fit: contain;
+.action-row .ant-btn { /* desktop: giữ nguyên width auto */ }
+@media (max-width: 576px) {
+  .action-row .ant-btn { width: 100%; }
 }
 
-.section-spacing {
-  margin-top: 56px;
+/* carousel nhỏ bên dưới hero */
+.hero-carousel .carousel-slide {
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 8px; padding: 8px;
 }
+.hero-carousel img { height: 56px; object-fit: contain; }
+
+/* spacing & images */
+.section-spacing { margin-top: 56px; }
 .secondary-image {
   width: 100%;
   max-height: 420px;
   object-fit: contain;
-  filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.08));
+  filter: drop-shadow(0 10px 24px rgba(0,0,0,0.08));
 }
 
-.feature-card {
-  border-radius: 16px;
-  background: #ffffff;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.05);
-}
-.mini-card {
-  border-radius: 16px;
-  overflow: hidden;
-}
-.mini-card .ant-card-cover img {
-  height: 160px;
-  object-fit: cover;
+/* cards */
+.feature-card { border-radius: 16px; background: #fff; box-shadow: 0 10px 24px rgba(0,0,0,0.05); }
+.mini-card { border-radius: 16px; overflow: hidden; }
+.mini-card .ant-card-cover img { height: 160px; object-fit: cover; }
+
+/* testimonials */
+.testimonials-section { background: linear-gradient(180deg,#fff,#f9fafb); padding: 16px; border-radius: 20px; }
+.testimonial-card { border-radius: 16px; min-height: 260px; }
+.avatar-img { width: 56px; height: 56px; object-fit: cover; border-radius: 50%; margin: 16px auto 0; }
+.rating { color: #f59e0b; margin: 8px 0; font-size: 18px; letter-spacing: 2px; }
+
+/* CTA */
+.cta-section { margin-top: 56px; padding: 24px; background: #f9fafb; border-radius: 20px; box-shadow: 0 10px 24px rgba(0,0,0,0.06); }
+.cta-image { width: 100%; max-width: 420px; object-fit: contain; filter: drop-shadow(0 10px 24px rgba(0,0,0,0.12)); }
+
+/* ====== BREAKPOINTS ====== */
+
+/* <= 1200px */
+@media (max-width: 1200px) {
+  .home-wrapper { padding: 28px 14px; }
+  .hero-img { height: 320px; }
 }
 
-.testimonials-section {
-  background: linear-gradient(180deg, #ffffff, #f9fafb);
-  padding: 16px;
-  border-radius: 20px;
-}
-.testimonial-card {
-  border-radius: 16px;
-  min-height: 260px;
-}
-.avatar-img {
-  width: 56px;
-  height: 56px;
-  object-fit: cover;
-  border-radius: 50%;
-  margin: 16px auto 0;
-}
-.rating {
-  color: #f59e0b;
-  margin: 8px 0;
-  font-size: 18px;
-  letter-spacing: 2px;
+/* <= 992px (tablet ngang / laptop nhỏ) */
+@media (max-width: 992px) {
+  .hero-img { height: 280px; }
+  .secondary-image { max-height: 360px; }
+  .hero-card { border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+  .hero-carousel img { height: 52px; }
+  .section-spacing { margin-top: 48px; }
 }
 
-.cta-section {
-  margin-top: 56px;
-  padding: 24px;
-  background: #f9fafb;
-  border-radius: 20px;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
-}
-.cta-image {
-  width: 100%;
-  max-width: 420px;
-  object-fit: contain;
-  filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.12));
-}
-
+/* <= 768px (tablet dọc / điện thoại lớn) */
 @media (max-width: 768px) {
-  .hero-blob--1,
-  .hero-blob--2 {
-    display: none;
-  }
-  .home-wrapper {
-    padding: 20px 12px;
-  }
-  .section-spacing {
-    margin-top: 40px;
-  }
+  .hero-blob--1, .hero-blob--2 { display: none; }
+  .home-wrapper { padding: 20px 12px; }
+  .section-spacing { margin-top: 40px; }
+  .hero-img { height: 220px; }
+  .secondary-image { max-height: 300px; }
+  .hero-carousel img { height: 48px; }
+  .testimonial-card { min-height: 220px; }
+  .cta-section { padding: 18px; }
+}
+
+/* <= 576px (điện thoại) */
+@media (max-width: 576px) {
+  .hero-title { font-size: 26px !important; line-height: 1.25 !important; } /* scale tiêu đề hero */
+  .description { font-size: 14px; }
+  .hero-img { height: 180px; }
+  .hero-carousel img { height: 44px; }
+  .mini-card .ant-card-cover img { height: 140px; }
+  .cta-section { padding: 16px; border-radius: 16px; }
+  .testimonials-section { padding: 12px; border-radius: 16px; }
 }

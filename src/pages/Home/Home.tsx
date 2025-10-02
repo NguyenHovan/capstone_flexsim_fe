@@ -1,5 +1,5 @@
 import { Button, Card, Col, Row, Tag, Carousel } from "antd";
-import { Typography } from "antd";
+import { Typography, message } from "antd"; // ✅ thêm message
 import { motion } from "framer-motion";
 import {
   ThunderboltFilled,
@@ -7,8 +7,8 @@ import {
   RocketFilled,
   PlayCircleFilled,
 } from "@ant-design/icons";
+import { useNavigate } from "react-router-dom"; 
 import imageRightHome from "../../assets/logisimedu.png";
-import robot from "../../assets/robot.png";
 import listedu from "../../assets/listedu.png";
 import service from "../../assets/services.png";
 import logisedu_3 from "../../assets/logisedu_3.png";
@@ -34,11 +34,29 @@ const heroImages = [
   "https://developer-blogs.nvidia.com/wp-content/uploads/2023/11/manufacturing-conveyor-boxes2.png",
 ];
 
+const DEMO_URL = "https://www.youtube.com/watch?v=YJgJzyDHZ8o"; 
+
 export default function HomePage() {
+  const navigate = useNavigate(); 
+const handleStartClick = () => {
+    try {
+      const raw = localStorage.getItem("currentUser");
+      const u = raw ? JSON.parse(raw) : null;
+      const isLoggedIn = !!(u && (u.id || u.accountId));
+
+      if (isLoggedIn) {
+        navigate("/course-list");
+      } else {
+        navigate("/login", { state: { toast: "Vui lòng đăng nhập" } });
+      }
+    } catch {
+      navigate("/login", { state: { toast: "Vui lòng đăng nhập" } });
+    }
+  };
+
   return (
     <div className="home-wrapper" style={{ overflow: "hidden" }}>
       <section className="hero-section">
-        {/* background blobs */}
         <div className="hero-blob hero-blob--1" />
         <div className="hero-blob hero-blob--2" />
 
@@ -49,7 +67,7 @@ export default function HomePage() {
                 color="#f59e0b"
                 style={{ padding: "6px 12px", borderRadius: 999 }}
               >
-                <RocketFilled /> &nbsp; Nền tảng FlexSim + AI
+                <RocketFilled /> &nbsp; Nền tảng FlexSim
               </Tag>
               <Title
                 level={1}
@@ -62,18 +80,24 @@ export default function HomePage() {
                 className="description"
                 style={{ fontSize: 16, color: "#4b5563" }}
               >
-                Chào mừng đến với nền tảng học logistics tiên tiến, kết hợp trí
-                tuệ nhân tạo (AI) và mô phỏng FlexSim để giúp giảng viên và học
+                Chào mừng đến với nền tảng học logistics tiên tiến và mô phỏng FlexSim để giúp giảng viên và học
                 viên xây dựng mô hình chân thực một cách nhanh chóng và hiệu
                 quả.
               </Paragraph>
               <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-                <Button type="primary" size="large" className="btn-gradient">
+                <Button
+                  type="primary"
+                  size="large"
+                  className="btn-gradient"
+                  onClick={handleStartClick}  // ✅ dùng handler mới
+                >
                   Bắt đầu
                 </Button>
-                <Button size="large" icon={<PlayCircleFilled />}>
-                  Xem demo
-                </Button>
+                <a href={DEMO_URL} target="_blank" rel="noopener noreferrer">
+                  <Button size="large" icon={<PlayCircleFilled />}>
+                    Xem demo
+                  </Button>
+                </a>
               </div>
               <div style={{ display: "flex", gap: 16, marginTop: 16 }}>
                 <Tag color="blue">
@@ -126,10 +150,6 @@ export default function HomePage() {
                   <Text>Trải nghiệm mô hình chân thực</Text>
                 </div>
                 <div className="carousel-slide">
-                  <img src={robot} alt="Minh hoạ hỗ trợ AI" />
-                  <Text>Xây dựng kịch bản với AI hỗ trợ</Text>
-                </div>
-                <div className="carousel-slide">
                   <img src={service} alt="Dịch vụ" />
                   <Text>Dịch vụ & đào tạo có thể mở rộng</Text>
                 </div>
@@ -147,8 +167,7 @@ export default function HomePage() {
                 Tạo và tuỳ chỉnh kịch bản dễ dàng
               </Title>
               <Paragraph className="description">
-                Xây dựng các kịch bản luyện tập logistics chân thực, tuỳ biến
-                cao với hỗ trợ từ AI, cho phép thử nghiệm nhanh phù hợp cả môi
+                Xây dựng các kịch bản luyện tập logistics chân thực, cho phép thử nghiệm nhanh phù hợp cả môi
                 trường giáo dục và doanh nghiệp.
               </Paragraph>
               <Row gutter={[16, 16]}>
@@ -203,7 +222,7 @@ export default function HomePage() {
             <motion.div {...fadeUp}>
               <Title className="sub-heading">Vì sao chọn dịch vụ của chúng tôi?</Title>
               <Paragraph className="description">
-                Học qua thực hành, tuỳ biến bằng AI và ứng dụng thực tế—được
+                Học qua thực hành và ứng dụng thực tế—được
                 thiết kế cho cả sinh viên và giảng viên.
               </Paragraph>
               <Row gutter={[16, 16]}>
@@ -249,7 +268,7 @@ export default function HomePage() {
             style={{ textAlign: "center", maxWidth: 720, margin: "0 auto" }}
           >
             Khám phá cách sinh viên và giảng viên nâng cao kiến thức logistics
-            với các mô phỏng được hỗ trợ bởi AI.
+            với các mô phỏng.
           </Paragraph>
         </motion.div>
 
@@ -277,7 +296,7 @@ export default function HomePage() {
                           </Text>
                           <div className="rating">★★★★★</div>
                           <Text>
-                            Các mô phỏng do AI tạo giúp mình hiểu hệ thống thực tế
+                            Các mô phỏng giúp mình hiểu hệ thống thực tế
                             nhanh hơn và tự tin hơn.
                           </Text>
                         </div>
@@ -298,16 +317,23 @@ export default function HomePage() {
                 Sẵn sàng nâng tầm đào tạo logistics?
               </Title>
               <Paragraph>
-                Tham gia cùng hàng nghìn người đang sử dụng AI và FlexSim để
+                Tham gia cùng hàng nghìn người đang sử dụng FlexSim để
                 thay đổi cách học và dạy logistics.
               </Paragraph>
               <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-                <Button type="primary" size="large" className="btn-gradient">
+                <Button
+                  type="primary"
+                  size="large"
+                  className="btn-gradient"
+                  onClick={() => navigate("/course-list")} 
+                >
                   Khám phá khoá học
                 </Button>
-                <Button size="large" icon={<PlayCircleFilled />}>
-                  Xem demo kịch bản
-                </Button>
+                <a href={DEMO_URL} target="_blank" rel="noopener noreferrer">
+                  <Button size="large" icon={<PlayCircleFilled />}>
+                    Xem demo kịch bản
+                  </Button>
+                </a>
               </div>
             </motion.div>
           </Col>
