@@ -102,6 +102,7 @@ export const API = {
   //SCENARIO
   GET_ALL_SCENARIO: "/api/scenario/get_all_scenario",
   GET_ALL_SCENARIO_ORGID: "/api/scenario/get_all_by_org",
+  GET_ALL_SCENARIO_BY_INSTRUCTOR: "/api/scenario/get_all_by_instructor", 
   GET_SCENARIO_ID: "/api/scenario/get_scenario",
   CREATE_SCENARIO: "/api/scenario/create_scenario",
   UPDATE_SCENARIO: "/api/scenario/update_scenario",
