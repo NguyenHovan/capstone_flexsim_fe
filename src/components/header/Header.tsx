@@ -12,11 +12,14 @@ const Header = () => {
   const { user, isLoggedIn } = useAuth();
   const [avatar, setAvatar] = useState<string | null>(null);
 
-  const fetchUserCurrent = async () => {
-    if (!user?.id) return;
-    const response = await AccountService.getAccountById(user.id);
-    setAvatar(response?.avtUrl || null);
-  };
+  useEffect(() => {
+    const fetchUserCurrent = async () => {
+      if (!user?.id) return;
+      const response = await AccountService.getAccountById(user.id);
+      setAvatar(response?.avtUrl || null);
+    };
+    fetchUserCurrent();
+  }, [user?.id]);
 
   const handleLogout = () => {
     localStorage.removeItem("accessToken");
@@ -25,24 +28,18 @@ const Header = () => {
     navigate("/login");
   };
 
-  useEffect(() => {
-    fetchUserCurrent();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id]);
-
   const menuItems: MenuProps["items"] = [
     { key: "profile", icon: <UserOutlined />, label: "Thông tin cá nhân", onClick: () => navigate("/profile") },
     { type: "divider" },
     { key: "logout", icon: <LogoutOutlined />, label: "Đăng xuất", onClick: handleLogout },
   ];
 
-  // ✅ Flexsim Web dùng route nội bộ
   const navLinks = [
     { name: "Trang chủ", to: "/" },
     { name: "Danh mục khóa học", to: "/course-list" },
     { name: "AI Quiz", to: "/ai-quiz" },
     { name: "Giới thiệu", to: "/about" },
-    { name: "Flexsim Web", to: "/flexsim-web" },
+    { name: "Flexsim Web", to: "/flexsim-web" }, // không chặn ở header nữa
   ];
 
   return (
@@ -57,7 +54,14 @@ const Header = () => {
     >
       {/* Logo */}
       <div
-        style={{ display: "flex", alignItems: "center", fontSize: 22, padding: "12px 32px", fontWeight: "bold", cursor: "pointer" }}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          fontSize: 22,
+          padding: "12px 32px",
+          fontWeight: "bold",
+          cursor: "pointer",
+        }}
         onClick={() => navigate("/")}
         aria-label="Trang chủ"
       >
@@ -68,7 +72,16 @@ const Header = () => {
         />
         <div>
           <span style={{ color: "#fff", textShadow: "1px 1px 4px rgba(0,0,0,0.3)" }}>LOGISIM</span>
-          <span style={{ color: "#222", background: "#fff", padding: "2px 8px", borderRadius: 6, marginLeft: 4, fontWeight: "bold" }}>
+          <span
+            style={{
+              color: "#222",
+              background: "#fff",
+              padding: "2px 8px",
+              borderRadius: 6,
+              marginLeft: 4,
+              fontWeight: "bold",
+            }}
+          >
             EDU
           </span>
         </div>
@@ -92,6 +105,7 @@ const Header = () => {
                 textDecoration: "none",
                 transition: "all 0.3s",
               }}
+              aria-label={link.name}
             >
               {link.name}
             </Link>
