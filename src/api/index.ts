@@ -89,6 +89,7 @@ export const API = {
   GET_SCENE_ID: "/api/scene/get_scene",
   CREATE_SCENE: "/api/scene/create_scene",
   UPDATE_SCENE: "/api/scene/update_scene",
+  GET_ALL_SCENE_BY_INSTRUCTOR: "/api/scene/get_all_by_instructor",
   DELETE_SCENE: "/api/scene/delete_scene",
 
   //SCENE OF WORKSPACE
