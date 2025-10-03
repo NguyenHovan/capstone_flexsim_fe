@@ -37,7 +37,6 @@ export default function FlexsimWeb() {
     return <div style={{ height: `calc(100vh - ${HEADER_HEIGHT}px)` }} />;
   }
 
-  // Heuristic: nếu 3s không onLoad => có thể bị chặn nhúng
   useEffect(() => {
     timerRef.current = window.setTimeout(() => {
       if (loading) setBlocked(true);

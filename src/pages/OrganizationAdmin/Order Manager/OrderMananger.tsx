@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
   Card, Table, Button, Modal, Form, Select, Tag, Space,
-  Typography, message, Empty, Tooltip,
+  Typography, message, Empty, Tooltip, Grid
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
@@ -16,6 +16,7 @@ import {
 } from "../../../utils/payParams";
 
 const { Title, Text } = Typography;
+const { useBreakpoint } = Grid;
 
 type CurrentUser = { id: string; organizationId: string; userName?: string };
 
@@ -29,6 +30,9 @@ const currency = (n?: number) =>
   typeof n === "number" ? new Intl.NumberFormat("vi-VN").format(n) : "";
 
 const OrderOrganization: React.FC = () => {
+  const screens = useBreakpoint();
+  const isMobile = !screens.md;
+
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(false);
   const [openCreate, setOpenCreate] = useState(false);
@@ -66,6 +70,7 @@ const OrderOrganization: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser?.id]);
 
+  /** Bấm nút Thanh toán trên từng đơn */
   const onPay = async (orderId: string, accountId: string | undefined) => {
     try {
       if (!orderId) { message.error("Thiếu orderId"); return; }
@@ -83,35 +88,35 @@ const OrderOrganization: React.FC = () => {
     }
   };
 
-  const handleCreateAndPay = async () => {
+  /** OK trong modal: chỉ TẠO ĐƠN, không thanh toán */
+  const handleCreateOrderOnly = async () => {
     try {
       const { subscriptionPlanId } = await form.validateFields();
       if (!currentUser) throw new Error("Chưa đăng nhập");
 
-      // TẠO ORDER: dùng accountId + organizationId của currentUser + gói đã chọn
-      const order = await OrderService.create({
+      await OrderService.create({
         organizationId: currentUser.organizationId,
         accountId: currentUser.id,
         subscriptionPlanId,
       });
 
-      message.success("Tạo đơn thành công. Đang chuyển đến cổng thanh toán…");
+      message.success("Tạo đơn thành công! Bạn có thể thanh toán từ bảng đơn hàng.");
       setOpenCreate(false);
       form.resetFields();
-
-      await onPay(order.id, currentUser.id);
+      await loadOrders(); // hiển thị đơn PENDING vừa tạo
     } catch (e: any) {
       if (e?.errorFields) return;
-      message.error(e?.message || "Tạo đơn/Thanh toán thất bại");
+      message.error(e?.message || "Tạo đơn thất bại");
     }
   };
 
+  /** Cột cho desktop/tablet */
   const columns: ColumnsType<Order> = [
     {
       title: "Mã đơn hàng",
       dataIndex: "id",
       key: "id",
-      width: 240,
+      width: 260,
       ellipsis: true,
       render: (v: string) => (
         <Tooltip title={v}><Text code copyable>{v}</Text></Tooltip>
@@ -120,7 +125,8 @@ const OrderOrganization: React.FC = () => {
     {
       title: "Bắt đầu → Kết thúc",
       key: "dates",
-      width: 210,
+      width: 220,
+      responsive: ["sm"], // ẩn trên xs
       render: (_, row) => {
         const s = row.startDate ? dayjs(row.startDate).format("DD/MM/YYYY") : "—";
         const e = row.endDate ? dayjs(row.endDate).format("DD/MM/YYYY") : "—";
@@ -132,7 +138,7 @@ const OrderOrganization: React.FC = () => {
       dataIndex: "totalPrice",
       key: "totalPrice",
       align: "center",
-      width: 120,
+      width: 140,
       render: (_: any, row) => <span>{currency((row as any).totalPrice ?? row.totalPrice)}</span>,
       sorter: (a, b) => ((a as any).totalPrice ?? a.totalPrice ?? 0) - ((b as any).totalPrice ?? b.totalPrice ?? 0),
     },
@@ -140,7 +146,7 @@ const OrderOrganization: React.FC = () => {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
-      width: 160,
+      width: 170,
       render: (s) => <Tag color={statusColor(s)}>{statusLabelVI(s)}</Tag>,
       filters: [
         { text: "Chờ thanh toán", value: 0 },
@@ -153,17 +159,22 @@ const OrderOrganization: React.FC = () => {
       title: "Tạo lúc",
       dataIndex: "createdAt",
       key: "createdAt",
-      width: 180,
+      width: 190,
+      responsive: ["md"], // ẩn dưới md
       render: (v?: string) => (v ? dayjs(v).format("YYYY-MM-DD HH:mm") : "—"),
       sorter: (a, b) => dayjs(a.createdAt || 0).valueOf() - dayjs(b.createdAt || 0).valueOf(),
     },
     {
       title: "Thao tác",
       key: "action",
-      width: 160,
+      width: 180,
       render: (_, row) => (
-        <Space>
-          {row.status === 0 && <Button type="primary" onClick={() => onPay(row.id, currentUser?.id)}>Thanh toán</Button>}
+        <Space wrap>
+          {row.status === 0 && (
+            <Button type="primary" size={isMobile ? "middle" : "small"} onClick={() => onPay(row.id, currentUser?.id)}>
+              Thanh toán
+            </Button>
+          )}
         </Space>
       ),
     },
@@ -180,29 +191,96 @@ const OrderOrganization: React.FC = () => {
     );
   }
 
+  /** Nội dung danh sách responsive */
+  const listContent = isMobile ? (
+    <Space direction="vertical" style={{ width: "100%" }} size="small">
+      {orders.length === 0 ? (
+        <Empty description="Chưa có đơn hàng nào cho tài khoản này" />
+      ) : (
+        orders.map((o) => {
+          const s = o.startDate ? dayjs(o.startDate).format("DD/MM/YYYY") : "—";
+          const e = o.endDate ? dayjs(o.endDate).format("DD/MM/YYYY") : "—";
+          return (
+            <Card key={o.id} size="small" bodyStyle={{ padding: 12 }}>
+              <Space direction="vertical" style={{ width: "100%" }} size={6}>
+                <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+                  <Text strong>Mã:</Text>
+                  <Text code style={{ maxWidth: 190 }} ellipsis={{ tooltip: o.id }}>
+                    {o.id}
+                  </Text>
+                </div>
+
+                <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+                  <Text strong>Trạng thái:</Text>
+                  <Tag color={statusColor(o.status)} style={{ margin: 0 }}>{statusLabelVI(o.status)}</Tag>
+                </div>
+
+                <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+                  <Text strong>Thời gian:</Text>
+                  <Text>{s} → {e}</Text>
+                </div>
+
+                <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+                  <Text strong>Tổng tiền:</Text>
+                  <Text>{currency((o as any).totalPrice ?? o.totalPrice)}</Text>
+                </div>
+
+                {o.createdAt && (
+                  <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+                    <Text strong>Tạo lúc:</Text>
+                    <Text>{dayjs(o.createdAt).format("DD/MM/YYYY HH:mm")}</Text>
+                  </div>
+                )}
+
+                {o.status === 0 && (
+                  <Button type="primary" block onClick={() => onPay(o.id, currentUser?.id)}>
+                    Thanh toán
+                  </Button>
+                )}
+              </Space>
+            </Card>
+          );
+        })
+      )}
+    </Space>
+  ) : (
+    <Table
+      rowKey="id"
+      loading={loading}
+      columns={columns}
+      dataSource={orders}
+      pagination={{ pageSize: 10, showSizeChanger: true }}
+      locale={{ emptyText: <Empty description="Chưa có đơn hàng nào cho tài khoản này" /> }}
+      scroll={{ x: 900 }}
+      size="middle"
+    />
+  );
+
   return (
     <Card>
-      <Space style={{ width: "100%", justifyContent: "space-between", marginBottom: 12 }}>
-        <Title level={4} style={{ margin: 0 }}>Quản lý đơn hàng</Title>
-        <Button type="primary" onClick={() => setOpenCreate(true)}>Tạo & Thanh toán</Button>
+      <Space
+        style={{ width: "100%", justifyContent: "space-between", marginBottom: 12 }}
+        wrap
+      >
+        <Title level={isMobile ? 5 : 4} style={{ margin: 0 }}>
+          Quản lý đơn hàng
+        </Title>
+        {/* Nhãn tuỳ ý; hành vi: mở modal tạo đơn */}
+        <Button type="primary" onClick={() => setOpenCreate(true)}>
+          Tạo đơn hàng
+        </Button>
       </Space>
 
-      <Table
-        rowKey="id"
-        loading={loading}
-        columns={columns}
-        dataSource={orders}
-        pagination={{ pageSize: 10 }}
-        locale={{ emptyText: <Empty description="Chưa có đơn hàng nào cho tài khoản này" /> }}
-      />
+      {listContent}
 
       <Modal
-        title="Chọn gói để mua"
+        title="Chọn gói để tạo đơn"
         open={openCreate}
         onCancel={() => setOpenCreate(false)}
-        onOk={handleCreateAndPay}
-        okText="Thanh toán"
+        onOk={handleCreateOrderOnly}
+        okText="Tạo đơn hàng"
         destroyOnHidden
+        width={isMobile ? 360 : 520}
       >
         <Form form={form} layout="vertical">
           <Form.Item
