@@ -1,22 +1,47 @@
-import { Avatar, Dropdown, Button } from "antd";
+import { Avatar, Dropdown, Button, Drawer, message } from "antd"; // ⬅️ thêm message
 import type { MenuProps } from "antd";
-import { UserOutlined, LogoutOutlined, LoginOutlined } from "@ant-design/icons";
+import {
+  UserOutlined,
+  LogoutOutlined,
+  LoginOutlined,
+  MenuOutlined,
+} from "@ant-design/icons";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AccountService } from "../../services/account.service";
+import "./header.css";
 
 const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, isLoggedIn } = useAuth();
   const [avatar, setAvatar] = useState<string | null>(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  // ✅ Các route cần đăng nhập
+  const protectedRoutes = useMemo(() => ["/ai-quiz", "/flexsim-web"], []);
+
+  // ✅ Helper: nếu protected & chưa login → toast + chuyển /login (ghi nhớ redirectTo)
+  const guardNavigate = (to: string) => {
+    if (!isLoggedIn && protectedRoutes.includes(to)) {
+      message.warning("Vui lòng đăng nhập"); // ⬅️ toast
+      navigate("/login", { state: { redirectTo: to } });
+      return false;
+    }
+    navigate(to);
+    return true;
+  };
 
   useEffect(() => {
     const fetchUserCurrent = async () => {
-      if (!user?.id) return;
-      const response = await AccountService.getAccountById(user.id);
-      setAvatar(response?.avtUrl || null);
+      try {
+        if (!user?.id) return;
+        const response = await AccountService.getAccountById(user.id);
+        setAvatar(response?.avtUrl || null);
+      } catch {
+        // ignore
+      }
     };
     fetchUserCurrent();
   }, [user?.id]);
@@ -25,87 +50,76 @@ const Header = () => {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("currentUser");
     localStorage.removeItem("roleId");
-    navigate("/login");
+    navigate("/");
   };
 
   const menuItems: MenuProps["items"] = [
-    { key: "profile", icon: <UserOutlined />, label: "Thông tin cá nhân", onClick: () => navigate("/profile") },
+    {
+      key: "profile",
+      icon: <UserOutlined />,
+      label: "Thông tin cá nhân",
+      onClick: () => navigate("/profile"),
+    },
     { type: "divider" },
-    { key: "logout", icon: <LogoutOutlined />, label: "Đăng xuất", onClick: handleLogout },
+    {
+      key: "logout",
+      icon: <LogoutOutlined />,
+      label: "Đăng xuất",
+      onClick: handleLogout,
+    },
   ];
 
   const navLinks = [
     { name: "Trang chủ", to: "/" },
     { name: "Danh mục khóa học", to: "/course-list" },
-    { name: "AI Quiz", to: "/ai-quiz" },
+    { name: "AI Quiz", to: "/ai-quiz" },        
     { name: "Giới thiệu", to: "/about" },
-    { name: "Flexsim Web", to: "/flexsim-web" }, // không chặn ở header nữa
+    { name: "Flexsim Web", to: "/flexsim-web" }, 
   ];
 
   return (
-    <header
-      style={{
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        background: "linear-gradient(90deg, #059769, #feb47b)",
-        boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-      }}
-    >
-      {/* Logo */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          fontSize: 22,
-          padding: "12px 32px",
-          fontWeight: "bold",
-          cursor: "pointer",
-        }}
+    <header className="site-header">
+      <button
+        className="site-logo"
         onClick={() => navigate("/")}
         aria-label="Trang chủ"
       >
         <img
           src="https://res.cloudinary.com/dsfrqevvg/image/upload/v1756926674/d2477089b0b74afdaf66e73fe2c218f4-free_ewplwi.png"
-          style={{ width: 50, height: 50, marginRight: 12 }}
+          className="site-logo__img"
           alt="LOGISIM EDU logo"
         />
-        <div>
-          <span style={{ color: "#fff", textShadow: "1px 1px 4px rgba(0,0,0,0.3)" }}>LOGISIM</span>
-          <span
-            style={{
-              color: "#222",
-              background: "#fff",
-              padding: "2px 8px",
-              borderRadius: 6,
-              marginLeft: 4,
-              fontWeight: "bold",
-            }}
-          >
-            EDU
-          </span>
-        </div>
-      </div>
+        <span className="site-logo__brand">
+          <span className="site-logo__brand--white">LOGISIM</span>
+          <span className="site-logo__brand-badge">EDU</span>
+        </span>
+      </button>
 
-      {/* Nav */}
-      <nav style={{ display: "flex", gap: 68 }}>
+      <nav className="site-nav desktop-only" aria-label="Chính">
         {navLinks.map((link) => {
           const isActive = location.pathname === link.to;
+          const isProtected = protectedRoutes.includes(link.to);
+
+          const handleClick = (e: React.MouseEvent) => {
+            e.preventDefault();
+            guardNavigate(link.to);
+          };
+
           return (
             <Link
               key={link.to}
               to={link.to}
-              style={{
-                color: isActive ? "#222" : "#fff",
-                fontSize: 20,
-                fontWeight: isActive ? 700 : 500,
-                background: isActive ? "rgba(255,255,255,0.7)" : "transparent",
-                padding: "10px 10px",
-                borderRadius: 6,
-                textDecoration: "none",
-                transition: "all 0.3s",
-              }}
-              aria-label={link.name}
+              onClick={handleClick}
+              className={`site-nav__link ${isActive ? "is-active" : ""} ${
+                !isLoggedIn && isProtected ? "is-locked" : ""
+              }`}
+              aria-current={isActive ? "page" : undefined}
+              aria-label={
+                !isLoggedIn && isProtected
+                  ? `${link.name} (yêu cầu đăng nhập)`
+                  : link.name
+              }
+              title={!isLoggedIn && isProtected ? "Yêu cầu đăng nhập" : undefined}
             >
               {link.name}
             </Link>
@@ -113,24 +127,27 @@ const Header = () => {
         })}
       </nav>
 
-      {/* Actions (right) */}
-      <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 32px" }}>
+      <div className="site-actions desktop-only">
         {isLoggedIn ? (
           <Dropdown menu={{ items: menuItems }} placement="bottomRight" arrow>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
+            <button className="user-chip" aria-label="Tài khoản">
               <Avatar
                 size={40}
                 src={
                   avatar ? (
-                    <img src={avatar} alt="avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    <img
+                      src={avatar}
+                      alt="avatar"
+                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    />
                   ) : undefined
                 }
                 style={{ border: "2px solid #fff", background: "#fff" }}
               >
                 {(!avatar && user?.userName?.[0]?.toUpperCase()) || "U"}
               </Avatar>
-              <span style={{ color: "#fff", fontWeight: 400 }}>{user?.userName}</span>
-            </div>
+              <span className="user-chip__name">{user?.userName}</span>
+            </button>
           </Dropdown>
         ) : (
           location.pathname !== "/login" && (
@@ -139,14 +156,10 @@ const Header = () => {
               size="large"
               ghost
               icon={<LoginOutlined />}
-              onClick={() => navigate("/login")}
-              style={{
-                color: "#fff",
-                borderColor: "#fff",
-                background: "rgba(255,255,255,0.15)",
-                backdropFilter: "blur(2px)",
-                fontWeight: 600,
-              }}
+              onClick={() =>
+                navigate("/login", { state: { redirectTo: location.pathname } })
+              }
+              className="login-btn"
               aria-label="Đăng nhập"
             >
               Đăng nhập
@@ -154,6 +167,90 @@ const Header = () => {
           )
         )}
       </div>
+
+      <button
+        className="mobile-menu-btn mobile-only"
+        aria-label="Mở menu"
+        onClick={() => setMobileOpen(true)}
+      >
+        <MenuOutlined />
+      </button>
+
+      <Drawer
+        placement="right"
+        open={mobileOpen}
+        onClose={() => setMobileOpen(false)}
+        className="site-drawer"
+        title={<div className="drawer-head"><span>Menu</span></div>}
+      >
+        <nav className="drawer-nav" aria-label="Menu di động">
+          {navLinks.map((link) => {
+            const isProtected = protectedRoutes.includes(link.to);
+
+            const onClickItem = (e: React.MouseEvent) => {
+            e.preventDefault();
+            const navigated = guardNavigate(link.to); 
+            if (navigated) setMobileOpen(false);
+            else setMobileOpen(false); 
+            };
+
+            return (
+              <Link
+                key={link.to}
+                to={link.to}
+                className="drawer-nav__item"
+                onClick={onClickItem}
+                aria-label={
+                  !isLoggedIn && isProtected
+                    ? `${link.name} (yêu cầu đăng nhập)`
+                    : link.name
+                }
+                title={!isLoggedIn && isProtected ? "Yêu cầu đăng nhập" : undefined}
+              >
+                {link.name}
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="drawer-actions">
+          {isLoggedIn ? (
+            <>
+              <button
+                className="drawer-action"
+                onClick={() => {
+                  setMobileOpen(false);
+                  navigate("/profile");
+                }}
+              >
+                <UserOutlined /> &nbsp; Thông tin cá nhân
+              </button>
+              <button
+                className="drawer-action danger"
+                onClick={() => {
+                  setMobileOpen(false);
+                  handleLogout();
+                }}
+              >
+                <LogoutOutlined /> &nbsp; Đăng xuất
+              </button>
+            </>
+          ) : (
+            location.pathname !== "/login" && (
+              <button
+                className="drawer-action primary"
+                onClick={() => {
+                  setMobileOpen(false);
+                  message.warning("Vui lòng đăng nhập"); 
+                  navigate("/login", { state: { redirectTo: location.pathname } });
+                }}
+              >
+                <LoginOutlined /> &nbsp; Đăng nhập
+              </button>
+            )
+          )}
+        </div>
+      </Drawer>
     </header>
   );
 };

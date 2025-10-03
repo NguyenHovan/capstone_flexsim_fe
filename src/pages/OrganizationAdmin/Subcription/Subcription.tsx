@@ -11,6 +11,7 @@ import {
   Tag,
   Space,
   Button,
+  Grid, // ⬅️ thêm
 } from "antd";
 import { CheckCircleFilled } from "@ant-design/icons";
 import dayjs from "dayjs";
@@ -25,6 +26,7 @@ import "./subcription.css";
 import { useNavigate } from "react-router-dom";
 
 const { Title, Text } = Typography;
+const { useBreakpoint } = Grid;
 
 const fmtCurrency = (n: number, currency = "VND") =>
   new Intl.NumberFormat(undefined, {
@@ -101,7 +103,7 @@ type PlanGridProps = {
   loading?: boolean;
   extraHeader?: (p: SubscriptionPlan) => React.ReactNode;
   extraFooter?: (p: SubscriptionPlan) => React.ReactNode;
-  onCreate?: (p: SubscriptionPlan) => void;
+  onCreate?: (p: SubscriptionPlan) => Promise<Order | void> | void;
   creatingPlanId?: string | null;
 };
 
@@ -114,6 +116,9 @@ const PlanGrid: React.FC<PlanGridProps> = ({
   creatingPlanId,
 }) => {
   const navigate = useNavigate();
+  const screens = useBreakpoint();
+  const isMobile = !screens.md;
+
   const items: PlanView[] = useMemo(
     () =>
       plans.map((p, i) => {
@@ -146,14 +151,28 @@ const PlanGrid: React.FC<PlanGridProps> = ({
   if (!items.length)
     return <Empty description="Không có gói nào." image={Empty.PRESENTED_IMAGE_SIMPLE} />;
 
+  const trim = (arr: string[]) => (isMobile ? arr.slice(0, 4) : arr); // ẩn bớt trên mobile
+
   return (
     <Row gutter={[16, 16]}>
       {items.map((p) => (
         <Col key={p.id} xs={24} sm={12} lg={8}>
-          <Card className={`pp-card variant-${p._variant}`} hoverable>
-            <div className="pp-head">
-              <div className="pp-name">{p.name}</div>
-              <Space direction="vertical" size={0} style={{ alignItems: "flex-end" }}>
+          <Card
+            className={`pp-card variant-${p._variant}`}
+            hoverable
+            size={isMobile ? "small" : "default"}
+            bodyStyle={{ padding: isMobile ? 12 : 16 }}
+          >
+            <div
+              className="pp-head"
+              style={isMobile ? { gridTemplateColumns: "1fr", rowGap: 4 } : undefined}
+            >
+              <div className="pp-name" style={{ fontSize: isMobile ? 16 : 18 }}>{p.name}</div>
+              <Space
+                direction="vertical"
+                size={0}
+                style={{ alignItems: isMobile ? "flex-start" : "flex-end" }}
+              >
                 {extraHeader?.(p)}
                 <Tag color={p.isActive ? "green" : "red"} className="pp-state">
                   {p.isActive ? "Đang hoạt động" : "Ngừng hoạt động"}
@@ -162,7 +181,9 @@ const PlanGrid: React.FC<PlanGridProps> = ({
             </div>
 
             <div className="pp-price">
-              <div className="pp-price-main">{fmtCurrency(p.price)}</div>
+              <div className="pp-price-main" style={{ fontSize: isMobile ? 26 : 32 }}>
+                {fmtCurrency(p.price)}
+              </div>
               <div className="pp-price-sub">theo tháng</div>
             </div>
 
@@ -172,7 +193,7 @@ const PlanGrid: React.FC<PlanGridProps> = ({
                   <div className="pp-section">
                     <div className="pp-section-title">Nổi bật</div>
                     <ul className="pp-benefits">
-                      {p._sections.primary.map((b, idx) => (
+                      {trim(p._sections.primary).map((b, idx) => (
                         <li key={`p-${idx}`}>
                           <CheckCircleFilled className="pp-check" />
                           <span>{b}</span>
@@ -185,7 +206,7 @@ const PlanGrid: React.FC<PlanGridProps> = ({
                   <div className="pp-section">
                     <div className="pp-section-title">Tất cả tính năng</div>
                     <ul className="pp-benefits">
-                      {p._sections.extra.map((b, idx) => (
+                      {trim(p._sections.extra).map((b, idx) => (
                         <li key={`e-${idx}`}>
                           <CheckCircleFilled className="pp-check" />
                           <span>{b}</span>
@@ -207,7 +228,7 @@ const PlanGrid: React.FC<PlanGridProps> = ({
                   ensure("Thời hạn:", /^duration:/i, `${months(p.durationInMonths)}`);
                   return (
                     <ul className="pp-benefits">
-                      {base.map((b, idx) => (
+                      {trim(base).map((b, idx) => (
                         <li key={idx}>
                           <CheckCircleFilled className="pp-check" />
                           <span>{b}</span>
@@ -225,9 +246,12 @@ const PlanGrid: React.FC<PlanGridProps> = ({
               <div className="pp-footer">
                 <Button
                   className="pp-subscribe"
-                  onClick={() => {
-                    onCreate(p);
-                    navigate(`/organizationAdmin/order-manager`);
+                  block={isMobile}
+                  onClick={async () => {
+                    const created = await onCreate(p);
+                    if ((created as any)?.id) {
+                      navigate("/organizationAdmin/order-manager", { replace: true });
+                    }
                   }}
                   loading={creatingPlanId === p.id}
                 >
@@ -243,6 +267,9 @@ const PlanGrid: React.FC<PlanGridProps> = ({
 };
 
 const OrgAdminSubscriptions: React.FC = () => {
+  const screens = useBreakpoint();
+  const isMobile = !screens.md;
+
   const [msg, contextHolder] = message.useMessage();
 
   const [me, setMe] = useState<{ id: string; organizationId?: string } | null>(null);
@@ -333,9 +360,10 @@ const OrgAdminSubscriptions: React.FC = () => {
     if (me?.id) loadMine(me.id);
   }, [me?.id]);
 
-  const createOrderFor = async (plan: SubscriptionPlan) => {
+  const createOrderFor = async (plan: SubscriptionPlan): Promise<Order | void> => {
     if (!me?.id || !me.organizationId) {
-      return msg.warning("Không tìm thấy thông tin tài khoản/đơn vị.");
+      msg.warning("Không tìm thấy thông tin tài khoản/đơn vị.");
+      return;
     }
     const key = `create-order-${plan.id}`;
     try {
@@ -353,9 +381,7 @@ const OrgAdminSubscriptions: React.FC = () => {
       }
 
       msg.success({ content: "Tạo đơn hàng thành công!", key, duration: 2.5 });
-
-      await loadMine(me.id);
-      return created;
+      return created; // không thanh toán ở đây
     } catch (e: any) {
       msg.destroy(key);
       msg.error(e?.response?.data?.message || e?.message || "Tạo đơn hàng thất bại");
@@ -369,13 +395,15 @@ const OrgAdminSubscriptions: React.FC = () => {
       {contextHolder}
 
       <div className="pricing-pro__heading">
-        <Title level={3} className="pricing-pro__title">
+        <Title level={isMobile ? 4 : 3} className="pricing-pro__title">
           Gói đăng ký
         </Title>
       </div>
 
       <Tabs
         defaultActiveKey="active"
+        size={isMobile ? "small" : "large"}
+        tabBarGutter={isMobile ? 8 : 24}
         items={[
           {
             key: "active",

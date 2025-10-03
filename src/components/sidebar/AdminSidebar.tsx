@@ -23,7 +23,7 @@ const AdminSidebar: React.FC = () => {
     if (window.confirm("Are you sure you want to logout?")) {
       localStorage.removeItem("accessToken");
       localStorage.removeItem("currentUser");
-      navigate("/login");
+      navigate("/");
     }
   };
 

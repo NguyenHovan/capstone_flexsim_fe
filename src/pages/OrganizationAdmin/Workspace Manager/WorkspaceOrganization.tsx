@@ -16,6 +16,7 @@ import {
   Avatar,
   Typography,
   Tooltip,
+  Grid, // ⬅️ thêm để bắt breakpoint
 } from "antd";
 import {
   PlusOutlined,
@@ -35,6 +36,7 @@ import { AccountService } from "../../../services/account.service";
 import "./workspaceOrganization.css";
 
 const { Paragraph, Text } = Typography;
+const { useBreakpoint } = Grid;
 
 /* ===== Helpers ===== */
 const norm = (s?: string) =>
@@ -59,6 +61,10 @@ const getOrgId = (): string => {
 };
 
 const WorkspaceOrganization: React.FC = () => {
+  const screens = useBreakpoint();
+  const isMobile = !screens.md;      // xs, sm
+  const isTablet = screens.md && !screens.lg; // md only
+
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -276,8 +282,7 @@ const WorkspaceOrganization: React.FC = () => {
     }
   };
 
- const handleDelete = (id: string) => {
-    console.log("handleDelete called with id:", id);
+  const handleDelete = (id: string) => {
     setDeleteId(id);
     setDeleteVisible(true);
   };
@@ -379,142 +384,182 @@ const WorkspaceOrganization: React.FC = () => {
     );
   };
 
-  /* ===== Columns ===== */
-  const columns: ColumnsType<Workspace> = [
-    { title: "ID", dataIndex: "id", key: "id", width: 220, ellipsis: true, sorter: (a, b) => compareStr(a.id, b.id) },
-    {
-      title: "Hình ảnh",
-      dataIndex: "imgUrl",
-      key: "imgUrl",
-      align: "center",
-      width: 110,
-      render: (url: string) =>
-        url ? (
-          <img
-            src={url}
-            alt=""
-            style={{
-              width: 48,
-              height: 48,
-              objectFit: "cover",
-              borderRadius: 6,
-              border: "1px solid #eee",
-            }}
-          />
-        ) : (
-          "—"
-        ),
-    },
-    {
-      title: "Tên",
-      dataIndex: "workSpaceName",
-      key: "workSpaceName",
-      width: 200,
-      ellipsis: true,
-      sorter: (a, b) => compareStr(a.workSpaceName, b.workSpaceName),
-    },
-    {
-      title: "Tài khoản",
-      dataIndex: "numberOfAccount",
-      key: "numberOfAccount",
-      align: "center",
-      width: 120,
-      sorter: (a, b) => (a.numberOfAccount || 0) - (b.numberOfAccount || 0),
-    },
-    {
-      title: "Khóa học",
-      key: "courses",
-      width: 460,
-      render: (_: any, rec: Workspace) => {
-        const key = normalizeId(rec.id);
-        const fullList = coursesByWorkspaceId.get(key) || [];
-        const expanded = !!showAllCoursesCell[key];
-        const displayList = expanded ? fullList : fullList.slice(0, 3);
-        const count = fullList.length;
-
-        return (
-          <div>
-            <Text strong>{count}</Text> {count === 1 ? "khóa học" : "khóa học"}
-            <div style={{ marginTop: 6 }}>
-              {renderCourseList(displayList, { dense: true })}
-              {count > 3 && (
-                <Button
-                  type="link"
-                  size="small"
-                  onClick={() =>
-                    setShowAllCoursesCell((prev) => ({ ...prev, [key]: !expanded }))
-                  }
-                >
-                  {expanded ? "Thu gọn" : "Xem thêm"}
-                </Button>
-              )}
-            </div>
-          </div>
-        );
-      },
-    },
-    {
-      title: "Mô tả",
-      dataIndex: "description",
-      key: "description",
-      width: 240,
-      ellipsis: true,
-    },
-    {
-      title: "Trạng thái",
-      dataIndex: "isActive",
-      key: "isActive",
-      align: "center",
-      width: 120,
-      filters: [
-        { text: "Đang hoạt động", value: "active" },
-        { text: "Ngừng hoạt động", value: "inactive" },
-      ],
-      onFilter: (value, record) =>
-        value === "active" ? record.isActive : !record.isActive,
-      render: (v: boolean) =>
-        v ? <Tag color="green">Đang hoạt động</Tag> : <Tag color="red">Ngừng hoạt động</Tag>,
-      sorter: (a, b) => Number(a.isActive) - Number(b.isActive),
-    },
-    {
-      title: "Thao tác",
-      key: "actions",
-      width: 270,
-      align: "center",
-      render: (_, rec) => (
-        <Space wrap>
-          <Button icon={<EyeOutlined />} size="small" onClick={() => handleView(rec)}>
-            Xem
-          </Button>
-          <Button icon={<EditOutlined />} size="small" onClick={() => handleEdit(rec)}>
-            Sửa
-          </Button>
-          <Button icon={<DeleteOutlined />} size="small" danger onClick={() => handleDelete(rec.id)}>
-            Xoá
-          </Button>
-        </Space>
+  /* ===== Columns (responsive) ===== */
+  // Cột dùng chung
+  const colId: any = {
+    title: "ID",
+    dataIndex: "id",
+    key: "id",
+    width: isMobile ? 160 : 220,
+    ellipsis: true,
+    sorter: (a: Workspace, b: Workspace) => compareStr(a.id, b.id),
+    render: (v: string) => (
+      <Tooltip title={v}>
+        <Text code>{v.slice(0, isMobile ? 8 : 16)}{v.length > (isMobile ? 8 : 16) ? "…" : ""}</Text>
+      </Tooltip>
+    ),
+  };
+  const colImg: any = {
+    title: "Hình",
+    dataIndex: "imgUrl",
+    key: "imgUrl",
+    align: "center",
+    width: isMobile ? 72 : 110,
+    render: (url: string) =>
+      url ? (
+        <img
+          src={url}
+          alt=""
+          style={{
+            width: isMobile ? 40 : 48,
+            height: isMobile ? 40 : 48,
+            objectFit: "cover",
+            borderRadius: 6,
+            border: "1px solid #eee",
+          }}
+        />
+      ) : (
+        "—"
       ),
+  };
+  const colName: any = {
+    title: "Tên",
+    dataIndex: "workSpaceName",
+    key: "workSpaceName",
+    width: isMobile ? 160 : 200,
+    ellipsis: true,
+    sorter: (a: Workspace, b: Workspace) => compareStr(a.workSpaceName, b.workSpaceName),
+  };
+  const colAccounts: any = {
+    title: "Tài khoản",
+    dataIndex: "numberOfAccount",
+    key: "numberOfAccount",
+    align: "center",
+    width: isMobile ? 100 : 120,
+    sorter: (a: Workspace, b: Workspace) => (a.numberOfAccount || 0) - (b.numberOfAccount || 0),
+  };
+  const colCourses: any = {
+    title: "Khóa học",
+    key: "courses",
+    width: isMobile ? 160 : isTablet ? 280 : 460,
+    render: (_: any, rec: Workspace) => {
+      const key = normalizeId(rec.id);
+      const fullList = coursesByWorkspaceId.get(key) || [];
+      const count = fullList.length;
+
+      // Mobile/Tablet: rút gọn – chỉ hiển thị số lượng + nút Xem
+      if (isMobile || isTablet) {
+        return (
+          <Space size={6} wrap>
+            <Text strong>{count}</Text> <span>khóa học</span>
+            {count > 0 && (
+              <Button size="small" type="link" onClick={() => handleView(rec)}>
+                Xem
+              </Button>
+            )}
+          </Space>
+        );
+      }
+
+      // Desktop: hiển thị danh sách + xem thêm
+      const expanded = !!showAllCoursesCell[key];
+      const displayList = expanded ? fullList : fullList.slice(0, 3);
+
+      return (
+        <div>
+          <Text strong>{count}</Text> {count === 1 ? "khóa học" : "khóa học"}
+          <div style={{ marginTop: 6 }}>
+            {renderCourseList(displayList, { dense: true })}
+            {count > 3 && (
+              <Button
+                type="link"
+                size="small"
+                onClick={() =>
+                  setShowAllCoursesCell((prev) => ({ ...prev, [key]: !expanded }))
+                }
+              >
+                {expanded ? "Thu gọn" : "Xem thêm"}
+              </Button>
+            )}
+          </div>
+        </div>
+      );
     },
-  ];
+  };
+  const colDesc: any = {
+    title: "Mô tả",
+    dataIndex: "description",
+    key: "description",
+    width: 240,
+    ellipsis: true,
+  };
+  const colStatus: any = {
+    title: "Trạng thái",
+    dataIndex: "isActive",
+    key: "isActive",
+    align: "center",
+    width: isMobile ? 110 : 120,
+    filters: [
+      { text: "Đang hoạt động", value: "active" },
+      { text: "Ngừng hoạt động", value: "inactive" },
+    ],
+    onFilter: (value: any, record: Workspace) =>
+      value === "active" ? record.isActive : !record.isActive,
+    render: (v: boolean) =>
+      v ? <Tag color="green">Đang hoạt động</Tag> : <Tag color="red">Ngừng hoạt động</Tag>,
+    sorter: (a: Workspace, b: Workspace) => Number(a.isActive) - Number(b.isActive),
+  };
+  const colActions: any = {
+    title: "Thao tác",
+    key: "actions",
+    width: isMobile ? 200 : 270,
+    align: "center",
+    render: (_: any, rec: Workspace) => (
+      <Space wrap>
+        <Button icon={<EyeOutlined />} size="small" onClick={() => handleView(rec)}>
+          Xem
+        </Button>
+        <Button icon={<EditOutlined />} size="small" onClick={() => handleEdit(rec)}>
+          Sửa
+        </Button>
+        <Button icon={<DeleteOutlined />} size="small" danger onClick={() => handleDelete(rec.id)}>
+          Xoá
+        </Button>
+      </Space>
+    ),
+  };
+
+  const columns: ColumnsType<Workspace> = isMobile
+    // Mobile: ẩn cột mô tả & rút gọn khóa học
+    ? [colImg, colName, colAccounts, colStatus, colActions]
+    // Tablet: ẩn mô tả để đỡ tràn
+    : isTablet
+    ? [colId, colImg, colName, colAccounts, colCourses, colStatus, colActions]
+    // Desktop đầy đủ
+    : [colId, colImg, colName, colAccounts, colCourses, colDesc, colStatus, colActions];
 
   return (
     <>
-      <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
-        <Col>
+      {/* Toolbar */}
+      <Row gutter={[8, 8]} justify="space-between" align="middle" className="ws-toolbar">
+        <Col xs={24} md={16}>
           <Input.Search
             placeholder="Tìm theo tên / mô tả / khóa học / giảng viên"
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
             allowClear
-            style={{ width: 360 }}
+            style={{ width: "100%" }}
+            size={isMobile ? "middle" : "large"}
           />
         </Col>
-        <Col>
+        <Col xs={24} md="auto">
           <Button
+            block={isMobile}
             type="primary"
             icon={<PlusOutlined />}
             onClick={() => setCreateVisible(true)}
             disabled={!organizationId}
+            size={isMobile ? "middle" : "large"}
           >
             Tạo không gian làm việc
           </Button>
@@ -527,8 +572,9 @@ const WorkspaceOrganization: React.FC = () => {
           columns={columns}
           dataSource={filteredData}
           loading={loading || refreshing}
-          pagination={{ pageSize: 10 }}
-          scroll={{ x: 1500 }}
+          pagination={{ pageSize: 10, showSizeChanger: !isMobile }}
+          size={isMobile ? "small" : "middle"}
+          scroll={isMobile ? { x: "max-content" } : { x: 1200 }}
         />
       </Card>
 
@@ -544,7 +590,7 @@ const WorkspaceOrganization: React.FC = () => {
           setImgFileCreate(null);
         }}
         destroyOnHidden
-        width={520}
+        width={isMobile ? 360 : 520}
       >
         <Form form={createForm} layout="vertical" onFinish={onCreate}>
           <Form.Item
@@ -610,7 +656,7 @@ const WorkspaceOrganization: React.FC = () => {
           setSelected(null);
         }}
         destroyOnHidden
-        width={520}
+        width={isMobile ? 360 : 520}
       >
         <Form form={updateForm} layout="vertical" onFinish={onUpdate}>
           <Form.Item name="workSpaceName" label="Tên không gian">
@@ -655,41 +701,38 @@ const WorkspaceOrganization: React.FC = () => {
           </Row>
         </Form>
       </Modal>
+
+      {/* DELETE */}
       <Modal
-  title="Xoá không gian làm việc"
-  open={deleteVisible}
-  onCancel={() => {
-    setDeleteVisible(false);
-    setDeleteId(null);
-  }}
-  footer={null}
-  destroyOnHidden
-  width={400}
->
-  <p>Bạn có chắc chắn muốn xoá không gian này? Hành động này không thể hoàn tác.</p>
-  <Row justify="end" gutter={8}>
-    <Col>
-      <Button
-        onClick={() => {
+        title="Xoá không gian làm việc"
+        open={deleteVisible}
+        onCancel={() => {
           setDeleteVisible(false);
           setDeleteId(null);
         }}
+        footer={null}
+        destroyOnHidden
+        width={isMobile ? 340 : 400}
       >
-        Huỷ
-      </Button>
-    </Col>
-    <Col>
-      <Button
-        type="primary"
-        danger
-        loading={loading}
-        onClick={onDelete}
-      >
-        Xoá
-      </Button>
-    </Col>
-  </Row>
-</Modal>
+        <p>Bạn có chắc chắn muốn xoá không gian này? Hành động này không thể hoàn tác.</p>
+        <Row justify="end" gutter={8}>
+          <Col>
+            <Button
+              onClick={() => {
+                setDeleteVisible(false);
+                setDeleteId(null);
+              }}
+            >
+              Huỷ
+            </Button>
+          </Col>
+          <Col>
+            <Button type="primary" danger loading={loading} onClick={onDelete}>
+              Xoá
+            </Button>
+          </Col>
+        </Row>
+      </Modal>
 
       {/* VIEW */}
       <Modal
@@ -701,7 +744,7 @@ const WorkspaceOrganization: React.FC = () => {
           setViewData(null);
         }}
         destroyOnHidden
-        width={700}
+        width={isMobile ? "92%" : 700}
       >
         {viewData ? (
           <div>

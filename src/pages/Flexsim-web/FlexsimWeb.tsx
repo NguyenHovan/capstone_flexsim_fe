@@ -17,27 +17,24 @@ export default function FlexsimWeb() {
   const timerRef = useRef<number | null>(null);
   const redirectedRef = useRef(false);
 
-  // Guest -> toast rồi mới chuyển trang (đợi 1 frame để Toaster chắc chắn render)
+  // Guest -> toast rồi redirect (đợi 1 frame)
   useEffect(() => {
     if (isLoggedIn === false && !redirectedRef.current) {
       redirectedRef.current = true;
 
-      // 1) bắn toast vào queue
-      toast.error("Vui lòng đăng nhập để truy cập");
+      toast.error("Vui lòng đăng nhập để dùng Flexsim Web");
 
-      // 2) đợi 1 khung hình cho React commit + Toaster mount
       requestAnimationFrame(() => {
         navigate("/login", { replace: true, state: { redirectTo: "/flexsim-web" } });
       });
     }
   }, [isLoggedIn, navigate]);
 
-  // Nếu guest -> giữ component sống trong 1 tick để toast kịp hiện
   if (isLoggedIn === false) {
+    // giữ DOM tồn tại ngắn để Toaster không bị unmount ngay
     return <div style={{ height: `calc(100vh - ${HEADER_HEIGHT}px)` }} />;
   }
 
-  // Heuristic: nếu 3s không onLoad => có thể bị chặn nhúng
   useEffect(() => {
     timerRef.current = window.setTimeout(() => {
       if (loading) setBlocked(true);

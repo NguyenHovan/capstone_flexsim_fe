@@ -26,7 +26,7 @@ const InstructorAdminHeader = () => {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("currentUser");
     localStorage.removeItem("roleId");
-    navigate("/login");
+    navigate("/");
   };
 
   useEffect(() => {

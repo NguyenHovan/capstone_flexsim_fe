@@ -88,7 +88,7 @@ const InstructorSidebar = () => {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("currentUser");
     localStorage.removeItem("roleId");
-    navigate("/login");
+    navigate("/");
   };
 
   return (

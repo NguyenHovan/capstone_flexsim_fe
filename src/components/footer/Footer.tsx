@@ -6,10 +6,12 @@ import {
 } from "@ant-design/icons";
 import "./footer.css";
 
+const DEMO_URL = "https://www.youtube.com/watch?v=YJgJzyDHZ8o";
+
 const Footer = () => {
   return (
     <footer className="footer-wrapper">
-      {/* Main grid layout */}
+      {/* Lưới chính */}
       <div className="custom-footer">
         <div className="footer-col logo-section">
           <div className="logo">
@@ -17,13 +19,13 @@ const Footer = () => {
             <span className="logo-teal">EDU</span>
           </div>
           <p>
-            Learn logistics the smart way. <br />
-            Simulate, practice, and master real- <br />
-            world supply chain systems.
+            Học logistics một cách thông minh. <br />
+            Mô phỏng, luyện tập và làm chủ các hệ thống <br />
+            chuỗi cung ứng thực tế.
           </p>
           <div className="contact-info">
             <p>
-              <EnvironmentOutlined /> 268 Lý Thường Kiệt, HCM
+              <EnvironmentOutlined /> 268 Lý Thường Kiệt, TP. Hồ Chí Minh
             </p>
             <p>
               <MailOutlined /> contact@logisim.edu.vn
@@ -35,54 +37,56 @@ const Footer = () => {
         </div>
 
         <div className="footer-col">
-          <h4>Platform</h4>
+          <h4>Nền tảng</h4>
           <ul>
             <li>
-              <Link to="#">Courses</Link>
+              <Link to="/course-list">Khoá học</Link>
             </li>
             <li>
-              <Link to="#">Scenarios</Link>
+              <Link to="#">Kịch bản</Link>
             </li>
             <li>
-              <Link to="#">Pricing</Link>
+              <Link to="#">Bảng giá</Link>
             </li>
             <li>
-              <Link to="#">Try a Demo</Link>
+              <a href={DEMO_URL} target="_blank" rel="noopener noreferrer">
+                Xem Demo
+              </a>
             </li>
           </ul>
         </div>
 
         <div className="footer-col">
-          <h4>Support</h4>
+          <h4>Hỗ trợ</h4>
           <ul>
             <li>
-              <Link to="#">Help Center</Link>
+              <Link to="#">Trung tâm trợ giúp</Link>
             </li>
             <li>
-              <Link to="#">FAQs</Link>
+              <Link to="#">Câu hỏi thường gặp</Link>
             </li>
             <li>
-              <Link to="#">Contact Support</Link>
+              <Link to="#">Liên hệ hỗ trợ</Link>
             </li>
           </ul>
         </div>
 
         <div className="footer-col">
-          <h4>Partners</h4>
+          <h4>Đối tác</h4>
           <ul>
             <li>
-              <Link to="#">Institutions</Link>
+              <Link to="/login">Trở thành Giảng viên</Link>
             </li>
             <li>
-              <Link to="#">Become a Partner</Link>
+              <Link to="/login">Trở thành Đối tác</Link>
             </li>
           </ul>
         </div>
       </div>
 
-      {/* Footer bottom */}
+      {/* Chân dưới */}
       <div className="footer-bottom">
-        <p>© 2025 LOGISIM EDU. All rights reserved.</p>
+        <p>© 2025 LOGISIM EDU. Đã đăng ký mọi quyền.</p>
       </div>
     </footer>
   );

@@ -94,6 +94,21 @@ export default function ScenarioObjectsView() {
       boxShadow: "0 4px 14px rgba(0,0,0,0.08)",
       border: "1px solid #f0f0f0",
     },
+    labelCaps: { 
+      fontSize: 11, 
+      fontWeight: 700, 
+      color: "#8c8c8c", 
+      textTransform: "uppercase", 
+      letterSpacing: 0.6, marginBottom: 4 
+    } as React.CSSProperties,
+    labelCapsTight: { 
+      fontSize: 10, 
+      fontWeight: 700, 
+      color: "#8c8c8c", 
+      textTransform: "uppercase", 
+      letterSpacing: 0.6, 
+      marginBottom: 2 
+    } as React.CSSProperties,
     title: { fontSize: 20, fontWeight: 700, color: "#222" },
     desc: { color: "#555", marginTop: 4, fontSize: 14 },
     scriptCard: {
@@ -182,6 +197,7 @@ export default function ScenarioObjectsView() {
             bodyStyle={{ padding: 18 }}
           >
             <div>
+              <div style={styles.labelCaps}>Đối tượng</div>
               <div style={styles.title}>{obj.objectName}</div>
               <div style={styles.desc}>{obj.description}</div>
             </div>
@@ -197,10 +213,9 @@ export default function ScenarioObjectsView() {
                     header={
                       <div style={styles.panelHeader}>
                         <div>
+                          <div style={styles.labelCapsTight}>Phương thức</div>
                           <Text strong>{m.methodName}</Text>
-                          <div style={{ color: "#888", fontSize: 13 }}>
-                            {m.description}
-                          </div>
+                          <div style={{ color: "#888", fontSize: 13 }}>{m.description}</div>
                         </div>
                         <Tag color="blue">
                           {m.scriptGets?.length || 0} scripts

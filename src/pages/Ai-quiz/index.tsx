@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import {
   Button,
   Card,
@@ -22,21 +22,23 @@ import {
   DownloadOutlined,
 } from "@ant-design/icons";
 import { FlexsimService } from "../../services/flexsim.service";
+import { useAuth } from "../../hooks/useAuth";
+import { useLocation, useNavigate } from "react-router-dom";
 import axiosInstance from "../../services/main.service";
 import { API } from "../../api";
 
 const { Title, Text, Paragraph } = Typography;
 
-const PRESETS = [
-  {
-    label: "Bài 1",
-    url: "https://res.cloudinary.com/dsfrqevvg/raw/upload/v1756923749/LogiSimEdu_File/Content.csv",
-  },
-  {
-    label: "Bài 2",
-    url: "https://res.cloudinary.com/dsfrqevvg/raw/upload/v1756923781/LogiSimEdu_File/Output.csv",
-  },
-];
+// const PRESETS = [
+//   {
+//     label: "Bài 1",
+//     url: "https://res.cloudinary.com/dsfrqevvg/raw/upload/v1756923749/LogiSimEdu_File/Content.csv",
+//   },
+//   {
+//     label: "Bài 2",
+//     url: "https://res.cloudinary.com/dsfrqevvg/raw/upload/v1756923781/LogiSimEdu_File/Output.csv",
+//   },
+// ];
 
 const DIFF_COLOR: Record<string, string> = {
   easy: "green",
@@ -79,7 +81,7 @@ function QuizView({ questions }: { questions: any[] }) {
     {}
   );
   const [checked, setChecked] = useState(false);
-  const [resultOpen, setResultOpen] = useState(false); // ⬅️ modal kết quả
+  const [resultOpen, setResultOpen] = useState(false);
 
   const totalAnswered = useMemo(
     () =>
@@ -306,6 +308,37 @@ function QuizView({ questions }: { questions: any[] }) {
 }
 
 export default function QuizFromPresetsPage() {
+  const { isLoggedIn } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const redirectedRef = useRef(false); // ngăn bắn toast nhiều lần
+
+  // Guest → toast + redirect (delay 1 frame)
+  useEffect(() => {
+    if (isLoggedIn === false && !redirectedRef.current) {
+      redirectedRef.current = true;
+
+      message.open({
+        type: "warning",
+        content: "Vui lòng đăng nhập để làm AI Quiz",
+        key: "login-required",
+        duration: 2,
+      });
+
+      requestAnimationFrame(() => {
+        navigate("/login", {
+          replace: true,
+          state: { redirectTo: location.pathname },
+        });
+      });
+    }
+  }, [isLoggedIn, navigate, location.pathname]);
+
+  if (isLoggedIn === false) {
+    // giữ component sống ngắn để toast có chỗ mount
+    return <div style={{ minHeight: 200 }} />;
+  }
+
   const [selectedUrl, setSelectedUrl] = useState<string | null>(null);
   const [maxQuestions] = useState<number | null>(10);
   const [lang] = useState<string>("vi");
@@ -353,7 +386,7 @@ export default function QuizFromPresetsPage() {
       setUploading(true);
       setPercent(0);
 
-      const file = await fetchUrlAsFile(selectedUrl);
+      const file = await fetchUrlAsFile(selectedUrl ?? "");
 
       const res = await FlexsimService.flexsimUpload(
         file,
@@ -373,10 +406,12 @@ export default function QuizFromPresetsPage() {
       setUploading(false);
     }
   };
+
   const file = {
     label: "Scene_1.fsm",
     url: "https://res.cloudinary.com/dsfrqevvg/raw/upload/v1756923724/LogiSimEdu_File/Scene_1.fsm",
   };
+
   return (
     <div style={{ maxWidth: 1000, margin: "0 auto", padding: "24px 16px" }}>
       <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
