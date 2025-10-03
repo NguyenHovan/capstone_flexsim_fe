@@ -4,12 +4,12 @@
 .course-list .ant-list-item-meta-content { min-width: 0; }
 
 .course-list-item {
-  border: 1px solid #e5e7eb;  /* gray-200 */
+  border: 1px solid #e5e7eb;
   border-radius: 8px;
   padding: 8px 12px;
   margin-bottom: 8px;
   background: #fff;
-  overflow: hidden;           /* quan trọng để không tràn */
+  overflow: hidden;
 }
 .course-list-item:hover { border-color: #94a3b8; }
 
@@ -34,7 +34,17 @@
   flex-wrap: wrap;
   margin-bottom: 4px;
 }
-.course-desc {
-  margin: 0;
-  word-break: break-word;
+.course-desc { margin: 0; word-break: break-word; }
+
+/* ===== Toolbar ===== */
+.ws-toolbar { margin-bottom: 16px; }
+
+/* ===== Mobile tweaks ===== */
+@media (max-width: 576px) {
+  .course-title-row { grid-template-columns: 1fr auto; }
+  .course-list-item { padding: 8px; }
+  .ws-toolbar { margin-bottom: 12px; }
+  .ant-card .ant-table { font-size: 12px; }
+  .ant-table .ant-table-thead > tr > th { padding: 10px 8px; }
+  .ant-table .ant-table-tbody > tr > td { padding: 10px 8px; }
 }

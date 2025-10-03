@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import {
   Button,
   Card,
@@ -21,32 +21,23 @@ import {
   DownloadOutlined,
 } from "@ant-design/icons";
 import { FlexsimService } from "../../services/flexsim.service";
+import { useAuth } from "../../hooks/useAuth";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const { Title, Text, Paragraph } = Typography;
 
 const PRESETS = [
-  {
-    label: "Bài 1",
-    url: "https://res.cloudinary.com/dsfrqevvg/raw/upload/v1756923749/LogiSimEdu_File/Content.csv",
-  },
-  {
-    label: "Bài 2",
-    url: "https://res.cloudinary.com/dsfrqevvg/raw/upload/v1756923781/LogiSimEdu_File/Output.csv",
-  },
+  { label: "Bài 1", url: "https://res.cloudinary.com/dsfrqevvg/raw/upload/v1756923749/LogiSimEdu_File/Content.csv" },
+  { label: "Bài 2", url: "https://res.cloudinary.com/dsfrqevvg/raw/upload/v1756923781/LogiSimEdu_File/Output.csv" },
 ];
 
-const DIFF_COLOR: Record<string, string> = {
-  easy: "green",
-  medium: "orange",
-  hard: "red",
-};
+const DIFF_COLOR: Record<string, string> = { easy: "green", medium: "orange", hard: "red" };
 
 const mimeFromExt = (ext: string) => {
   const e = ext.toLowerCase();
   if (e === "csv") return "text/csv";
   if (e === "json") return "application/json";
-  if (e === "xlsx")
-    return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+  if (e === "xlsx") return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
   if (e === "xls") return "application/vnd.ms-excel";
   return "application/octet-stream";
 };
@@ -62,8 +53,7 @@ const filenameFromUrl = (url: string) => {
 
 async function fetchUrlAsFile(url: string): Promise<File> {
   const res = await fetch(url, { mode: "cors" });
-  if (!res.ok)
-    throw new Error(`Không tải được file từ URL (HTTP ${res.status})`);
+  if (!res.ok) throw new Error(`Không tải được file từ URL (HTTP ${res.status})`);
   const blob = await res.blob();
   const name = filenameFromUrl(url);
   const ext = name.includes(".") ? name.split(".").pop()! : "bin";
@@ -72,24 +62,17 @@ async function fetchUrlAsFile(url: string): Promise<File> {
 }
 
 function QuizView({ questions }: { questions: any[] }) {
-  const [answers, setAnswers] = useState<Record<string, number | undefined>>(
-    {}
-  );
+  const [answers, setAnswers] = useState<Record<string, number | undefined>>({});
   const [checked, setChecked] = useState(false);
-  const [resultOpen, setResultOpen] = useState(false); // ⬅️ modal kết quả
+  const [resultOpen, setResultOpen] = useState(false);
 
   const totalAnswered = useMemo(
-    () =>
-      questions.reduce((n, q) => n + (answers[q.id] !== undefined ? 1 : 0), 0),
+    () => questions.reduce((n, q) => n + (answers[q.id] !== undefined ? 1 : 0), 0),
     [answers, questions]
   );
 
   const score = useMemo(
-    () =>
-      questions.reduce(
-        (s, q) => s + (checked && answers[q.id] === q.correctIndex ? 1 : 0),
-        0
-      ),
+    () => questions.reduce((s, q) => s + (checked && answers[q.id] === q.correctIndex ? 1 : 0), 0),
     [answers, checked, questions]
   );
 
@@ -101,11 +84,7 @@ function QuizView({ questions }: { questions: any[] }) {
   const styles = {
     card: { borderRadius: 16, boxShadow: "0 10px 24px rgba(0,0,0,0.06)" },
     stem: { fontWeight: 600, fontSize: 16 },
-    option: (
-      chosen: boolean,
-      ok: boolean,
-      done: boolean
-    ): React.CSSProperties => ({
+    option: (chosen: boolean, ok: boolean, done: boolean): React.CSSProperties => ({
       padding: "8px 12px",
       borderRadius: 10,
       background: chosen
@@ -123,8 +102,7 @@ function QuizView({ questions }: { questions: any[] }) {
     }),
   } as const;
 
-  const onPick = (qid: string, idx: number) =>
-    setAnswers((p) => ({ ...p, [qid]: idx }));
+  const onPick = (qid: string, idx: number) => setAnswers((p) => ({ ...p, [qid]: idx }));
 
   const onCheckAll = () => {
     if (!checked) {
@@ -146,14 +124,10 @@ function QuizView({ questions }: { questions: any[] }) {
           <Space style={{ width: "100%", justifyContent: "space-between" }}>
             <Space>
               <Text strong>Questions: {questions.length}</Text>
-              <Text type="secondary">
-                • Answered: {totalAnswered}/{questions.length}
-              </Text>
+              <Text type="secondary">• Answered: {totalAnswered}/{questions.length}</Text>
             </Space>
             <Space>
-              <Text strong>
-                Score: {score}/{questions.length}
-              </Text>
+              <Text strong>Score: {score}/{questions.length}</Text>
             </Space>
           </Space>
         </Card>
@@ -172,31 +146,25 @@ function QuizView({ questions }: { questions: any[] }) {
                   <Text>Q{i + 1}.</Text>
                   <Text style={styles.stem as any}>{q.stem}</Text>
                   {q.topic && <Tag color="blue">{q.topic}</Tag>}
-                  {q.difficulty && (
-                    <Tag color={DIFF_COLOR[q.difficulty] || "default"}>
-                      {q.difficulty}
-                    </Tag>
-                  )}
+                  {q.difficulty && <Tag color={DIFF_COLOR[q.difficulty] || "default"}>{q.difficulty}</Tag>}
                 </Space>
               }
               extra={
-                done ? (
-                  correct ? (
-                    <Space>
-                      <CheckCircleTwoTone twoToneColor="#22c55e" />
-                      <Text strong style={{ color: "#16a34a" }}>
-                        Correct
-                      </Text>
-                    </Space>
-                  ) : (
-                    <Space>
-                      <CloseCircleTwoTone twoToneColor="#ef4444" />
-                      <Text strong style={{ color: "#ef4444" }}>
-                        Incorrect
-                      </Text>
-                    </Space>
-                  )
-                ) : null
+                done
+                  ? correct
+                    ? (
+                      <Space>
+                        <CheckCircleTwoTone twoToneColor="#22c55e" />
+                        <Text strong style={{ color: "#16a34a" }}>Correct</Text>
+                      </Space>
+                    )
+                    : (
+                      <Space>
+                        <CloseCircleTwoTone twoToneColor="#ef4444" />
+                        <Text strong style={{ color: "#ef4444" }}>Incorrect</Text>
+                      </Space>
+                    )
+                  : null
               }
             >
               <Radio.Group
@@ -211,11 +179,7 @@ function QuizView({ questions }: { questions: any[] }) {
                   return (
                     <div key={idx} style={styles.option(isChosen, ok, done)}>
                       <Radio value={idx}>
-                        <Text
-                          style={{
-                            fontWeight: done && ok ? 700 : isChosen ? 600 : 400,
-                          }}
-                        >
+                        <Text style={{ fontWeight: done && ok ? 700 : isChosen ? 600 : 400 }}>
                           {opt}
                         </Text>
                       </Radio>
@@ -238,11 +202,7 @@ function QuizView({ questions }: { questions: any[] }) {
                     type={correct ? "success" : "error"}
                     showIcon
                     message={<Text strong>Giải thích</Text>}
-                    description={
-                      <Paragraph style={{ margin: 0 }}>
-                        {q.explanation}
-                      </Paragraph>
-                    }
+                    description={<Paragraph style={{ margin: 0 }}>{q.explanation}</Paragraph>}
                   />
                 </div>
               )}
@@ -251,12 +211,7 @@ function QuizView({ questions }: { questions: any[] }) {
         })}
       </Space>
       <Flex justify="center">
-        <Button
-          style={{ marginTop: 12 }}
-          type="primary"
-          onClick={onCheckAll}
-          disabled={checked || questions.length === 0}
-        >
+        <Button style={{ marginTop: 12 }} type="primary" onClick={onCheckAll} disabled={checked || questions.length === 0}>
           Check All
         </Button>
       </Flex>
@@ -266,26 +221,16 @@ function QuizView({ questions }: { questions: any[] }) {
         open={resultOpen}
         onCancel={() => setResultOpen(false)}
         footer={[
-          <Button key="close" onClick={() => setResultOpen(false)}>
-            Đóng
-          </Button>,
-          <Button key="retry" type="primary" onClick={resetLocal}>
-            Làm lại
-          </Button>,
+          <Button key="close" onClick={() => setResultOpen(false)}>Đóng</Button>,
+          <Button key="retry" type="primary" onClick={resetLocal}>Làm lại</Button>,
         ]}
       >
         <Space direction="vertical" style={{ width: "100%" }}>
-          <Text>
-            <b>Điểm:</b> {score}/{questions.length}
-          </Text>
-          <Text type="secondary">
-            Đã chọn: {totalAnswered}/{questions.length}
-          </Text>
+          <Text><b>Điểm:</b> {score}/{questions.length}</Text>
+          <Text type="secondary">Đã chọn: {totalAnswered}/{questions.length}</Text>
           <div style={{ marginTop: 8 }}>
             <Alert
-              type={
-                percent === 100 ? "success" : percent >= 50 ? "info" : "warning"
-              }
+              type={percent === 100 ? "success" : percent >= 50 ? "info" : "warning"}
               showIcon
               message={
                 percent === 100
@@ -303,6 +248,34 @@ function QuizView({ questions }: { questions: any[] }) {
 }
 
 export default function QuizFromPresetsPage() {
+  const { isLoggedIn } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const redirectedRef = useRef(false); // ngăn bắn toast nhiều lần
+
+  // Guest → toast + redirect (delay 1 frame)
+  useEffect(() => {
+    if (isLoggedIn === false && !redirectedRef.current) {
+      redirectedRef.current = true;
+
+      message.open({
+        type: "warning",
+        content: "Vui lòng đăng nhập để làm AI Quiz",
+        key: "login-required",
+        duration: 2,
+      });
+
+      requestAnimationFrame(() => {
+        navigate("/login", { replace: true, state: { redirectTo: location.pathname } });
+      });
+    }
+  }, [isLoggedIn, navigate, location.pathname]);
+
+  if (isLoggedIn === false) {
+    // giữ component sống ngắn để toast có chỗ mount
+    return <div style={{ minHeight: 200 }} />;
+  }
+
   const [selectedUrl, setSelectedUrl] = useState<string>(PRESETS[0].url);
   const [maxQuestions] = useState<number | null>(10);
   const [lang] = useState<string>("vi");
@@ -340,10 +313,12 @@ export default function QuizFromPresetsPage() {
       setUploading(false);
     }
   };
+
   const file = {
     label: "Scene_1.fsm",
     url: "https://res.cloudinary.com/dsfrqevvg/raw/upload/v1756923724/LogiSimEdu_File/Scene_1.fsm",
   };
+
   return (
     <div style={{ maxWidth: 1000, margin: "0 auto", padding: "24px 16px" }}>
       <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
@@ -359,24 +334,14 @@ export default function QuizFromPresetsPage() {
               Use Preset Dataset → Generate Quiz
             </span>
           </Title>
-          <Text type="secondary">
-            Chọn 1 dataset có sẵn rồi gửi lên backend.
-          </Text>
+          <Text type="secondary">Chọn 1 dataset có sẵn rồi gửi lên backend.</Text>
         </Col>
         <Col>
           <Space>
-            <Button
-              icon={<DownloadOutlined />}
-              href={file.url}
-              download={file.label}
-            >
+            <Button icon={<DownloadOutlined />} href={file.url} download={file.label}>
               Download {file.label}
             </Button>
-            <Button
-              icon={<ReloadOutlined />}
-              onClick={resetAll}
-              disabled={uploading}
-            >
+            <Button icon={<ReloadOutlined />} onClick={resetAll} disabled={uploading}>
               Reset
             </Button>
           </Space>
@@ -384,11 +349,7 @@ export default function QuizFromPresetsPage() {
       </Row>
 
       <Card
-        style={{
-          borderRadius: 16,
-          boxShadow: "0 10px 24px rgba(0,0,0,0.06)",
-          marginBottom: 16,
-        }}
+        style={{ borderRadius: 16, boxShadow: "0 10px 24px rgba(0,0,0,0.06)", marginBottom: 16 }}
       >
         <Space direction="vertical" size={12} style={{ width: "100%" }}>
           <Text strong>Chọn dataset:</Text>
@@ -405,12 +366,7 @@ export default function QuizFromPresetsPage() {
           </Radio.Group>
 
           <Space style={{ marginTop: 8 }}>
-            <Button
-              type="primary"
-              icon={<UploadOutlined />}
-              onClick={start}
-              loading={uploading}
-            >
+            <Button type="primary" icon={<UploadOutlined />} onClick={start} loading={uploading}>
               Generate from preset
             </Button>
           </Space>
@@ -419,10 +375,7 @@ export default function QuizFromPresetsPage() {
 
       {questions && (
         <Card
-          style={{
-            borderRadius: 16,
-            boxShadow: "0 10px 24px rgba(0,0,0,0.06)",
-          }}
+          style={{ borderRadius: 16, boxShadow: "0 10px 24px rgba(0,0,0,0.06)" }}
           bodyStyle={{ padding: 16 }}
           title={`Kết quả: ${questions.length} câu hỏi`}
         >

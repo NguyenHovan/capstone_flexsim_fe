@@ -18,6 +18,8 @@ import {
   Upload,
   Tabs,
   Switch,
+  Grid, // ⬅️ dùng breakpoint
+  Tooltip,
 } from "antd";
 import UploadCloudinary from "../../UploadFile/UploadCloudinary";
 import type { UpdateAccountPayload } from "../../../types/account";
@@ -40,8 +42,10 @@ import type { ColumnsType } from "antd/es/table";
 import { AccountService } from "../../../services/account.service";
 import type { Account } from "../../../types/account";
 import "./userOrganization.css";
+
 const { Content } = Layout;
-const { Title } = Typography;
+const { Title, Text } = Typography;
+const { useBreakpoint } = Grid;
 
 /* ===== VIETNAMESE LABELS ===== */
 
@@ -158,9 +162,6 @@ const TEMPLATE_ROWS: TmplRow[] = [
   { name: "fullName", required: true, example: "Nguyễn Văn A" },
   { name: "email", required: true, example: "a@example.com" },
   { name: "password", required: true, example: "Abc@123" },
-  // { name: "gender", required: false, example: "1 | 2 | 3 (1=Nam, 2=Nữ, 3=Khác)" },
-  // { name: "phone", required: false, example: "0901234567" },
-  // { name: "address", required: false, example: "Hà Nội" },
 ];
 
 const TemplateBox: React.FC<{
@@ -195,6 +196,10 @@ const TemplateBox: React.FC<{
 );
 
 const UserOrganization: React.FC = () => {
+  const screens = useBreakpoint();
+  const isMobile = !screens.md;      // xs, sm
+  const isTablet = screens.md && !screens.lg; // md only
+
   const [users, setUsers] = useState<Account[]>([]);
   const [loading, setLoading] = useState(false);
   const [savingEdit, setSavingEdit] = useState(false);
@@ -585,116 +590,135 @@ const UserOrganization: React.FC = () => {
     return list;
   }, [users, debounced, roleFilter, statusFilter, sortBy, sortDir]);
 
-  const columns: ColumnsType<Account> = [
-    { title: "ID", dataIndex: "id", key: "id", width: 220, ellipsis: true },
-    {
-      title: "Hình ảnh",
-      dataIndex: "avtUrl",
-      key: "avtUrl",
-      align: "center",
-      width: 110,
-      render: (url) =>
-        url ? (
-          <img
-            src={url}
-            alt=""
-            style={{
-              width: 48,
-              height: 48,
-              objectFit: "cover",
-              borderRadius: 6,
-              border: "1px solid #eee",
-            }}
-          />
-        ) : (
-          "—"
-        ),
-    },
-    { title: "Tên đăng nhập", dataIndex: "userName", key: "userName", width: 140 },
-    { title: "Họ tên", dataIndex: "fullName", key: "fullName", width: 180 },
-    { title: "Email", dataIndex: "email", key: "email", width: 220, ellipsis: true },
-    { title: "Điện thoại", dataIndex: "phone", key: "phone", width: 140 },
-    {
-      title: "Vai trò",
-      dataIndex: "roleId",
-      key: "roleId",
-      width: 120,
-      render: (r) => roleNameMap[Number(r)] || r,
-    },
-    {
-      title: "Giới tính",
-      dataIndex: "gender",
-      key: "gender",
-      width: 110,
-      render: (g) => prettyGender(g),
-    },
-    {
-      title: "Hoạt động",
-      dataIndex: "isActive",
-      key: "isActive",
-      width: 130,
-      render: (_: boolean, rec) => (
-        <Switch
-          checkedChildren="Bật"
-          unCheckedChildren="Tắt"
-          checked={!!rec.isActive}
-          loading={togglingId === rec.id}
-          disabled={actionId === rec.id}
-          onChange={(checked) => onToggleActive(rec, checked)}
+  /* ========== Columns (responsive) ========== */
+  const colId: any = {
+    title: "ID",
+    dataIndex: "id",
+    key: "id",
+    width: isMobile ? 140 : 220,
+    ellipsis: true,
+    render: (v: string) => (
+      <Tooltip title={v}>
+        <Text code>{v.slice(0, isMobile ? 8 : 16)}{v.length > (isMobile ? 8 : 16) ? "…" : ""}</Text>
+      </Tooltip>
+    ),
+  };
+  const colAvatar: any = {
+    title: "Ảnh",
+    dataIndex: "avtUrl",
+    key: "avtUrl",
+    align: "center",
+    width: isMobile ? 70 : 110,
+    render: (url: string) =>
+      url ? (
+        <img
+          src={url}
+          alt=""
+          style={{
+            width: isMobile ? 36 : 48,
+            height: isMobile ? 36 : 48,
+            objectFit: "cover",
+            borderRadius: 6,
+            border: "1px solid #eee",
+          }}
         />
+      ) : (
+        "—"
       ),
-    },
-    {
-      title: "Ngày tạo",
-      dataIndex: "createdAt",
-      key: "createdAt",
-      width: 140,
-      render: (d) => (d ? new Date(d).toLocaleDateString() : "–"),
-    },
-    {
-      title: "Ngày cập nhật",
-      dataIndex: "updatedAt",
-      key: "updatedAt",
-      width: 140,
-      render: (d) => (d ? new Date(d).toLocaleDateString() : "–"),
-    },
-    {
-      title: "Thao tác",
-      key: "actions",
-      width: 220,
-      render: (_, rec) => (
-        <Space wrap size="small">
-          <Button icon={<EyeOutlined />} size="small" onClick={() => onView(rec)}>
-            Xem
+  };
+  const colUserName: any = { title: "Tên đăng nhập", dataIndex: "userName", key: "userName", width: 140, ellipsis: true };
+  const colFullName: any = { title: "Họ tên", dataIndex: "fullName", key: "fullName", width: isMobile ? 160 : 180, ellipsis: true };
+  const colEmail: any = { title: "Email", dataIndex: "email", key: "email", width: 220, ellipsis: true };
+  const colPhone: any = { title: "Điện thoại", dataIndex: "phone", key: "phone", width: 140, ellipsis: true };
+  const colRole: any = {
+    title: "Vai trò",
+    dataIndex: "roleId",
+    key: "roleId",
+    width: 120,
+    render: (r: number) => roleNameMap[Number(r)] || r,
+  };
+  const colGender: any = {
+    title: "Giới tính",
+    dataIndex: "gender",
+    key: "gender",
+    width: 110,
+    render: (g: unknown) => prettyGender(g),
+  };
+  const colActive: any = {
+    title: "Hoạt động",
+    dataIndex: "isActive",
+    key: "isActive",
+    width: isMobile ? 120 : 130,
+    render: (_: boolean, rec: Account) => (
+      <Switch
+        checkedChildren="Bật"
+        unCheckedChildren="Tắt"
+        checked={!!rec.isActive}
+        loading={togglingId === rec.id}
+        disabled={actionId === rec.id}
+        onChange={(checked) => onToggleActive(rec, checked)}
+      />
+    ),
+  };
+  const colCreated: any = {
+    title: "Ngày tạo",
+    dataIndex: "createdAt",
+    key: "createdAt",
+    width: 140,
+    render: (d?: string) => (d ? new Date(d).toLocaleDateString() : "–"),
+  };
+  const colUpdated: any = {
+    title: "Ngày cập nhật",
+    dataIndex: "updatedAt",
+    key: "updatedAt",
+    width: 140,
+    render: (d?: string) => (d ? new Date(d).toLocaleDateString() : "–"),
+  };
+  const colActions: any = {
+    title: "Thao tác",
+    key: "actions",
+    width: isMobile ? 230 : 220,
+    render: (_: any, rec: Account) => (
+      <Space wrap size="small">
+        <Button icon={<EyeOutlined />} size="small" onClick={() => onView(rec)}>
+          Xem
+        </Button>
+        <Button icon={<EditOutlined />} size="small" onClick={() => onEdit(rec)}>
+          Sửa
+        </Button>
+        {rec.isActive ? (
+          <Button
+            icon={<StopOutlined />}
+            size="small"
+            danger
+            loading={actionId === rec.id}
+            onClick={() => onBanBtn(rec)}
+          >
+            Khoá
           </Button>
-          <Button icon={<EditOutlined />} size="small" onClick={() => onEdit(rec)}>
-            Sửa
+        ) : (
+          <Button
+            icon={<CheckCircleOutlined />}
+            size="small"
+            type="primary"
+            loading={actionId === rec.id}
+            onClick={() => onUnbanBtn(rec)}
+          >
+            Mở khoá
           </Button>
-          {rec.isActive ? (
-            <Button
-              icon={<StopOutlined />}
-              size="small"
-              danger
-              loading={actionId === rec.id}
-              onClick={() => onBanBtn(rec)}
-            >
-              Khoá
-            </Button>
-          ) : (
-            <Button
-              icon={<CheckCircleOutlined />}
-              size="small"
-              type="primary"
-              loading={actionId === rec.id}
-              onClick={() => onUnbanBtn(rec)}
-            >
-              Mở khoá
-            </Button>
-          )}
-        </Space>
-      ),
-    },
-  ];
+        )}
+      </Space>
+    ),
+  };
+
+  // Mobile: Ảnh, Tên đăng nhập, Họ tên, Vai trò, Bật/Tắt, Hành động
+  // Tablet: + Email
+  // Desktop: đầy đủ như trước
+  const columns: ColumnsType<Account> = isMobile
+    ? [colAvatar, colUserName, colFullName, colRole, colActive, colActions]
+    : isTablet
+    ? [colId, colAvatar, colUserName, colFullName, colEmail, colRole, colActive, colActions]
+    : [colId, colAvatar, colUserName, colFullName, colEmail, colPhone, colRole, colGender, colActive, colCreated, colUpdated, colActions];
 
   function downloadBlob(blob: Blob, filename: string) {
     const url = URL.createObjectURL(blob);
@@ -708,15 +732,17 @@ const UserOrganization: React.FC = () => {
   return (
     <Layout>
       <Content style={{ padding: 24 }}>
-        <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
-          <Col>
+        {/* Header + Actions */}
+        <Row gutter={[8, 8]} justify="space-between" align="middle" className="uo-toolbar">
+          <Col xs={24} md="auto">
             <Title level={3} style={{ margin: 0 }}>
               Quản lý người dùng
             </Title>
           </Col>
-          <Col>
+          <Col xs={24} md="auto">
             <Space wrap>
               <Button
+                block={isMobile}
                 icon={<UserAddOutlined />}
                 type="primary"
                 onClick={() => {
@@ -730,6 +756,7 @@ const UserOrganization: React.FC = () => {
                 Tạo Giảng viên
               </Button>
               <Button
+                block={isMobile}
                 icon={<UserOutlined />}
                 type="primary"
                 onClick={() => {
@@ -743,6 +770,7 @@ const UserOrganization: React.FC = () => {
                 Tạo Học viên
               </Button>
               <Button
+                block={isMobile}
                 onClick={async () => {
                   const res = await AccountService.exportData();
                   const blob: Blob = res.data;
@@ -765,6 +793,7 @@ const UserOrganization: React.FC = () => {
           </Col>
         </Row>
 
+        {/* Filters */}
         <Card style={{ marginBottom: 12 }}>
           <Row gutter={[12, 12]} align="middle">
             <Col xs={24} md={10} lg={12}>
@@ -774,6 +803,7 @@ const UserOrganization: React.FC = () => {
                 placeholder="Tìm theo tên đăng nhập hoặc họ tên…"
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
+                size={isMobile ? "middle" : "large"}
               />
             </Col>
             <Col xs={12} md={4} lg={4}>
@@ -812,14 +842,21 @@ const UserOrganization: React.FC = () => {
           </Row>
         </Card>
 
+        {/* Table */}
         <Card>
           <Table
             columns={columns}
             dataSource={dataView}
             rowKey="id"
             loading={loading}
-            pagination={{ pageSize: 10, showSizeChanger: true, pageSizeOptions: [10, 20, 50] }}
-            scroll={{ x: 1300 }}
+            pagination={{
+              pageSize: 10,
+              showSizeChanger: !isMobile,
+              pageSizeOptions: [10, 20, 50],
+              size: isMobile ? "small" : "default",
+            }}
+            size={isMobile ? "small" : "middle"}
+            scroll={isMobile ? { x: "max-content" } : { x: 1300 }}
           />
         </Card>
 
@@ -830,11 +867,11 @@ const UserOrganization: React.FC = () => {
           footer={<Button onClick={() => setIsViewModal(false)}>Đóng</Button>}
           onCancel={() => setIsViewModal(false)}
           destroyOnClose
-          width={600}
+          width={isMobile ? "92%" : 600}
         >
           {viewingUser && (
-            <Row gutter={16}>
-              <Col span={12}>
+            <Row gutter={[12, 12]}>
+              <Col xs={24} md={12}>
                 <p>
                   <b>Id:</b> {viewingUser.id}
                 </p>
@@ -851,7 +888,7 @@ const UserOrganization: React.FC = () => {
                   <b>Email:</b> {viewingUser.email}
                 </p>
               </Col>
-              <Col span={12}>
+              <Col xs={24} md={12}>
                 <p>
                   <b>Điện thoại:</b> {viewingUser.phone}
                 </p>
@@ -883,7 +920,7 @@ const UserOrganization: React.FC = () => {
           }}
           okButtonProps={{ loading: savingEdit, disabled: savingEdit }}
           destroyOnClose
-          width={680}
+          width={isMobile ? "92%" : 680}
           afterOpenChange={(opened) => {
             if (!opened && toastFlagRef.current) {
               message.success("Cập nhật tài khoản thành công!");
@@ -902,7 +939,7 @@ const UserOrganization: React.FC = () => {
             }}
           >
             <Row gutter={16}>
-              <Col span={12}>
+              <Col xs={24} md={12}>
                 <Form.Item name="fullName" label="Họ tên">
                   <Input
                     onPressEnter={(e) => {
@@ -915,7 +952,7 @@ const UserOrganization: React.FC = () => {
             </Row>
 
             <Row gutter={16}>
-              <Col span={12}>
+              <Col xs={24} md={12}>
                 <Form.Item name="gender" label="Giới tính">
                   <Select options={genderOptions as any} />
                 </Form.Item>
@@ -923,7 +960,7 @@ const UserOrganization: React.FC = () => {
             </Row>
 
             <Row gutter={16}>
-              <Col span={12}>
+              <Col xs={24} md={12}>
                 <Form.Item name="phone" label="Điện thoại">
                   <Input
                     onPressEnter={(e) => {
@@ -936,7 +973,7 @@ const UserOrganization: React.FC = () => {
             </Row>
 
             <Row gutter={16}>
-              <Col span={12}>
+              <Col xs={24} md={12}>
                 <Form.Item name="address" label="Địa chỉ">
                   <Input
                     onPressEnter={(e) => {
@@ -946,7 +983,7 @@ const UserOrganization: React.FC = () => {
                   />
                 </Form.Item>
               </Col>
-              <Col span={12}>
+              <Col xs={24} md={12}>
                 <Form.Item name="avtUrl" label="Ảnh (Cloudinary)" valuePropName="value">
                   <UploadCloudinary
                     value={formEdit.getFieldValue("avtUrl")}
@@ -975,7 +1012,7 @@ const UserOrganization: React.FC = () => {
             disabled: tabInstr === "manual" ? creatingInstructor : importingInstr,
           }}
           destroyOnClose
-          width={700}
+          width={isMobile ? "92%" : 700}
         >
           {instrError && tabInstr === "manual" && (
             <Alert style={{ marginBottom: 12 }} type="error" showIcon message={instrError} />
@@ -997,7 +1034,7 @@ const UserOrganization: React.FC = () => {
                     }}
                   >
                     <Row gutter={16}>
-                      <Col span={12}>
+                      <Col xs={24} md={12}>
                         <Form.Item name="userName" label="Tên đăng nhập" rules={[{ required: true }]}>
                           <Input
                             placeholder="Ví dụ: giangvien_a"
@@ -1008,7 +1045,7 @@ const UserOrganization: React.FC = () => {
                           />
                         </Form.Item>
                       </Col>
-                      <Col span={12}>
+                      <Col xs={24} md={12}>
                         <Form.Item name="fullName" label="Họ tên" rules={[{ required: true }]}>
                           <Input
                             placeholder="Ví dụ: Nguyễn Văn A"
@@ -1021,7 +1058,7 @@ const UserOrganization: React.FC = () => {
                       </Col>
                     </Row>
                     <Row gutter={16}>
-                      <Col span={12}>
+                      <Col xs={24} md={12}>
                         <Form.Item name="email" label="Email" rules={[{ required: true }, { type: "email" }]}>
                           <Input
                             placeholder="name@example.com"
@@ -1032,7 +1069,7 @@ const UserOrganization: React.FC = () => {
                           />
                         </Form.Item>
                       </Col>
-                      <Col span={12}>
+                      <Col xs={24} md={12}>
                         <Form.Item name="gender" label="Giới tính">
                           <Select options={genderOptions as any} allowClear />
                         </Form.Item>
@@ -1105,7 +1142,7 @@ const UserOrganization: React.FC = () => {
             disabled: tabStud === "manual" ? creatingStudent : importingStud,
           }}
           destroyOnClose
-          width={700}
+          width={isMobile ? "92%" : 700}
         >
           {studError && tabStud === "manual" && (
             <Alert style={{ marginBottom: 12 }} type="error" showIcon message={studError} />
@@ -1127,7 +1164,7 @@ const UserOrganization: React.FC = () => {
                     }}
                   >
                     <Row gutter={16}>
-                      <Col span={12}>
+                      <Col xs={24} md={12}>
                         <Form.Item name="userName" label="Tên đăng nhập" rules={[{ required: true }]}>
                           <Input
                             placeholder="Ví dụ: hocvien_a"
@@ -1138,7 +1175,7 @@ const UserOrganization: React.FC = () => {
                           />
                         </Form.Item>
                       </Col>
-                      <Col span={12}>
+                      <Col xs={24} md={12}>
                         <Form.Item name="fullName" label="Họ tên" rules={[{ required: true }]}>
                           <Input
                             placeholder="Ví dụ: Trần Thị B"
@@ -1151,7 +1188,7 @@ const UserOrganization: React.FC = () => {
                       </Col>
                     </Row>
                     <Row gutter={16}>
-                      <Col span={12}>
+                      <Col xs={24} md={12}>
                         <Form.Item name="email" label="Email" rules={[{ required: true }, { type: "email" }]}>
                           <Input
                             placeholder="name@example.com"
@@ -1162,7 +1199,7 @@ const UserOrganization: React.FC = () => {
                           />
                         </Form.Item>
                       </Col>
-                      <Col span={12}>
+                      <Col xs={24} md={12}>
                         <Form.Item name="gender" label="Giới tính">
                           <Select options={genderOptions as any} allowClear />
                         </Form.Item>

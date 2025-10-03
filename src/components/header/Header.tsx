@@ -1,4 +1,4 @@
-import { Avatar, Dropdown, Button, Drawer } from "antd";
+import { Avatar, Dropdown, Button, Drawer, message } from "antd"; // ⬅️ thêm message
 import type { MenuProps } from "antd";
 import {
   UserOutlined,
@@ -8,9 +8,9 @@ import {
 } from "@ant-design/icons";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AccountService } from "../../services/account.service";
-import "./header.css"; 
+import "./header.css";
 
 const Header = () => {
   const navigate = useNavigate();
@@ -19,11 +19,29 @@ const Header = () => {
   const [avatar, setAvatar] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  // ✅ Các route cần đăng nhập
+  const protectedRoutes = useMemo(() => ["/ai-quiz", "/flexsim-web"], []);
+
+  // ✅ Helper: nếu protected & chưa login → toast + chuyển /login (ghi nhớ redirectTo)
+  const guardNavigate = (to: string) => {
+    if (!isLoggedIn && protectedRoutes.includes(to)) {
+      message.warning("Vui lòng đăng nhập"); // ⬅️ toast
+      navigate("/login", { state: { redirectTo: to } });
+      return false;
+    }
+    navigate(to);
+    return true;
+  };
+
   useEffect(() => {
     const fetchUserCurrent = async () => {
-      if (!user?.id) return;
-      const response = await AccountService.getAccountById(user.id);
-      setAvatar(response?.avtUrl || null);
+      try {
+        if (!user?.id) return;
+        const response = await AccountService.getAccountById(user.id);
+        setAvatar(response?.avtUrl || null);
+      } catch {
+        // ignore
+      }
     };
     fetchUserCurrent();
   }, [user?.id]);
@@ -54,9 +72,9 @@ const Header = () => {
   const navLinks = [
     { name: "Trang chủ", to: "/" },
     { name: "Danh mục khóa học", to: "/course-list" },
-    { name: "AI Quiz", to: "/ai-quiz" },
+    { name: "AI Quiz", to: "/ai-quiz" },        
     { name: "Giới thiệu", to: "/about" },
-    { name: "Flexsim Web", to: "/flexsim-web" },
+    { name: "Flexsim Web", to: "/flexsim-web" }, 
   ];
 
   return (
@@ -80,12 +98,28 @@ const Header = () => {
       <nav className="site-nav desktop-only" aria-label="Chính">
         {navLinks.map((link) => {
           const isActive = location.pathname === link.to;
+          const isProtected = protectedRoutes.includes(link.to);
+
+          const handleClick = (e: React.MouseEvent) => {
+            e.preventDefault();
+            guardNavigate(link.to);
+          };
+
           return (
             <Link
               key={link.to}
               to={link.to}
-              className={`site-nav__link ${isActive ? "is-active" : ""}`}
+              onClick={handleClick}
+              className={`site-nav__link ${isActive ? "is-active" : ""} ${
+                !isLoggedIn && isProtected ? "is-locked" : ""
+              }`}
               aria-current={isActive ? "page" : undefined}
+              aria-label={
+                !isLoggedIn && isProtected
+                  ? `${link.name} (yêu cầu đăng nhập)`
+                  : link.name
+              }
+              title={!isLoggedIn && isProtected ? "Yêu cầu đăng nhập" : undefined}
             >
               {link.name}
             </Link>
@@ -122,7 +156,9 @@ const Header = () => {
               size="large"
               ghost
               icon={<LoginOutlined />}
-              onClick={() => navigate("/login")}
+              onClick={() =>
+                navigate("/login", { state: { redirectTo: location.pathname } })
+              }
               className="login-btn"
               aria-label="Đăng nhập"
             >
@@ -145,23 +181,36 @@ const Header = () => {
         open={mobileOpen}
         onClose={() => setMobileOpen(false)}
         className="site-drawer"
-        title={
-          <div className="drawer-head">
-            <span>Menu</span>
-          </div>
-        }
+        title={<div className="drawer-head"><span>Menu</span></div>}
       >
         <nav className="drawer-nav" aria-label="Menu di động">
-          {navLinks.map((link) => (
-            <Link
-              key={link.to}
-              to={link.to}
-              className="drawer-nav__item"
-              onClick={() => setMobileOpen(false)}
-            >
-              {link.name}
-            </Link>
-          ))}
+          {navLinks.map((link) => {
+            const isProtected = protectedRoutes.includes(link.to);
+
+            const onClickItem = (e: React.MouseEvent) => {
+            e.preventDefault();
+            const navigated = guardNavigate(link.to); 
+            if (navigated) setMobileOpen(false);
+            else setMobileOpen(false); 
+            };
+
+            return (
+              <Link
+                key={link.to}
+                to={link.to}
+                className="drawer-nav__item"
+                onClick={onClickItem}
+                aria-label={
+                  !isLoggedIn && isProtected
+                    ? `${link.name} (yêu cầu đăng nhập)`
+                    : link.name
+                }
+                title={!isLoggedIn && isProtected ? "Yêu cầu đăng nhập" : undefined}
+              >
+                {link.name}
+              </Link>
+            );
+          })}
         </nav>
 
         <div className="drawer-actions">
@@ -192,7 +241,8 @@ const Header = () => {
                 className="drawer-action primary"
                 onClick={() => {
                   setMobileOpen(false);
-                  navigate("/login");
+                  message.warning("Vui lòng đăng nhập"); 
+                  navigate("/login", { state: { redirectTo: location.pathname } });
                 }}
               >
                 <LoginOutlined /> &nbsp; Đăng nhập
