@@ -12,6 +12,7 @@ import {
   Alert,
   Modal,
   Flex,
+  Upload,
 } from "antd";
 import {
   CheckCircleTwoTone,
@@ -21,6 +22,8 @@ import {
   DownloadOutlined,
 } from "@ant-design/icons";
 import { FlexsimService } from "../../services/flexsim.service";
+import axiosInstance from "../../services/main.service";
+import { API } from "../../api";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -303,12 +306,42 @@ function QuizView({ questions }: { questions: any[] }) {
 }
 
 export default function QuizFromPresetsPage() {
-  const [selectedUrl, setSelectedUrl] = useState<string>(PRESETS[0].url);
+  const [selectedUrl, setSelectedUrl] = useState<string | null>(null);
   const [maxQuestions] = useState<number | null>(10);
   const [lang] = useState<string>("vi");
   const [uploading, setUploading] = useState(false);
   const [, setPercent] = useState(0);
   const [questions, setQuestions] = useState<any[] | null>(null);
+  const handleUpload = async (file: File) => {
+    try {
+      setUploading(true);
+      setPercent(0);
+
+      const fd = new FormData();
+      fd.append("file", file);
+
+      const { data } = await axiosInstance.post(API.UPLOAD_FILE, fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+        onUploadProgress: (progressEvent) => {
+          if (progressEvent.total) {
+            setPercent(
+              Math.round((progressEvent.loaded * 100) / progressEvent.total)
+            );
+          }
+        },
+      });
+
+      setSelectedUrl(data?.url);
+      setQuestions(data.questions);
+      message.success(`Upload OK • ${data.questions.length} câu hỏi`);
+    } catch (e: any) {
+      console.error(e);
+      message.error(e?.message || "Upload thất bại");
+    } finally {
+      setUploading(false);
+    }
+    return false; // chặn Antd upload mặc định
+  };
 
   const resetAll = () => {
     setQuestions(null);
@@ -392,7 +425,7 @@ export default function QuizFromPresetsPage() {
       >
         <Space direction="vertical" size={12} style={{ width: "100%" }}>
           <Text strong>Chọn dataset:</Text>
-          <Radio.Group
+          {/* <Radio.Group
             value={selectedUrl}
             onChange={(e) => setSelectedUrl(e.target.value)}
             style={{ display: "grid", gap: 8 }}
@@ -402,7 +435,17 @@ export default function QuizFromPresetsPage() {
                 {p.label}
               </Radio>
             ))}
-          </Radio.Group>
+          </Radio.Group> */}
+          <Upload
+            // accept=""
+            showUploadList={false}
+            beforeUpload={handleUpload}
+          >
+            <Button icon={<UploadOutlined />} loading={uploading}>
+              Tải file lên
+            </Button>
+          </Upload>
+          {selectedUrl && <p>{selectedUrl}</p>}
 
           <Space style={{ marginTop: 8 }}>
             <Button
