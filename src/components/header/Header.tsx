@@ -1,16 +1,24 @@
-import { Avatar, Dropdown, Button } from "antd";
+// Header.tsx
+import { Avatar, Dropdown, Button, Drawer } from "antd";
 import type { MenuProps } from "antd";
-import { UserOutlined, LogoutOutlined, LoginOutlined } from "@ant-design/icons";
+import {
+  UserOutlined,
+  LogoutOutlined,
+  LoginOutlined,
+  MenuOutlined,
+} from "@ant-design/icons";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { useEffect, useState } from "react";
 import { AccountService } from "../../services/account.service";
+import "./header.css"; // ✅ nhớ import css mới
 
 const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, isLoggedIn } = useAuth();
   const [avatar, setAvatar] = useState<string | null>(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
     const fetchUserCurrent = async () => {
@@ -29,9 +37,19 @@ const Header = () => {
   };
 
   const menuItems: MenuProps["items"] = [
-    { key: "profile", icon: <UserOutlined />, label: "Thông tin cá nhân", onClick: () => navigate("/profile") },
+    {
+      key: "profile",
+      icon: <UserOutlined />,
+      label: "Thông tin cá nhân",
+      onClick: () => navigate("/profile"),
+    },
     { type: "divider" },
-    { key: "logout", icon: <LogoutOutlined />, label: "Đăng xuất", onClick: handleLogout },
+    {
+      key: "logout",
+      icon: <LogoutOutlined />,
+      label: "Đăng xuất",
+      onClick: handleLogout,
+    },
   ];
 
   const navLinks = [
@@ -39,73 +57,38 @@ const Header = () => {
     { name: "Danh mục khóa học", to: "/course-list" },
     { name: "AI Quiz", to: "/ai-quiz" },
     { name: "Giới thiệu", to: "/about" },
-    { name: "Flexsim Web", to: "/flexsim-web" }, // không chặn ở header nữa
+    { name: "Flexsim Web", to: "/flexsim-web" },
   ];
 
   return (
-    <header
-      style={{
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        background: "linear-gradient(90deg, #059769, #feb47b)",
-        boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-      }}
-    >
+    <header className="site-header">
       {/* Logo */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          fontSize: 22,
-          padding: "12px 32px",
-          fontWeight: "bold",
-          cursor: "pointer",
-        }}
+      <button
+        className="site-logo"
         onClick={() => navigate("/")}
         aria-label="Trang chủ"
       >
         <img
           src="https://res.cloudinary.com/dsfrqevvg/image/upload/v1756926674/d2477089b0b74afdaf66e73fe2c218f4-free_ewplwi.png"
-          style={{ width: 50, height: 50, marginRight: 12 }}
+          className="site-logo__img"
           alt="LOGISIM EDU logo"
         />
-        <div>
-          <span style={{ color: "#fff", textShadow: "1px 1px 4px rgba(0,0,0,0.3)" }}>LOGISIM</span>
-          <span
-            style={{
-              color: "#222",
-              background: "#fff",
-              padding: "2px 8px",
-              borderRadius: 6,
-              marginLeft: 4,
-              fontWeight: "bold",
-            }}
-          >
-            EDU
-          </span>
-        </div>
-      </div>
+        <span className="site-logo__brand">
+          <span className="site-logo__brand--white">LOGISIM</span>
+          <span className="site-logo__brand-badge">EDU</span>
+        </span>
+      </button>
 
-      {/* Nav */}
-      <nav style={{ display: "flex", gap: 68 }}>
+      {/* Nav (desktop) */}
+      <nav className="site-nav desktop-only" aria-label="Chính">
         {navLinks.map((link) => {
           const isActive = location.pathname === link.to;
           return (
             <Link
               key={link.to}
               to={link.to}
-              style={{
-                color: isActive ? "#222" : "#fff",
-                fontSize: 20,
-                fontWeight: isActive ? 700 : 500,
-                background: isActive ? "rgba(255,255,255,0.7)" : "transparent",
-                padding: "10px 10px",
-                borderRadius: 6,
-                textDecoration: "none",
-                transition: "all 0.3s",
-              }}
-              aria-label={link.name}
+              className={`site-nav__link ${isActive ? "is-active" : ""}`}
+              aria-current={isActive ? "page" : undefined}
             >
               {link.name}
             </Link>
@@ -113,24 +96,28 @@ const Header = () => {
         })}
       </nav>
 
-      {/* Actions (right) */}
-      <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 32px" }}>
+      {/* Actions (desktop) */}
+      <div className="site-actions desktop-only">
         {isLoggedIn ? (
           <Dropdown menu={{ items: menuItems }} placement="bottomRight" arrow>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
+            <button className="user-chip" aria-label="Tài khoản">
               <Avatar
                 size={40}
                 src={
                   avatar ? (
-                    <img src={avatar} alt="avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    <img
+                      src={avatar}
+                      alt="avatar"
+                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    />
                   ) : undefined
                 }
                 style={{ border: "2px solid #fff", background: "#fff" }}
               >
                 {(!avatar && user?.userName?.[0]?.toUpperCase()) || "U"}
               </Avatar>
-              <span style={{ color: "#fff", fontWeight: 400 }}>{user?.userName}</span>
-            </div>
+              <span className="user-chip__name">{user?.userName}</span>
+            </button>
           </Dropdown>
         ) : (
           location.pathname !== "/login" && (
@@ -140,13 +127,7 @@ const Header = () => {
               ghost
               icon={<LoginOutlined />}
               onClick={() => navigate("/login")}
-              style={{
-                color: "#fff",
-                borderColor: "#fff",
-                background: "rgba(255,255,255,0.15)",
-                backdropFilter: "blur(2px)",
-                fontWeight: 600,
-              }}
+              className="login-btn"
               aria-label="Đăng nhập"
             >
               Đăng nhập
@@ -154,6 +135,78 @@ const Header = () => {
           )
         )}
       </div>
+
+      {/* Mobile menu button */}
+      <button
+        className="mobile-menu-btn mobile-only"
+        aria-label="Mở menu"
+        onClick={() => setMobileOpen(true)}
+      >
+        <MenuOutlined />
+      </button>
+
+      {/* Drawer mobile */}
+      <Drawer
+        placement="right"
+        open={mobileOpen}
+        onClose={() => setMobileOpen(false)}
+        className="site-drawer"
+        title={
+          <div className="drawer-head">
+            <span>Menu</span>
+          </div>
+        }
+      >
+        <nav className="drawer-nav" aria-label="Menu di động">
+          {navLinks.map((link) => (
+            <Link
+              key={link.to}
+              to={link.to}
+              className="drawer-nav__item"
+              onClick={() => setMobileOpen(false)}
+            >
+              {link.name}
+            </Link>
+          ))}
+        </nav>
+
+        <div className="drawer-actions">
+          {isLoggedIn ? (
+            <>
+              <button
+                className="drawer-action"
+                onClick={() => {
+                  setMobileOpen(false);
+                  navigate("/profile");
+                }}
+              >
+                <UserOutlined /> &nbsp; Thông tin cá nhân
+              </button>
+              <button
+                className="drawer-action danger"
+                onClick={() => {
+                  setMobileOpen(false);
+                  handleLogout();
+                }}
+              >
+                <LogoutOutlined /> &nbsp; Đăng xuất
+              </button>
+            </>
+          ) : (
+            location.pathname !== "/login" && (
+              <button
+                className="drawer-action primary"
+                onClick={() => {
+                  setMobileOpen(false);
+                  navigate("/login");
+                }}
+              >
+                <LoginOutlined /> &nbsp; Đăng nhập
+              </button>
+            )
+          )}
+        </div>
+      </Drawer>
     </header>
   );
 };
