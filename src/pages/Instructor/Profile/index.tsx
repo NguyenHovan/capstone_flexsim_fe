@@ -77,6 +77,14 @@ const actionBarStyle: React.CSSProperties = {
   flexWrap: "wrap",
 };
 
+const saveGhostBtnStyle: React.CSSProperties = {
+  height: 40,
+  color: "#fff",
+  borderColor: "#fff",
+  background: "rgba(255,255,255,0.12)",   // nhẹ để nổi trên nền
+  backdropFilter: "blur(2px)",
+  boxShadow: "0 10px 22px rgba(0,0,0,0.12)",
+};
 const labelStyle: React.CSSProperties = { fontWeight: 600 };
 
 /* ----------------- Component ----------------- */
@@ -228,14 +236,21 @@ const ProfilePage = () => {
                   <Space size="middle" wrap>
                     <UploadCloudinary value={avatarUrl} onChange={setAvatarUrl} />
                     <Button
-                      type="primary"
-                      icon={<SaveOutlined />}
-                      onClick={saveAvatarOnly}
-                      disabled={!avatarDirty}
-                      loading={savingAvatar}
-                    >
-                      Lưu ảnh đại diện
-                    </Button>
+  ghost
+  icon={<SaveOutlined />}
+  onClick={saveAvatarOnly}
+  disabled={!avatarDirty}
+  loading={savingAvatar}
+  style={{
+    ...saveGhostBtnStyle,
+    // khi disabled vẫn sáng và dễ đọc
+    opacity: avatarDirty ? 1 : 0.7,
+    cursor: avatarDirty ? "pointer" : "not-allowed",
+  }}
+>
+  Lưu ảnh đại diện
+</Button>
+
                   </Space>
                 </div>
               </Col>
