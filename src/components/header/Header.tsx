@@ -1,4 +1,3 @@
-// Header.tsx
 import { Avatar, Dropdown, Button, Drawer } from "antd";
 import type { MenuProps } from "antd";
 import {
@@ -11,7 +10,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { useEffect, useState } from "react";
 import { AccountService } from "../../services/account.service";
-import "./header.css"; // ✅ nhớ import css mới
+import "./header.css"; 
 
 const Header = () => {
   const navigate = useNavigate();
@@ -33,7 +32,7 @@ const Header = () => {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("currentUser");
     localStorage.removeItem("roleId");
-    navigate("/login");
+    navigate("/");
   };
 
   const menuItems: MenuProps["items"] = [
@@ -62,7 +61,6 @@ const Header = () => {
 
   return (
     <header className="site-header">
-      {/* Logo */}
       <button
         className="site-logo"
         onClick={() => navigate("/")}
@@ -79,7 +77,6 @@ const Header = () => {
         </span>
       </button>
 
-      {/* Nav (desktop) */}
       <nav className="site-nav desktop-only" aria-label="Chính">
         {navLinks.map((link) => {
           const isActive = location.pathname === link.to;
@@ -96,7 +93,6 @@ const Header = () => {
         })}
       </nav>
 
-      {/* Actions (desktop) */}
       <div className="site-actions desktop-only">
         {isLoggedIn ? (
           <Dropdown menu={{ items: menuItems }} placement="bottomRight" arrow>
@@ -136,7 +132,6 @@ const Header = () => {
         )}
       </div>
 
-      {/* Mobile menu button */}
       <button
         className="mobile-menu-btn mobile-only"
         aria-label="Mở menu"
@@ -145,7 +140,6 @@ const Header = () => {
         <MenuOutlined />
       </button>
 
-      {/* Drawer mobile */}
       <Drawer
         placement="right"
         open={mobileOpen}
