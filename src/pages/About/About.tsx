@@ -26,10 +26,14 @@ import {
   BarChartOutlined,
   DeploymentUnitOutlined,
 } from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import "./about.css";
 
 const { Header, Content, Footer } = Layout;
 const { Title, Paragraph, Text, Link } = Typography;
+
+const DEMO_URL = "https://www.youtube.com/watch?v=YJgJzyDHZ8o";
 
 type Feature = {
   icon: React.ReactNode;
@@ -39,46 +43,46 @@ type Feature = {
 };
 
 const missionBullets: string[] = [
-  "Make hands-on logistics training accessible and affordable for schools and companies.",
-  "Bridge classroom theory with real operations via scenario-based learning.",
-  "Build practical skills in warehousing, transportation, and supply-chain optimization.",
+  "Đưa đào tạo logistics thực hành đến gần hơn, chi phí hợp lý cho trường học và doanh nghiệp.",
+  "Kết nối lý thuyết lớp học với vận hành thực tiễn qua học tập theo kịch bản.",
+  "Xây dựng kỹ năng về kho bãi, vận tải và tối ưu chuỗi cung ứng.",
 ];
 
 const features: Feature[] = [
   {
     icon: <ExperimentOutlined />,
-    title: "Flexible Simulation Library",
-    desc: "Customizable FlexSim scenes: warehouses, ports, cross-docks, industrial sites, and more.",
-    tags: ["3D/2D", "Drag-and-drop", "Scenarios"],
+    title: "Thư viện mô phỏng linh hoạt",
+    desc: "Các bối cảnh FlexSim tuỳ chỉnh: kho bãi, cảng, cross-dock, nhà máy và hơn thế nữa.",
+    tags: ["3D/2D", "Kéo-thả", "Kịch bản"],
   },
   {
     icon: <SolutionOutlined />,
-    title: "Courses, Topics & Assessments",
-    desc: "Design courses linked to scenes. Add interactive labs, auto-graded quizzes, and rubrics.",
+    title: "Khoá học, chủ đề & đánh giá",
+    desc: "Thiết kế khoá học gắn với bối cảnh. Thêm phòng lab tương tác, quiz chấm tự động và rubric.",
     tags: ["LMS", "Quiz", "Rubric"],
   },
   {
     icon: <CloudServerOutlined />,
-    title: "Deploy Anywhere",
-    desc: "Cloud or on-prem. Secure SSO + LMS/SIS integration through APIs.",
+    title: "Triển khai linh hoạt",
+    desc: "Cloud hoặc on-prem. Hỗ trợ SSO + tích hợp LMS/SIS qua API an toàn.",
     tags: ["Cloud", "On-prem", "SSO"],
   },
   {
     icon: <SafetyCertificateOutlined />,
-    title: "Analytics & Tracking",
-    desc: "Near real-time logs, scores, dashboards for instructors and org admins.",
+    title: "Phân tích & theo dõi",
+    desc: "Log, điểm số theo thời gian gần thực, dashboard cho giảng viên và quản trị tổ chức.",
     tags: ["Analytics", "Realtime"],
   },
   {
     icon: <ThunderboltOutlined />,
-    title: "Scalable & High Performance",
-    desc: "Supports large classes and heavy scenarios with elastic resources.",
+    title: "Hiệu năng & mở rộng",
+    desc: "Vận hành lớp học lớn và kịch bản nặng nhờ tài nguyên co giãn.",
     tags: ["Scalable", "High-perf"],
   },
   {
     icon: <CustomerServiceOutlined />,
-    title: "Localized Content & Support",
-    desc: "Aligned with VN & international curricula; dedicated technical/academic support.",
+    title: "Nội dung & hỗ trợ bản địa hoá",
+    desc: "Phù hợp chương trình VN & quốc tế; hỗ trợ kỹ thuật/học thuật tận tâm.",
     tags: ["Localized", "Support"],
   },
 ];
@@ -86,36 +90,36 @@ const features: Feature[] = [
 const audiences: Feature[] = [
   {
     icon: <BookOutlined />,
-    title: "Universities & Colleges",
-    desc: "Programs in logistics, business, and industrial engineering seeking practical simulation labs.",
+    title: "Đại học & Cao đẳng",
+    desc: "Các chương trình logistics, kinh doanh, CN công nghiệp cần phòng lab mô phỏng thực hành.",
   },
   {
     icon: <TeamOutlined />,
-    title: "Enterprises",
-    desc: "Onboarding and up-skilling for warehouse and transport operations in safe virtual scenarios.",
+    title: "Doanh nghiệp",
+    desc: "Onboarding & nâng cao kỹ năng kho bãi, vận tải trong kịch bản ảo an toàn.",
   },
   {
     icon: <CompassOutlined />,
-    title: "Training Centers",
-    desc: "Short courses and certificates powered by scenario-based learning.",
+    title: "Trung tâm đào tạo",
+    desc: "Khoá ngắn hạn & chứng chỉ dựa trên học tập theo kịch bản.",
   },
 ];
 
 const reasons: Feature[] = [
   {
     icon: <SmileOutlined />,
-    title: "Beginner-Friendly",
-    desc: "Intuitive UI and ready-made scenarios let newcomers build and run simulations in minutes.",
+    title: "Thân thiện người mới",
+    desc: "Giao diện trực quan, kịch bản dựng sẵn giúp bắt đầu mô phỏng trong vài phút.",
   },
   {
     icon: <SafetyCertificateOutlined />,
-    title: "Measurable Outcomes",
-    desc: "Actions are logged and scored for transparent, objective assessment.",
+    title: "Kết quả đo lường được",
+    desc: "Mọi thao tác được ghi nhận và chấm điểm minh bạch, khách quan.",
   },
   {
     icon: <ThunderboltOutlined />,
-    title: "Practical Impact",
-    desc: "Test layouts, picking strategies, fleet sizing, and workflows before investing for real.",
+    title: "Tác động thực tiễn",
+    desc: "Thử layout, chiến lược picking, quy mô đội xe, quy trình… trước khi đầu tư thật.",
   },
 ];
 
@@ -134,13 +138,31 @@ const Stat: React.FC<{
 );
 
 const AboutLogisimEdu: React.FC = () => {
+  const navigate = useNavigate();
+
+  const handleStart = () => {
+    const token = localStorage.getItem("accessToken");
+    if (token) {
+      navigate("/course-list");
+    } else {
+      toast.info("Vui lòng đăng nhập để tiếp tục");
+      navigate("/login");
+    }
+  };
+
+  const handleExplore = () => {
+    const token = localStorage.getItem("accessToken");
+    navigate(token ? "/course-list" : "/login");
+    if (!token) toast.info("Vui lòng đăng nhập để tiếp tục");
+  };
+
   return (
-    <Layout className="about-layout" aria-label="About LogiSimEdu">
+    <Layout className="about-layout" aria-label="Giới thiệu LogiSimEdu">
       <Header className="about-hero" role="banner">
         <div className="about-hero__bg" />
         <div className="about-hero__glow" />
         <div className="about-hero__content glass">
-          <Badge.Ribbon text="FlexSim-Powered" color="cyan">
+          <Badge.Ribbon text="Nền tảng FlexSim" color="cyan">
             <div>
               <Title
                 level={1}
@@ -150,44 +172,39 @@ const AboutLogisimEdu: React.FC = () => {
                 LogiSimEdu
               </Title>
               <Paragraph className="about-hero__subtitle">
-                A Logistics Training Platform Using{" "}
-                <b>FlexSim-Based Interactive Scenarios</b>.
+                Nền tảng đào tạo logistics với{" "}
+                <b>kịch bản tương tác dựa trên FlexSim</b>.
               </Paragraph>
               <Space size="middle" wrap>
-                <Button type="primary" size="large" className="btn-shadow">
-                  Start Free Trial
+                <Button type="primary" size="large" className="btn-shadow" onClick={handleStart}>
+                  Bắt đầu dùng thử
                 </Button>
-                <Button size="large" className="btn-ghost">
-                  Watch Demo
-                </Button>
+                <a href={DEMO_URL} target="_blank" rel="noopener noreferrer">
+                  <Button size="large" className="btn-ghost">Xem Demo</Button>
+                </a>
               </Space>
             </div>
           </Badge.Ribbon>
 
           <div className="about-stats">
-            <Stat icon={<TeamOutlined />} value="10k+" label="Learners" />
-            <Stat
-              icon={<DeploymentUnitOutlined />}
-              value="250+"
-              label="Workspaces"
-            />
-            <Stat icon={<BarChartOutlined />} value="400+" label="Scenarios" />
+            <Stat icon={<TeamOutlined />} value="10k+" label="Học viên" />
+            <Stat icon={<DeploymentUnitOutlined />} value="250+" label="Workspace" />
+            <Stat icon={<BarChartOutlined />} value="400+" label="Kịch bản" />
           </div>
         </div>
       </Header>
 
       <Content className="about-content">
-        {/* MISSION */}
+        {/* SỨ MỆNH */}
         <section className="about-section">
           <Row gutter={[24, 24]} align="middle">
             <Col xs={24} md={12}>
-              <Title level={2}>Our Mission</Title>
+              <Title level={2}>Sứ mệnh của chúng tôi</Title>
               <Paragraph type="secondary">
-                LogiSimEdu enables organizations and learners to “learn by
-                doing” with simulation-based training for warehousing and supply
-                chain operations.
+                LogiSimEdu giúp tổ chức và người học “học qua thực hành”
+                bằng mô phỏng cho nghiệp vụ kho bãi và chuỗi cung ứng.
               </Paragraph>
-              <ul className="about-bullets" aria-label="Mission highlights">
+              <ul className="about-bullets" aria-label="Điểm nhấn sứ mệnh">
                 {missionBullets.map((b, i) => (
                   <li key={i}>{b}</li>
                 ))}
@@ -210,10 +227,10 @@ const AboutLogisimEdu: React.FC = () => {
 
         <Divider className="decor-divider" />
 
-        {/* WHAT WE OFFER */}
+        {/* CHÚNG TÔI CUNG CẤP */}
         <section className="about-section">
           <Title level={2} className="section-title">
-            What We Offer
+            Chúng tôi cung cấp
           </Title>
           <Row gutter={[24, 24]}>
             {features.map((f, idx) => (
@@ -239,24 +256,21 @@ const AboutLogisimEdu: React.FC = () => {
 
         <Divider className="decor-divider" />
 
-        {/* WHO USES */}
+        {/* AI SỬ DỤNG LOGISIMEDU? */}
         <section className="about-section">
           <Row gutter={[24, 24]} align="top">
             <Col xs={24} md={10}>
-              <Title level={2}>Who Uses LogiSimEdu?</Title>
+              <Title level={2}>Ai sử dụng LogiSimEdu?</Title>
               <Paragraph>
-                The platform serves formal education, enterprise training, and
-                professional development providers.
+                Nền tảng phục vụ giáo dục chính quy, đào tạo doanh nghiệp
+                và các đơn vị phát triển nghề nghiệp.
               </Paragraph>
               <Timeline
                 className="about-timeline"
                 items={[
-                  { color: "blue", children: "Pilot rollout in 2–4 weeks" },
-                  { color: "green", children: "Secure SSO/LMS integration" },
-                  {
-                    color: "gray",
-                    children: "Expand scenario library to fit your curriculum",
-                  },
+                  { color: "blue", children: "Thí điểm trong 2–4 tuần" },
+                  { color: "green", children: "Tích hợp SSO/LMS an toàn" },
+                  { color: "gray", children: "Mở rộng thư viện kịch bản phù hợp chương trình" },
                 ]}
               />
             </Col>
@@ -264,10 +278,7 @@ const AboutLogisimEdu: React.FC = () => {
               <Row gutter={[24, 24]}>
                 {audiences.map((a, i) => (
                   <Col key={i} xs={24} sm={12}>
-                    <Card
-                      className="about-card about-card--soft lift"
-                      hoverable
-                    >
+                    <Card className="about-card about-card--soft lift" hoverable>
                       <div className="about-card__icon">{a.icon}</div>
                       <Title level={4} className="about-card__title">
                         {a.title}
@@ -285,10 +296,10 @@ const AboutLogisimEdu: React.FC = () => {
 
         <Divider className="decor-divider" />
 
-        {/* WHY CHOOSE US */}
+        {/* VÌ SAO CHỌN CHÚNG TÔI? */}
         <section className="about-section">
           <Title level={2} className="section-title">
-            Why Choose Us?
+            Vì sao chọn chúng tôi?
           </Title>
           <Row gutter={[24, 24]}>
             {reasons.map((r, i) => (
@@ -308,22 +319,19 @@ const AboutLogisimEdu: React.FC = () => {
             <Row align="middle" gutter={[24, 24]}>
               <Col xs={24} md={16}>
                 <Title level={3} style={{ marginBottom: 8 }}>
-                  Ready to transform your logistics training?
+                  Sẵn sàng nâng tầm đào tạo logistics?
                 </Title>
                 <Text type="secondary">
-                  Book a personalized demo and see how LogiSimEdu fits your
-                  curriculum or operations.
+                  Đặt lịch demo phù hợp và xem LogiSimEdu hoà hợp với chương trình đào tạo của bạn.
                 </Text>
               </Col>
               <Col xs={24} md={8} style={{ textAlign: "right" }}>
                 <Space wrap>
-                  <Button type="primary" size="large" className="btn-shadow">
-                    Talk to Us
+                  <Button type="primary" size="large" className="btn-shadow" onClick={handleExplore}>
+                    Khám phá khoá học
                   </Button>
                   <Button size="large" className="btn-ghost">
-                    <Link href="mailto:hello@logisimedu.example">
-                      Send Email
-                    </Link>
+                    <Link href="mailto:contact@logisim.edu.vn">Gửi email</Link>
                   </Button>
                 </Space>
               </Col>
@@ -332,7 +340,7 @@ const AboutLogisimEdu: React.FC = () => {
         </section>
       </Content>
 
-      <Footer className="about-footer"></Footer>
+      <Footer className="about-footer" />
     </Layout>
   );
 };
