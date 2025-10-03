@@ -72,9 +72,9 @@ const Header = () => {
   const navLinks = [
     { name: "Trang chủ", to: "/" },
     { name: "Danh mục khóa học", to: "/course-list" },
-    { name: "AI Quiz", to: "/ai-quiz" },        
+    { name: "Trắc nghiệm AI", to: "/ai-quiz" },        
     { name: "Giới thiệu", to: "/about" },
-    { name: "Flexsim Web", to: "/flexsim-web" }, 
+    { name: "FlexSim trực tuyến", to: "/flexsim-web" }, 
   ];
 
   return (

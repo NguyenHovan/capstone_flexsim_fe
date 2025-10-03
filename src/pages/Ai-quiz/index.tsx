@@ -150,14 +150,14 @@ function QuizView({ questions }: { questions: any[] }) {
         <Card style={{ ...styles.card }} bodyStyle={{ padding: 16 }}>
           <Space style={{ width: "100%", justifyContent: "space-between" }}>
             <Space>
-              <Text strong>Questions: {questions.length}</Text>
+              <Text strong>Câu hỏi: {questions.length}</Text>
               <Text type="secondary">
-                • Answered: {totalAnswered}/{questions.length}
+                • Đã trả lời: {totalAnswered}/{questions.length}
               </Text>
             </Space>
             <Space>
               <Text strong>
-                Score: {score}/{questions.length}
+                Điểm: {score}/{questions.length}
               </Text>
             </Space>
           </Space>
@@ -174,7 +174,7 @@ function QuizView({ questions }: { questions: any[] }) {
               style={styles.card}
               title={
                 <Space wrap>
-                  <Text>Q{i + 1}.</Text>
+                  <Text>Câu{i + 1}.</Text>
                   <Text style={styles.stem as any}>{q.stem}</Text>
                   {q.topic && <Tag color="blue">{q.topic}</Tag>}
                   {q.difficulty && (
@@ -190,14 +190,14 @@ function QuizView({ questions }: { questions: any[] }) {
                     <Space>
                       <CheckCircleTwoTone twoToneColor="#22c55e" />
                       <Text strong style={{ color: "#16a34a" }}>
-                        Correct
+                        Đúng
                       </Text>
                     </Space>
                   ) : (
                     <Space>
                       <CloseCircleTwoTone twoToneColor="#ef4444" />
                       <Text strong style={{ color: "#ef4444" }}>
-                        Incorrect
+                        Sai
                       </Text>
                     </Space>
                   )
@@ -262,7 +262,7 @@ function QuizView({ questions }: { questions: any[] }) {
           onClick={onCheckAll}
           disabled={checked || questions.length === 0}
         >
-          Check All
+          Kiểm tra tất cả
         </Button>
       </Flex>
 
@@ -311,9 +311,8 @@ export default function QuizFromPresetsPage() {
   const { isLoggedIn } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const redirectedRef = useRef(false); // ngăn bắn toast nhiều lần
+  const redirectedRef = useRef(false); 
 
-  // Guest → toast + redirect (delay 1 frame)
   useEffect(() => {
     if (isLoggedIn === false && !redirectedRef.current) {
       redirectedRef.current = true;
@@ -335,7 +334,6 @@ export default function QuizFromPresetsPage() {
   }, [isLoggedIn, navigate, location.pathname]);
 
   if (isLoggedIn === false) {
-    // giữ component sống ngắn để toast có chỗ mount
     return <div style={{ minHeight: 200 }} />;
   }
 
@@ -373,7 +371,7 @@ export default function QuizFromPresetsPage() {
     } finally {
       setUploading(false);
     }
-    return false; // chặn Antd upload mặc định
+    return false; 
   };
 
   const resetAll = () => {
@@ -424,11 +422,11 @@ export default function QuizFromPresetsPage() {
                 color: "transparent",
               }}
             >
-              Use Preset Dataset → Generate Quiz
+              Dùng dữ liệu mẫu → Ra đề trắc nghiệm bằng AI
             </span>
           </Title>
           <Text type="secondary">
-            Chọn 1 dataset có sẵn rồi gửi lên backend.
+            Chọn một tệp dữ liệu có sẵn và gửi lên hệ thống để tạo đề.
           </Text>
         </Col>
         <Col>
@@ -438,14 +436,14 @@ export default function QuizFromPresetsPage() {
               href={file.url}
               download={file.label}
             >
-              Download {file.label}
+              Tải xuống {file.label}
             </Button>
             <Button
               icon={<ReloadOutlined />}
               onClick={resetAll}
               disabled={uploading}
             >
-              Reset
+             Làm mới
             </Button>
           </Space>
         </Col>
@@ -459,7 +457,7 @@ export default function QuizFromPresetsPage() {
         }}
       >
         <Space direction="vertical" size={12} style={{ width: "100%" }}>
-          <Text strong>Chọn dataset:</Text>
+          <Text strong>Chọn tệp dữ liệu:</Text>
           {/* <Radio.Group
             value={selectedUrl}
             onChange={(e) => setSelectedUrl(e.target.value)}
@@ -489,7 +487,7 @@ export default function QuizFromPresetsPage() {
               onClick={start}
               loading={uploading}
             >
-              Generate from preset
+              Tạo bài kiểm tra từ dữ liệu có sẵn
             </Button>
           </Space>
         </Space>
